@@ -3,19 +3,44 @@ title: uBotMCP
 description: uBotMCP（规划中）：通过 MCP 向大模型开放传感器与执行器。
 pageKind: placeholder
 sidebar:
-  order: 10
+  order: 40
 ---
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
+uBotMCP 是规划中的大模型接入插件，这一页说明它打算做什么，以及发布前可以先怎么做。
+
 <PackageStatus name="UBotMCP" />
 
-{/* STUB */}
-{/*
-待写章节（占位页，章节顺序见 docs-templates/placeholder.mdx）：
-- [ ] 定位
-- [ ] 计划提供的能力
-- [ ] 与现有插件的关系
-- [ ] 发布前可以先怎么做
-- [ ] 定位：通过 MCP 向大模型开放传感器与执行器
-*/}
+## 定位
+
+通过 MCP（Model Context Protocol）把传感器和执行器开放给大模型（LLM）。
+
+在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+
+## 计划提供的能力
+
+包索引为它声明了一个能力标签（`provides`）：
+
+| 能力标签 | 含义 |
+| --- | --- |
+| `MCP.Tools` | 以 MCP 工具（tools）的形式开放给大模型的能力 |
+
+uBotCore 里已有统一的入口，不用知道具体是哪个传感器或执行器：
+
+- `UBot Sensor` 接口给出传感器的编号、类型、运行状态和最新的帧头，`UBot::Sensors::FindSensors` 能找到一个 Actor 上所有实现了它的对象。
+- `UBot Velocity Commandable` 接口接收速度指令，`UBot::Actuation::FindVelocityCommandable` 能找到可以接收的对象。速度指令里的来源标签 `Source` 的示例值就包括 `MCP`。
+
+尚未确定：开放哪些工具、怎样连接和管理访问、哪些执行器可以被调用。
+
+## 与现有插件的关系
+
+- uBotCore 和 uBotSensor：它依赖这两个插件的 0.1.x，不依赖 uBotROS。
+- uBotAerial：包索引里的组合「大模型无人机」把它和 uBotSensor、uBotAerial 放在一起，用途是「大模型通过 MCP 控制无人机」，见 [选择组合](/start/recipes/)。uBotAerial 也还在规划中。
+
+## 发布前可以先怎么做
+
+- 在蓝图里读取 uBotSensor 的传感器数据，见 [传感器通用用法](/sensor/basics/)。
+- 如果你的大模型工具链能访问 ROS 2，可以先用 uBotROS 把传感器数据发布出去，见 [发布传感器数据](/ros/publish-sensors/)。
+- 自己写 C++ 服务时，可以用上面的查找函数和接口取数据、下指令，见 [在 C++ 中使用传感器与接口](/develop/cpp/)。
+- uBotMCP 发布后，自己写的服务要不要改、怎么改，尚未确定。
