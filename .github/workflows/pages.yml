@@ -1,0 +1,72 @@
+# Every push to main: build the site under /uBotDocs and publish it to GitHub Pages
+# (https://astreox.github.io/uBotDocs/). The root build is tested and link-checked by CI.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Check out (without submodules; the build reads data/api only)
+        uses: actions/checkout@v7
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up Node from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Install
+        run: npm ci
+
+      - name: Build under the Pages path
+        run: npm run build
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - name: Prefix and check the links
+        # Not needed with a custom domain: the site is then served at the root.
+        if: steps.pages.outputs.base_path != ''
+        run: node scripts/rebase-links.mjs
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

@@ -22,12 +22,18 @@ const reference = referenceSidebar({ packages, dataDir });
 // local builds working until the domain exists; `.invalid` can never resolve by accident.
 const site = process.env.SITE_URL || "https://ubot-docs.example.invalid";
 
+// A site served under a path (GitHub Pages: /uBotDocs) sets BASE_PATH. Pages and components link with
+// root paths (/sensor/imu/), so such a build skips the link validator (CI validates the root build) and
+// scripts/rebase-links.mjs prefixes the links in dist/ and checks them afterwards.
+const base = process.env.BASE_PATH ? `/${process.env.BASE_PATH.replace(/^\/+|\/+$/g, "")}` : undefined;
+
 // Invalid ```blueprint blocks fail `astro build` (.mdx pages at once, .md pages at the end through
 // blueprintBuildGate); the dev server shows an error box instead.
 const strict = process.argv.includes("build");
 
 export default defineConfig({
   site,
+  base,
   markdown: {
     processor: satteri({
       mdastPlugins: [blueprintPlugin({ root, strict }), headingIdsPlugin()],
@@ -63,12 +69,14 @@ export default defineConfig({
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
       lastUpdated: false,
       credits: false,
-      plugins: [
-        starlightLinksValidator({
-          errorOnInvalidHashes: true,
-          errorOnLocalLinks: true,
-        }),
-      ],
+      plugins: base
+        ? []
+        : [
+            starlightLinksValidator({
+              errorOnInvalidHashes: true,
+              errorOnLocalLinks: true,
+            }),
+          ],
     }),
   ],
 });

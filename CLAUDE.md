@@ -76,10 +76,15 @@ src/components/             PackageList, RecipeTable, PackageStatus, DependencyG
                             SamplingTimeline, PageTitle (the "需要：…" line under the title and the search's package filter)
 src/scripts/blueprint.js    client: wires, node cards, full-screen view, node index filter
 src/scripts/scrollables.js  client: tab stop and scroll hint for tables and diagrams that scroll sideways
-scripts/                    gen-reference, check, sync-index, sync-api, sync-branch, add-package, export-api.ps1 (Windows + UE only), zh, find-node
+scripts/                    gen-reference, check, sync-index, sync-api, sync-branch, add-package, export-api.ps1 (Windows + UE only), zh, find-node, rebase-links
 vendor/<folder>/            plugin repositories as git submodules, for reading source only
 deploy/                     server setup (nginx, SSH gate), see deploy/README.md
 ```
+
+GitHub Pages: `.github/workflows/pages.yml` publishes every push to main at
+https://astreox.github.io/uBotDocs/. That build sets `BASE_PATH=/uBotDocs` (Astro's `base`); pages keep
+linking with root paths (`/sensor/imu/`), and `scripts/rebase-links.mjs` prefixes the base in `dist/` and
+fails on a link that points at no file. Never write `/uBotDocs` into a page or a component.
 
 The sidebar is built from the registry (`lib/sidebar.mjs`, called by `astro.config.mjs`). Do not edit a
 central list to add a page or a plugin:
