@@ -1,0 +1,107 @@
+UUBotROSSensorBridgeComponent:
+  summary: 把所属 Actor 上的每个 uBot 传感器发布到 ROS 2，并发布传感器 TF。为每个传感器建一个发布器，只搜索 Actor 本身和它的组件，不搜索子 Actor。发布器建好后进入 Ready，不等桥连接成功。
+  sourceHash: "e825e6e25578"
+
+UUBotROSSensorBridgeComponent.BaseFrameOverride:
+  summary: 基坐标系名。留空时用 uBot Identity 的 Base Frame Id（默认 base_link）。
+  sourceHash: "49811adde080"
+
+UUBotROSSensorBridgeComponent.BaseLinkComponent:
+  summary: 基组件，静态 TF 以它为参考。留空或无法解析时，用 uBot Identity 的 Base Component（默认是根组件）。
+  sourceHash: "3b5ff05dcdc8"
+
+UUBotROSSensorBridgeComponent.GetActivePublisherTopics:
+  summary: 已声明的全部话题，已排序。
+  sourceHash: "66e7b04cdcd8"
+
+UUBotROSSensorBridgeComponent.GetDiscoveredSensorCount:
+  summary: 有发布器的传感器个数。
+  sourceHash: "efb4a109d87b"
+
+UUBotROSSensorBridgeComponent.GetROSBridgeError:
+  summary: 最近一次配置错误的文字，没有时为空。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.GetROSBridgeStatus:
+  summary: 组件的生命周期状态。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.GetResolvedBaseFrameId:
+  summary: 实际发布的基坐标系；开启 Prefix Frames with Namespace 时带命名空间前缀。
+  sourceHash: "e6b94b9823c8"
+
+UUBotROSSensorBridgeComponent.GetResolvedNamespace:
+  summary: 默认话题用的命名空间，已净化，没有前导 /；根命名空间时为空。
+  sourceHash: "89edf2afffab"
+
+UUBotROSSensorBridgeComponent.IsROSBridgeReady:
+  summary: 状态为 Ready 时为 true。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.OdometryFrame:
+  summary: 里程计坐标系名，默认 odom，是动态 TF 的父坐标系。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.OnROSBridgeError:
+  summary: 配置有问题、组件进入 Error 时触发，Error Message 是原因。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.OnROSBridgeReady:
+  summary: 发布器建好、组件进入 Ready 时触发。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.OnROSPublishersRefreshed:
+  summary: Refresh Sensor Publishers 成功后触发，Publisher Count 是现在声明的话题数。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.RefreshSensorPublishers:
+  summary: 重新发现所属 Actor 的传感器并重建全部发布器，组件没在运行时先初始化。成功返回 true。
+  sourceHash: "75c7a25db5ee"
+
+UUBotROSSensorBridgeComponent.RestartROSBridge:
+  summary: 拆掉发布器后重新初始化，成功返回 true。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.RobotNamespaceOverride:
+  summary: 机器人的命名空间。留空时用 uBot Identity 的命名空间；只填 / 表示根命名空间（话题形如 /imu/data）。用 / 分隔多级，每一段都会被净化。
+  sourceHash: "2225313945bc"
+
+UUBotROSSensorBridgeComponent.SensorDataQosOverride:
+  summary: 覆盖传感器数据（IMU、激光雷达、图像）的 QoS，默认是 Best Effort / Volatile / 5。
+  sourceHash: "46013ad853c5"
+
+UUBotROSSensorBridgeComponent.StateQosOverride:
+  summary: 覆盖位姿和里程计的 QoS，默认是 Reliable / Volatile / 10。
+  sourceHash: "3d211babbed2"
+
+UUBotROSSensorBridgeComponent.StopROSBridge:
+  summary: 拆掉全部发布器和静态 TF，状态变为 Stopped。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.TopicOverrides:
+  summary: 按逻辑键替换默认话题：pose、odom、imu、scan、lidar、rgb_camera、rgb_camera.camera_info、depth_camera、depth_camera.camera_info。同类型有多个传感器时，键是净化后的 SensorId 和 <SensorId>.camera_info。
+  sourceHash: "9fae4d109be4"
+
+UUBotROSSensorBridgeComponent.bAutoInitialize:
+  summary: Begin Play 时自动初始化；关闭后调用 Restart ROSBridge 或 Refresh Sensor Publishers。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.bPrefixFramesWithNamespace:
+  summary: 所有发布的 frame id 变成 <namespace>/<frame>，用于多机器人的 TF 树。
+  sourceHash: "9e9cd36b63c9"
+
+UUBotROSSensorBridgeComponent.bPublishDynamicTF:
+  summary: 是否发布动态的 odom → base TF。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.bPublishInvalidSamples:
+  summary: 是否也发布无效样本，比如 Warming Up。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.bPublishStaticSensorTF:
+  summary: 是否发布静态的 base → 传感器 TF。
+  sourceHash: "e3b0c44298fc"
+
+UUBotROSSensorBridgeComponent.bSkipWhenNoSubscribers:
+  summary: 桥报告某个话题没有订阅者时，跳过这个话题的编码；相机还跳过 GPU 读回。
+  sourceHash: "be6868fa3618"

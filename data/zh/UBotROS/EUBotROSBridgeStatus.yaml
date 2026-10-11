@@ -1,0 +1,19 @@
+EUBotROSBridgeStatus:
+  summary: 一个世界与 ubot_ros_bridge 之间 TCP 连接的状态。
+  sourceHash: "eeb0aceb3c36"
+
+EUBotROSBridgeStatus.Connected:
+  summary: 握手完成，可以收发数据。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSBridgeStatus.Connecting:
+  summary: 正在尝试第一次连接，等待桥的握手应答。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSBridgeStatus.Disabled:
+  summary: 没有在连接：调用了 Disconnect，或 Auto Connect 关闭且没有调用过 Connect。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSBridgeStatus.Error:
+  summary: 最近一次连接尝试失败，或已建立的连接断开；每隔 Reconnect Interval Seconds 重试。
+  sourceHash: "e3b0c44298fc"

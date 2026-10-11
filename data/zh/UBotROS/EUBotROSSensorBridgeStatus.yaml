@@ -1,0 +1,23 @@
+EUBotROSSensorBridgeStatus:
+  summary: uBot ROS Sensor Bridge 组件的生命周期状态。
+  sourceHash: "3f6933ccafb5"
+
+EUBotROSSensorBridgeStatus.Error:
+  summary: 配置有问题，没有发布任何话题；原因见 Get ROSBridge Error。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSSensorBridgeStatus.Initializing:
+  summary: 正在发现传感器并建立发布器。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSSensorBridgeStatus.Ready:
+  summary: 发布器已建好，不等桥连接成功。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSSensorBridgeStatus.Stopped:
+  summary: 已拆掉全部发布器：调用了 Stop ROSBridge，或组件结束运行。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSSensorBridgeStatus.Uninitialized:
+  summary: 还没有初始化。
+  sourceHash: "e3b0c44298fc"

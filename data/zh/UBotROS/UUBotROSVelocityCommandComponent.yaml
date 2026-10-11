@@ -1,0 +1,79 @@
+UUBotROSVelocityCommandComponent:
+  summary: 接收 ROS 2 的 geometry_msgs/msg/Twist 速度指令，换算后交给实现了 UBot Velocity Commandable 的目标。不含控制逻辑，只做解码、换算、限速、分发和超时。话题是 /<namespace>/cmd_vel（best_effort / volatile / 10）。
+  sourceHash: "b5774fbfb89a"
+
+UUBotROSVelocityCommandComponent.CommandTimeoutSeconds:
+  summary: 超过这么多仿真秒没有新指令，就让目标停车；0 关闭超时。
+  sourceHash: "8997ef33d0f9"
+
+UUBotROSVelocityCommandComponent.CommandTopicOverride:
+  summary: 非空时替代 /<namespace>/cmd_vel，缺少前导 / 会补上。
+  sourceHash: "faae9ea1163a"
+
+UUBotROSVelocityCommandComponent.GetCommandError:
+  summary: 最近一条错误的文字；自上次启动以来没有错误时为空。
+  sourceHash: "efe85aee6d9b"
+
+UUBotROSVelocityCommandComponent.GetCommandTarget:
+  summary: 指令交给的对象；没有目标（只触发事件）时为空。
+  sourceHash: "abafa4ea41a4"
+
+UUBotROSVelocityCommandComponent.GetLastCommand:
+  summary: 最近一条有效指令（限速之后），收到第一条之前全为 0。
+  sourceHash: "bf0cc398de34"
+
+UUBotROSVelocityCommandComponent.GetResolvedCommandTopic:
+  summary: 正在订阅的话题；没有订阅时，是下一次启动会用的话题。
+  sourceHash: "218cb5619372"
+
+UUBotROSVelocityCommandComponent.IsCommandActive:
+  summary: 从收到有效指令到超时为 true；超时关闭时，收到过指令后一直为 true。
+  sourceHash: "3e091e986679"
+
+UUBotROSVelocityCommandComponent.IsCommandReceiverReady:
+  summary: 已订阅时为 true，与桥是否连上无关。
+  sourceHash: "771f6ce90bdb"
+
+UUBotROSVelocityCommandComponent.MaxAngularSpeedRadiansPerSecond:
+  summary: 角速度的上限，单位 rad/s，按向量模长限制并保持轴向；0 表示不限制。
+  sourceHash: "f8d0ea4b7a6a"
+
+UUBotROSVelocityCommandComponent.MaxLinearSpeedMetersPerSecond:
+  summary: 线速度的上限，单位 m/s，按向量模长限制并保持方向；0 表示不限制。
+  sourceHash: "691549390675"
+
+UUBotROSVelocityCommandComponent.OnCommandError:
+  summary: 订阅失败、消息畸形或含非有限值、目标不可用或拒绝了指令时触发，Error Message 是原因。
+  sourceHash: "3e2c2407ef67"
+
+UUBotROSVelocityCommandComponent.OnCommandTimeout:
+  summary: 每次超时触发一次，在目标收到 Stop Motion 之后。
+  sourceHash: "169051df7e3c"
+
+UUBotROSVelocityCommandComponent.OnVelocityCommand:
+  summary: 每条有效指令换算、限速之后触发，有没有目标都触发，Command 是结果。
+  sourceHash: "1331d846c64b"
+
+UUBotROSVelocityCommandComponent.RestartCommandReceiver:
+  summary: 取消订阅后用当前设置重新订阅，超时计时继续。成功返回 true。
+  sourceHash: "9816aa565cd2"
+
+UUBotROSVelocityCommandComponent.RobotNamespaceOverride:
+  summary: 留空时用 uBot Identity 解析出的命名空间。前后的 / 被忽略，每一段都会被净化；只含 / 表示根命名空间（话题 /cmd_vel）。
+  sourceHash: "0fd72294c83d"
+
+UUBotROSVelocityCommandComponent.SetTargetComponent:
+  summary: 用一个组件直接替换 Target Component；传空则恢复在所属 Actor 上自动查找。
+  sourceHash: "82581e2525ac"
+
+UUBotROSVelocityCommandComponent.StopCommandReceiver:
+  summary: 取消订阅；已经生效的指令仍然按时超时。
+  sourceHash: "edfddb2e08cc"
+
+UUBotROSVelocityCommandComponent.TargetComponent:
+  summary: 接收指令的组件，必须实现 UBot Velocity Commandable。留空时用所属 Actor，或它第一个实现该接口的组件；只设了 Referenced Actor 时，在那个 Actor 上同样查找。
+  sourceHash: "00ff0de59170"
+
+UUBotROSVelocityCommandComponent.bAutoStartReceiver:
+  summary: Begin Play 时订阅；关闭后调用 Restart Command Receiver 开始接收。
+  sourceHash: "02fd67b72968"

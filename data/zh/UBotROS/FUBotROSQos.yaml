@@ -1,0 +1,23 @@
+Break:FUBotROSQos:
+  summary: 把 UBot ROSQos 拆成各个字段。
+  sourceHash: "544fd1e8cfe0"
+
+FUBotROSQos:
+  summary: 发送给桥的 ROS 2 QoS 配置；历史策略固定为 KEEP_LAST，深度为 Depth。
+  sourceHash: "2cddb0b14171"
+
+FUBotROSQos.Depth:
+  summary: KEEP_LAST 的历史深度，范围 1 到 1000。
+  sourceHash: "d98021c3c732"
+
+FUBotROSQos.Durability:
+  summary: 持久性策略：Volatile 或 Transient Local。
+  sourceHash: "e3b0c44298fc"
+
+FUBotROSQos.Reliability:
+  summary: 可靠性策略：Best Effort 或 Reliable。
+  sourceHash: "e3b0c44298fc"
+
+Make:FUBotROSQos:
+  summary: 用各个字段构造一个 UBot ROSQos。
+  sourceHash: "f401ffe5fb23"

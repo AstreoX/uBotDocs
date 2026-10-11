@@ -1,0 +1,19 @@
+Break:FUBotROSQosOverride:
+  summary: 把 UBot ROSQos Override 拆成各个字段。
+  sourceHash: "0580709f8273"
+
+FUBotROSQosOverride:
+  summary: 可选的 QoS 覆盖：勾选 Override 后，用 Qos 替换默认配置。
+  sourceHash: "1eb638fb9c94"
+
+FUBotROSQosOverride.Qos:
+  summary: Override 勾选时使用的 QoS，初始值是 Best Effort / Volatile / 深度 5。
+  sourceHash: "e3b0c44298fc"
+
+FUBotROSQosOverride.bOverride:
+  summary: 是否用 Qos 替换默认 QoS。
+  sourceHash: "e3b0c44298fc"
+
+Make:FUBotROSQosOverride:
+  summary: 用各个字段构造一个 UBot ROSQos Override。
+  sourceHash: "5bdee417ab0c"

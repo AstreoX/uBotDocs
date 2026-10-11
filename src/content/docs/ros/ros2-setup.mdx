@@ -7,12 +7,127 @@ sidebar:
   order: 20
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 环境（WSL Ubuntu 22.04 + Humble）
-- [ ] 获取桥
-- [ ] 两种运行方式
-- [ ] WSL 网络
-- [ ] 确认连通
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页准备好 ROS 2 端：在 Ubuntu 22.04 的 ROS 2 Humble 里启动随插件附带的桥节点 `ubot_ros_bridge`，并确认 UE 连得上。
+
+## 步骤
+
+<Steps>
+
+1. **准备环境**
+
+   桥在 Ubuntu 22.04 上的 ROS 2 Humble 里验证过。UE 在 Windows 上时，把 ROS 2 装在 WSL 的 `Ubuntu-22.04` 里，安装见 [ROS 2 Humble 官方文档](https://docs.ros.org/en/humble/Installation.html)。
+
+   桥只用 Python 标准库、`rclpy`、`rosidl_runtime_py` 和下面这些消息包，不需要 colcon 和 C++ 编译器：
+
+   - `builtin_interfaces`、`std_msgs`、`geometry_msgs`、`nav_msgs`
+   - `sensor_msgs`、`tf2_msgs`、`rosgraph_msgs`
+
+   桥只加载 ament 索引里已安装的消息接口，用到自定义消息时，先 `source` 它所在的工作空间。
+
+2. **找到桥的源码**
+
+   桥在插件的 `ros2/ubot_ros_bridge` 文件夹里，即 `<Project>/Plugins/uBot/uBotROS/ros2/ubot_ros_bridge`。下文把 `<Project>/Plugins/uBot/uBotROS` 写作 `<UBotROS 插件>`。
+
+   在 WSL 里，Windows 的磁盘挂在 `/mnt/` 下，例如 `E:\MyProject` 对应 `/mnt/e/MyProject`。
+
+3. **启动桥**
+
+   直接运行，不经过 colcon（已验证的方式）：
+
+   ```bash
+   source /opt/ros/humble/setup.bash
+   cd <UBotROS 插件>/ros2/ubot_ros_bridge
+   python3 -m ubot_ros_bridge.bridge_node --port 8268
+   ```
+
+   或者把包复制（或软链接）到 colcon 工作空间并构建：
+
+   ```bash
+   mkdir -p ~/ubot_ws/src && cp -r <UBotROS 插件>/ros2/ubot_ros_bridge ~/ubot_ws/src/
+   cd ~/ubot_ws && colcon build --packages-select ubot_ros_bridge && source install/setup.bash
+   ros2 run ubot_ros_bridge bridge --ros-args -p port:=8268
+   ros2 launch ubot_ros_bridge ubot_ros_bridge.launch.py port:=8268
+   ```
+
+   `ros2 run` 和 `ros2 launch` 二选一。桥启动后打印 `ubot_ros_bridge 0.1.0 listening on 0.0.0.0:8268 (ROS humble, ...)`，按 `Ctrl+C` 退出。
+
+4. **设置 UE 的地址**
+
+   桥和 UE 在同一台机器上，包括 Windows 上的 UE 连 WSL 里的桥时，`Bridge Host` 保持默认的 `127.0.0.1`，`Bridge Port` 保持 8268，不用改。其他情况见下面的“WSL 与网络”。
+
+5. **运行并确认**
+
+   在 UE 里点 **Play**。`Auto Connect` 默认开启，世界开始时自动连接，UE 的输出日志（`LogUBotROS`）里出现 `uBot ROS bridge: connected to 127.0.0.1:8268`。
+
+   在 ROS 2 终端里看 `/clock`，它不需要任何传感器：
+
+   ```bash
+   ros2 topic echo /clock --once
+   ```
+
+</Steps>
+
+### WSL 与网络
+
+- **Windows 上的 UE，WSL 里的桥**：`Bridge Host` 保持默认的 `127.0.0.1`。WSL2 的 localhost 转发把 Windows 的 `127.0.0.1:8268` 转到 WSL 里的桥；在 NAT 网络模式、`localhostForwarding=true` 下，桥监听默认的 `0.0.0.0` 和 `--bind-address 127.0.0.1` 两种情况都验证过。
+- **ROS 在另一台机器上**：把 `Bridge Host` 设成那台机器的地址，桥保持默认的 `0.0.0.0` 监听，并在防火墙上放行 TCP 8268。
+- **机器可能被不可信网络访问**：桥用 `--bind-address 127.0.0.1`，或用防火墙限制来源，见下面的注意事项。
+
+## 关键属性
+
+桥的参数可以用命令行给，也可以用 ROS 参数（`--ros-args -p 名称:=值`）或 launch 文件给，ROS 参数优先。只列常用的：
+
+| 参数 | 默认值 | 作用 |
+| --- | --- | --- |
+| `bind_address` | `0.0.0.0` | 监听地址 |
+| `port` | 8268 | 监听端口，需与 UE 的 `Bridge Port` 一致 |
+| `max_payload_bytes` | 64 MiB | 单帧负载上限，需与 UE 的 `Max Payload Bytes` 一致 |
+| `max_queued_bytes` | 128 MiB | 每个客户端的发送队列上限，队列满时先丢 best_effort 消息 |
+| `idle_timeout_seconds` | 10 s | 客户端这么久没发来任何数据就断开；0 表示关闭 |
+| `max_clients` | 32 | 同时接受的客户端数，一个 Game 或 PIE 世界占一个；0 表示不限制 |
+
+每个参数都有同名的命令行选项，下划线写成连字符，比如 `--max-payload-bytes`。其余参数（`hello_timeout_seconds`）和 launch 参数见[桥的 README](https://github.com/AstreoX/uBotROS/blob/main/ros2/ubot_ros_bridge/README.md)。
+
+## 输出与事件
+
+桥和 UE 都会在日志里报告连接过程。桥在终端里打印：
+
+- `listening on 0.0.0.0:8268`：桥已经在监听，地址和端口要与 UE 的设置对得上。
+- `advertised /robot1/imu/data [sensor_msgs/msg/Imu]`：UE 声明了一个发布者，桥创建了对应的 ROS 2 话题。
+- `disconnected: <原因>`：一个客户端断开，桥释放了它的全部话题。
+
+UE 在输出日志（`LogUBotROS`）里打印：
+
+- `connected to 127.0.0.1:8268 (ubot_ros_bridge 0.1.0, ROS humble)`：握手完成。
+- `ROS sensor bridge '...' on '...' ready: namespace '/robot1', N sensor(s), M topic(s)`：一个 Sensor Bridge 组件建好了发布器。
+
+加了 Sensor Bridge 之后，在 ROS 2 里用下面的命令查看（`robot1` 是示例命名空间）：
+
+```bash
+ros2 topic list
+ros2 topic echo /robot1/imu/data --once
+ros2 topic hz /robot1/imu/data
+ros2 topic echo /tf_static --once --qos-durability transient_local --qos-reliability reliable
+ros2 run tf2_ros tf2_echo base_link imu_sensor
+ros2 topic pub -r 10 /robot1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z: 0.2}}"
+```
+
+最后一行向 UE 发 `cmd_vel`，需要 Actor 上有 `uBot ROS Velocity Command`，见[接收 cmd_vel](/ros/cmd-vel/)。
+
+## 注意事项
+
+- 协议没有认证和加密，任何能连上端口的人都能让桥发布和订阅话题。桥默认监听 `0.0.0.0`，在可能被不可信网络访问的机器上请用 `--bind-address 127.0.0.1` 或防火墙。
+- 桥进程的 `ROS_DOMAIN_ID` 决定话题出现在哪个 ROS 域里，ROS 2 终端要用同一个。
+- 传感器话题是 best_effort，`ros2 topic echo` 会自动适配；自己写订阅者或在 RViz 里显示时，把 QoS 设为 best_effort。
+- 没有订阅者的话题默认不编码、不发送，所以 `ros2 topic list` 里有话题，不代表 UE 一直在发数据。
+- colcon 方式的包描述是完整的，但没有在测试环境里跑过；只验证了 ROS 2 Humble。
+- 端口被占用时，桥打印错误并以退出码 1 结束。
+
+## 相关参考
+
+- [连接与状态](/ros/connection/)：连接状态、断线重连和排查。
+- [uBotROS 设置项](/ros/settings/)：`Bridge Host`、`Bridge Port` 等 UE 侧设置。
+- [协议说明](/ros/protocol/)：UE 与桥之间的 TCP 协议。
+- [桥的 README](https://github.com/AstreoX/uBotROS/blob/main/ros2/ubot_ros_bridge/README.md)：全部参数、错误代码和线程模型。

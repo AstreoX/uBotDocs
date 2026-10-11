@@ -1,0 +1,11 @@
+EUBotROSReliability:
+  summary: ROS 2 QoS 的可靠性（Reliability）策略。
+  sourceHash: "679d13a80f5c"
+
+EUBotROSReliability.BestEffort:
+  summary: 尽力而为，可能丢消息；传感器数据默认用它。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSReliability.Reliable:
+  summary: 保证送达，必要时重传；位姿、里程计、TF 和 /clock 用它。
+  sourceHash: "e3b0c44298fc"
