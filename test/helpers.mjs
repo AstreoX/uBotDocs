@@ -110,7 +110,7 @@ sidebar:
   order: 20
 ---
 
-这一页用 \`Ping\` 节点检查测试组件是否在线。
+用 \`Ping\` 节点检查测试组件是否在线。
 
 \`\`\`blueprint
 nodes:

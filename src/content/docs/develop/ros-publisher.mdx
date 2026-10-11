@@ -10,7 +10,7 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-这一页说明怎样为自己的传感器写一个发布器（publisher），让 uBot ROS Sensor Bridge 把它的数据也发布到 ROS 2 话题。
+为自己的传感器写一个发布器（publisher），让 uBot ROS Sensor Bridge 把它的数据也发布到 ROS 2 话题。
 
 Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为每个传感器选择扩展点（extension point）`UBotROS.SensorPublisher` 上支持它、优先级最高的工厂（factory）。你要写两样东西：一个发布器类和一个工厂。
 
