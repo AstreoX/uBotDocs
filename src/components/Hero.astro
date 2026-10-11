@@ -16,7 +16,7 @@ const { data } = Astro.locals.starlightRoute.entry;
 const { title = data.title, tagline, actions = [] } = data.hero || {};
 
 const SOURCE = `
-caption: 激光雷达的距离和 IMU 的姿态；点任意节点可以看说明和引脚
+caption: 读取 3D 激光雷达与 IMU 数据的蓝图示例，点击节点可查看说明与引脚。
 nodes:
   A: { ref: UUBot3DLidarSensorComponent.On3DLidarFrameReady, component: Lidar3D, at: [0, 0] }
   C: { ref: K2Node_IfThenElse, at: [1, 0] }
