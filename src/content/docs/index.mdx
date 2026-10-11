@@ -6,15 +6,12 @@ hero:
   title: uBot
   tagline: 面向 Unreal Engine 5.5 的具身智能仿真插件。画面接近真机，功能按需安装，蓝图里就能上手，需要时接上 ROS 2。
   actions:
+    - text: 下载 uBot Manager
+      link: https://github.com/AstreoX/uBotManager/releases
+      icon: download
     - text: 开始使用
       link: /start/introduction/
-      icon: right-arrow
-    - text: 五分钟上手
-      link: /start/quickstart/
-      variant: minimal
-    - text: 节点索引
-      link: /reference/nodes/
-      variant: minimal
+      variant: secondary
 ---
 
 import { CardGrid, Icon, LinkCard } from "@astrojs/starlight/components";
@@ -62,6 +59,8 @@ import HomePlugins from "../../components/HomePlugins.astro";
 <HomePlugins />
 
 ## 从这里开始
+
+[uBot Manager](/manager/) 是安装 uBot 的入口：它在 UE 工程里选择、安装和更新插件，启动时检查新版本，并处理插件之间的依赖。目前提供 Windows 版本，到 [Releases 页面](https://github.com/AstreoX/uBotManager/releases)下载安装包，安装步骤见[安装 uBot](/start/install/)。
 
 <CardGrid>
   <LinkCard title="简介" description="uBot 是什么、能做什么、各插件的关系。" href="/start/introduction/" />
