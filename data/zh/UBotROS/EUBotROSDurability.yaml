@@ -1,0 +1,11 @@
+EUBotROSDurability:
+  summary: ROS 2 QoS 的持久性（Durability）策略。Transient Local 用于 /tf_static 这样的锁存话题。
+  sourceHash: "97450be71088"
+
+EUBotROSDurability.TransientLocal:
+  summary: 发布者为晚到的订阅者保留最近的消息，用于 /tf_static 这样的锁存话题。
+  sourceHash: "e3b0c44298fc"
+
+EUBotROSDurability.Volatile:
+  summary: 不为晚到的订阅者保留消息。
+  sourceHash: "e3b0c44298fc"

@@ -1,0 +1,19 @@
+Break:FUBotROSTopicOverride:
+  summary: 把 UBot ROSTopic Override 拆成各个字段。
+  sourceHash: "da0689b94298"
+
+FUBotROSTopicOverride:
+  summary: 可选的话题覆盖：勾选 Override 后，用 Topic 替换默认话题。
+  sourceHash: "1233c3815436"
+
+FUBotROSTopicOverride.Topic:
+  summary: Override 勾选时使用的话题，按绝对话题处理：缺少前导 / 会补上，不再加命名空间。
+  sourceHash: "ac789aa1517b"
+
+FUBotROSTopicOverride.bOverride:
+  summary: 是否用 Topic 替换默认话题。
+  sourceHash: "e3b0c44298fc"
+
+Make:FUBotROSTopicOverride:
+  summary: 用各个字段构造一个 UBot ROSTopic Override。
+  sourceHash: "4458a925474a"

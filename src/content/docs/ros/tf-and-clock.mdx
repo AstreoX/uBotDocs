@@ -6,11 +6,112 @@ sidebar:
   order: 50
 ---
 
-{/* STUB */}
-{/*
-待写章节（概念页，章节顺序见 docs-templates/concept.mdx）：
-- [ ] TF 树（图）
-- [ ] 静态 TF
-- [ ] 动态 `odom → base`
-- [ ] `/clock` 与 `use_sim_time`
-*/}
+这一页说明 uBotROS 发布哪些 TF 变换，以及 `/clock` 怎样让 ROS 2 节点使用仿真时间。
+
+<figure class="not-content" style={{ margin: "1.25rem 0" }}>
+  <div data-scrollable="TF 树图" style={{ overflowX: "auto", border: "1px solid var(--sl-color-gray-5)", borderRadius: "0.6rem", background: "var(--sl-color-gray-6)", padding: "0.75rem 0.5rem 0.5rem" }}>
+    <svg viewBox="0 0 560 336" role="img" aria-labelledby="ros-tf-title ros-tf-desc" style={{ display: "block", width: "100%", minWidth: "480px", maxWidth: "640px", height: "auto", fontFamily: "var(--__sl-font)" }}>
+      <title id="ros-tf-title">uBotROS 发布的 TF 树</title>
+      <desc id="ros-tf-desc">map 到 odom 的变换不由 uBotROS 发布。odom 到 base_link 是动态变换，发布到 /tf。base_link 到 imu_sensor、lidar_2d 和 rgb_camera 是静态变换，rgb_camera 再到 rgb_camera_optical 也是静态变换，都发布到 /tf_static。</desc>
+      <defs>
+        <marker id="ros-tf-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0 0 L10 5 L0 10 Z" fill="var(--sl-color-accent)" />
+        </marker>
+        <marker id="ros-tf-arrow-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0 0 L10 5 L0 10 Z" fill="var(--sl-color-gray-3)" />
+        </marker>
+        <marker id="ros-tf-arrow-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0 0 L10 5 L0 10 Z" fill="var(--sl-color-gray-4)" />
+        </marker>
+      </defs>
+
+      <path d="M24 40 V72 H38" stroke="var(--sl-color-gray-4)" stroke-width="2" stroke-dasharray="5 4" fill="none" marker-end="url(#ros-tf-arrow-d)" />
+      <path d="M54 88 V120 H68" stroke="var(--sl-color-accent)" stroke-width="2.5" fill="none" marker-end="url(#ros-tf-arrow-a)" />
+      <path d="M84 136 V168 H98" stroke="var(--sl-color-gray-3)" stroke-width="2" fill="none" marker-end="url(#ros-tf-arrow-g)" />
+      <path d="M84 136 V216 H98" stroke="var(--sl-color-gray-3)" stroke-width="2" fill="none" marker-end="url(#ros-tf-arrow-g)" />
+      <path d="M84 136 V264 H98" stroke="var(--sl-color-gray-3)" stroke-width="2" fill="none" marker-end="url(#ros-tf-arrow-g)" />
+      <path d="M114 280 V312 H128" stroke="var(--sl-color-gray-3)" stroke-width="2" fill="none" marker-end="url(#ros-tf-arrow-g)" />
+
+      <rect x="10" y="8" width="110" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-gray-4)" stroke-width="1.5" stroke-dasharray="5 4" />
+      <text x="65" y="29" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-gray-3)">map</text>
+      <text x="134" y="28" font-size="12" fill="var(--sl-color-gray-3)">由 SLAM 或 AMCL 发布，uBotROS 不发布</text>
+
+      <rect x="40" y="56" width="110" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-gray-5)" stroke-width="1.5" />
+      <text x="95" y="77" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-white)">odom</text>
+
+      <rect x="70" y="104" width="120" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-accent)" stroke-width="2" />
+      <text x="130" y="125" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-white)">base_link</text>
+      <text x="204" y="124" font-size="12" fill="var(--sl-color-accent)">/tf，动态：odom → base_link</text>
+
+      <rect x="100" y="152" width="130" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-gray-5)" stroke-width="1.5" />
+      <text x="165" y="173" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-white)">imu_sensor</text>
+      <text x="244" y="172" font-size="12" fill="var(--sl-color-gray-2)">/tf_static，静态</text>
+      <rect x="100" y="200" width="130" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-gray-5)" stroke-width="1.5" />
+      <text x="165" y="221" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-white)">lidar_2d</text>
+      <text x="244" y="220" font-size="12" fill="var(--sl-color-gray-2)">/tf_static，静态</text>
+      <rect x="100" y="248" width="130" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-gray-5)" stroke-width="1.5" />
+      <text x="165" y="269" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-white)">rgb_camera</text>
+      <text x="244" y="268" font-size="12" fill="var(--sl-color-gray-2)">/tf_static，静态</text>
+
+      <rect x="130" y="296" width="170" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-gray-5)" stroke-width="1.5" />
+      <text x="215" y="317" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-white)">rgb_camera_optical</text>
+      <text x="314" y="316" font-size="12" fill="var(--sl-color-gray-2)">/tf_static，静态，相机的光学坐标系</text>
+    </svg>
+  </div>
+</figure>
+
+图中的 `imu_sensor`、`lidar_2d` 和 `rgb_camera` 是各传感器 `Frame Id` 的默认值，基坐标系默认是 `base_link`，里程计坐标系默认是 `odom`。
+
+| 变换 | 话题 | 何时发布 |
+| --- | --- | --- |
+| `odom → base_link`（动态） | `/tf` | 第一个里程计传感器的每个有效样本 |
+| `base_link → <传感器 frame>`（静态） | `/tf_static` | 组件初始化和 `Refresh Sensor Publishers` 之后，以及每次重连之后 |
+| `<frame> → <frame>_optical`（静态） | `/tf_static` | 同上，只有相机 |
+| `map → odom` | — | uBotROS 不发布，由 SLAM 或 AMCL 提供 |
+
+## 静态 TF
+
+- `base_link → <传感器 frame>` 是传感器的 frame 组件相对基组件的位置和朝向，去掉缩放，在组件初始化和 `Refresh Sensor Publishers` 时算一次。之后传感器相对机体移动，TF 不会更新。
+- 基组件是 `Base Link Component`；留空时用 `uBot Identity` 的 `Base Component`，默认是根组件。
+- 相机另外发布 `<frame> → <frame>_optical`：平移为零，旋转是四元数 `(x=-0.5, y=0.5, z=-0.5, w=0.5)`。图像和 `camera_info` 的 `frame_id` 用光学系，约定是 z 向前、x 向右、y 向下。
+- 里程计传感器没有静态 TF：它的 `Frame Id`（默认 `odom`）是基坐标系的父坐标系，再发布 `base_link → odom` 会和动态的 `odom → base_link` 成环，并且与 `map → odom` 冲突。
+- 其他传感器的 frame 恰好等于里程计坐标系时，也会被跳过并记一条 Warning；frame 等于基坐标系的传感器不需要静态 TF。
+- 所有 Sensor Bridge 登记的静态变换，由子系统合并成一条锁存的 `/tf_static` 消息，QoS 是 reliable / transient_local / 1。变换集合变化时和每次重连后，它会重新发布。
+- 同一个 child frame 被多个组件设置时，后注册的生效，内容不同时记 Warning。
+- 订阅 `/tf_static` 的节点要用 transient_local，才能拿到锁存的消息。
+
+## 动态 `odom → base_link`
+
+- 取所属 Actor 上第一个里程计传感器，每个有效样本发布一条到 `/tf`（reliable / volatile / 100），时间戳是样本的仿真时间。`Publish Invalid Samples` 开启时，无效样本也发布。
+- 前提是这个传感器跟踪的组件就是基组件，并且它的 `Odometry Frame Id` 和 `Child Frame Id` 与组件的 `Odometry Frame` 和基坐标系一致。否则日志里记 Error，动态 TF 关闭，组件仍然是 `Ready`。
+- `Publish Dynamic TF` 和 `Publish Static Sensor TF` 可以分别关闭两类 TF。
+
+## 多个机器人
+
+同一个世界里有多个机器人时，`/tf`、`/tf_static` 和 `/clock` 是共享的，frame id 重名会冲突，静态 TF 里后注册的会覆盖先注册的。
+
+- 开启 `Prefix Frames with Namespace`：所有 frame id 变成 `<namespace>/<frame>`，例如 `robot1/base_link`、`robot1/odom` 和 `robot1/rgb_camera_optical`。已经以命名空间开头的不会重复加，世界参考的位姿所用的 `world` 不加前缀。
+- 或者给每个机器人设不同的 `Base Frame Override` 和传感器 `Frame Id`。
+
+## `/clock` 与 `use_sim_time`
+
+- 子系统在 `Publish Clock` 开启（默认）且桥已连接时，每个世界 Tick 向 `Clock Topic`（默认 `/clock`）发布一条 `rosgraph_msgs/msg/Clock`，QoS 是 reliable / volatile / 10。
+- 时间是 uBot 仿真时间，基准是世界的游戏时间，遵循暂停和时间膨胀，不是墙上时间。每个新的 PIE 或 Game 会话从 0 开始，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- 暂停时子系统仍在 Tick，所以 `/clock` 继续以冻结的值发布；暂停时传感器不采样。
+- `Clock Topic` 在运行中改动会重建发布者；它不是合法的绝对话题时，`/clock` 不发布，日志里记一条 Warning。
+
+ROS 2 节点要使用仿真时间，启动时把 `use_sim_time` 设为 true：
+
+```bash
+ros2 run <package> <executable> --ros-args -p use_sim_time:=true
+ros2 launch <package> <launch file> use_sim_time:=true   # 取决于 launch 文件是否暴露该参数
+```
+
+新的 PIE 会话把时间重新从 0 开始，对 ROS 2 来说是时间回跳，TF 缓冲等通常会被清空。桥节点本身不使用时间戳。
+
+## 相关页面
+
+- [发布传感器数据](/ros/publish-sensors/)：传感器消息的 `frame_id` 和时间戳。
+- [坐标系与单位](/concepts/coordinates-and-units/)：UE 到 ROS 的位置、旋转和角速度换算。
+- [标识与命名](/concepts/identity/)：命名空间和基坐标系怎么确定。
+- [uBotROS 设置项](/ros/settings/)：`Publish Clock` 和 `Clock Topic`。

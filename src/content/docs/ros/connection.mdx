@@ -6,12 +6,140 @@ sidebar:
   order: 30
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 地址和端口
-- [ ] 连接状态（表）
-- [ ] 状态事件（节点图）
-- [ ] 断线重连
-- [ ] 排查
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明 UE 怎样连到 `ubot_ros_bridge`：地址和端口在哪里设置，连接有哪几种状态，断线后怎样重连，连不上时怎样排查。
+
+## 快速用法
+
+每个 Game 或 PIE 世界有一个 `UBot ROSBridge Subsystem`，负责这个世界的 TCP 连接。连上和断开都有事件，可以直接在蓝图里提示：
+
+```blueprint
+caption: 桥连上或断开时在屏幕上提示
+nodes:
+  A: UUBotROSBridgeSubsystem.OnBridgeConnected
+  B: { ref: UKismetSystemLibrary.PrintString, set: { InString: ROS bridge connected } }
+  C: UUBotROSBridgeSubsystem.OnBridgeDisconnected
+  D: UKismetSystemLibrary.PrintString
+wires:
+  - A.then -> B.execute
+  - C.then -> D.execute
+  - C.Reason -> D.InString
+notes:
+  A: 子系统的事件要先用 `Bind Event` 绑定到一个自定义事件，图里画的就是这个自定义事件。
+```
+
+`Reason` 是断开的原因。事件只在已建立的连接结束时触发，连接尝试失败不会触发 `On Bridge Disconnected`。
+
+## 步骤
+
+<Steps>
+
+1. **启动桥**
+
+   按[准备 ROS 2 端](/ros/ros2-setup/)启动 `ubot_ros_bridge`，看到 `listening on` 日志。
+
+2. **检查地址和端口**
+
+   打开 **Edit > Project Settings > Plugins > uBot ROS**，`Bridge Host` 和 `Bridge Port` 默认是 `127.0.0.1` 和 8268。桥和 UE 在同一台机器上，包括 Windows 到 WSL，不用改。
+
+   uBot Manager 的 **设置 > ROS 桥接** 读写同一个文件里的这两项。
+
+3. **运行**
+
+   点 **Play**。`Auto Connect` 默认开启，世界开始时自动连接，输出日志里出现 `uBot ROS bridge: connected to 127.0.0.1:8268`。
+
+   编辑器的 uBot 面板（**Window > uBot**）的 Runtime 分区里，`ROS bridge` 一项同时显示已连接和 `host:port`。
+
+</Steps>
+
+关闭 `Auto Connect` 后，由蓝图决定什么时候连。`Connect To` 只对当前世界生效，不改项目设置：
+
+```blueprint
+caption: Auto Connect 关闭时，在 Event BeginPlay 里手动连接
+nodes:
+  A: AActor.ReceiveBeginPlay
+  S: { inline: { title: Get UBot ROSBridge Subsystem, kind: pure, outputs: [{ name: Return Value, type: "object:UUBotROSBridgeSubsystem" }] } }
+  C: { ref: UUBotROSBridgeSubsystem.ConnectTo, set: { Host: 192.168.1.20, Port: 8268 } }
+wires:
+  - A.then -> C.execute
+  - S.ReturnValue -> C.Target
+notes:
+  S: 右键搜索 `ROSBridge Subsystem`，取得当前世界的子系统。
+```
+
+## 关键属性
+
+在 **Project Settings > Plugins > uBot ROS** 的 `Bridge` 分类里，全部设置见[uBotROS 设置项](/ros/settings/)：
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Bridge Host` | `127.0.0.1` | 桥的地址，IP 或主机名 |
+| `Bridge Port` | 8268 | 桥的 TCP 端口，范围 1 到 65535 |
+| `Auto Connect` | true | Game 或 PIE 世界开始时自动连接 |
+| `Reconnect Interval Seconds` | 2 s | 连接失败或断开后的重试间隔，最小 0.05 s |
+
+## 输出与事件
+
+### 连接状态
+
+`Get Bridge Status` 返回 [`EUBot ROSBridge Status`](/reference/ubotros/enums/eubotrosbridgestatus/)，uBot 面板的 Runtime 分区把它显示成 `ROS bridge`（中文界面为 `ROS 桥接`）：
+
+| `Get Bridge Status` | 含义 | uBot 面板 |
+| --- | --- | --- |
+| `Disabled` | 没有在连接：调用了 `Disconnect`，或 `Auto Connect` 关闭且没调用过 `Connect` | 已断开（信息） |
+| `Connecting` | 正在尝试第一次连接，等待桥的握手应答 | 正在连接 |
+| `Connected` | 握手完成，可以收发数据 | 已连接 |
+| `Error` | 最近一次连接尝试失败，或已建立的连接断开；每 `Reconnect Interval Seconds` 重试 | 已断开（警告） |
+
+### 节点和事件
+
+| 节点 | 作用 |
+| --- | --- |
+| `Is Bridge Connected` | 握手完成后为 true |
+| `Get Last Bridge Error` | 最近一次失败、断开或协议错误的原因，没有时为空 |
+| `Get Bridge Endpoint` | 正在连接（或最后连过）的 `host:port`，从没连过时为空 |
+| `Connect` | 按项目设置连接；对同一个地址重复调用什么也不做 |
+| `Connect To` | 连到指定的 `Host` 和 `Port`，只对当前世界生效 |
+| `Disconnect` | 关闭连接并停止重连，丢弃还没发出的数据 |
+| `On Bridge Connected` | 握手完成时触发，每次重连之后都会触发 |
+| `On Bridge Disconnected` | 已建立的连接结束时触发（连接丢失、协议错误或 `Disconnect`），`Reason` 是原因 |
+
+### 断线重连
+
+- UE 每 2 s 发一次 `PING`；10 s 没有收到桥的任何数据，就断开并重连。一次连接尝试最长 3 s。
+- 连接失败或断开后，每 `Reconnect Interval Seconds` 重试，直到连上或调用 `Disconnect`。
+- 重连后，UE 重新声明全部发布者和订阅者（id 不变），重新发布合并的 `/tf_static`，然后发出排队的 reliable 数据。
+- 断开期间，best_effort 数据直接丢弃；reliable 数据排队，总量受 `Max Queued Bytes` 限制。已经交给 socket 的帧会丢失。
+- UE 断开时，桥会销毁它的话题，ROS 2 侧的订阅者要能处理发布者重新出现。
+
+### 面板、日志和 Manager
+
+- 连接失败或断开时，uBot 面板的 Problems 分区出现问题 `rosBridgeUnreachable`（`Could not connect to ubot_ros_bridge at <地址>.`），连上或调用 `Disconnect` 后清除。
+- 一次 PIE 或游戏运行结束时，状态写入 `<Project>/Saved/uBot/status.json`。
+- uBot Manager 的 Problems 视图在“上次运行”范围里显示同一个问题，快速修复是“打开 ROS 设置”；那里的“测试连接”会做一次 TCP 连接。
+
+## 注意事项
+
+连不上或没有数据时，按下表排查：
+
+| 现象 | 原因与处理 |
+| --- | --- |
+| 日志 `cannot reach ubot_ros_bridge at <地址>`，状态一直是 `Error` | 桥没有启动，或地址、端口不一致。对照桥启动日志里的 `listening on`；跨机器时检查防火墙和端口占用 |
+| 日志 `invalid bridge endpoint` | `Bridge Host` 为空，或端口不在 1 到 65535 之间 |
+| 状态是 `Connected`，ROS 2 里没有数据 | 订阅者用了 reliable，而传感器话题是 best_effort；两边的 `ROS_DOMAIN_ID` 不同；没有订阅者的话题默认不发送，见[发布传感器数据](/ros/publish-sensors/) |
+| 桥日志 `idle timeout` 或 `no HELLO` | UE 被调试器暂停或网络中断，UE 会自动重连；需要长时间断点调试时，给桥加 `--idle-timeout-seconds 0` |
+| 桥回复 `too_many_clients` | 已有 32 个连接（默认 `max_clients`）：关闭过的 PIE 会话还没释放，或多个 UE 进程共用一个桥 |
+| 桥回复 `unknown_type` | ROS 2 侧没有安装对应的消息包，或没有 `source` 自定义消息所在的工作空间 |
+| 桥回复 `qos_conflict` 或 `type_conflict` | 同一个话题被不同的客户端以不同的 QoS 或类型声明 |
+
+- 地址、端口、重连间隔和队列限制在连接启动时读取。对同一个地址再调用 `Connect` 什么也不做，要让新的重连间隔或队列限制生效，先 `Disconnect` 再 `Connect`。
+- `uBot ROS Sensor Bridge` 在发布器建好后就进入 `Ready`，不等桥连上。断开持续约 2 s 后，它在日志里记一条 Warning。
+- 同时开多个 PIE 窗口就是多个连接；不同世界发布同一个话题时，类型和 QoS 必须一致。
+
+## 相关参考
+
+- [UBot ROSBridge Subsystem](/reference/ubotros/uubotrosbridgesubsystem/)：全部节点和事件。
+- [uBotROS 设置项](/ros/settings/)：地址、端口、重连间隔和队列限制。
+- [准备 ROS 2 端](/ros/ros2-setup/)：启动桥，WSL 与网络。
+- [协议说明](/ros/protocol/)：握手、PING 和重连的细节。

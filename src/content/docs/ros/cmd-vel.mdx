@@ -6,12 +6,143 @@ sidebar:
   order: 60
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 添加 Velocity Command 组件
-- [ ] 消息如何转换
-- [ ] 超时与安全
-- [ ] 在蓝图里处理（节点图）
-- [ ] 驱动实现了接口的对象
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明怎样用 `uBot ROS Velocity Command` 接收 ROS 2 的 `cmd_vel` 速度指令，换算成 UE 的轴向后交给能执行它的对象。
+
+## 快速用法
+
+组件订阅 `geometry_msgs/msg/Twist`，每收到一条有效指令就触发 `On Velocity Command`。没有现成的执行器时，可以直接在蓝图里处理：
+
+```blueprint
+caption: 每收到一条指令，在屏幕上显示线速度的大小（m/s）
+nodes:
+  A: { ref: UUBotROSVelocityCommandComponent.OnVelocityCommand, component: CmdVel }
+  B: { ref: Break:FUBotVelocityCommand, hideUnconnected: true }
+  C: UKismetMathLibrary.VSize
+  D: UKismetStringLibrary.Conv_DoubleToString
+  E: { ref: UKismetSystemLibrary.PrintString, set: { Key: cmd_vel } }
+wires:
+  - A.then -> E.execute
+  - A.Command -> B.UBotVelocityCommand
+  - B.LinearVelocityMetersPerSecond -> C.A
+  - C.ReturnValue -> D.InDouble
+  - D.ReturnValue -> E.InString
+notes:
+  A: 指令已经换算成 UE 的机体系轴向，线速度单位是 m/s。
+```
+
+## 步骤
+
+<Steps>
+
+1. **添加组件**
+
+   在要被驱动的 Actor 上，点 Components 面板的 **Add**，搜索 `uBot ROS Velocity Command`，重命名为 `CmdVel`。`Auto Start Receiver` 默认开启，`Begin Play` 时开始订阅。
+
+2. **确定话题**
+
+   话题是 `/<namespace>/cmd_vel`，命名空间的规则与 [Sensor Bridge](/ros/publish-sensors/) 相同：取 `uBot Identity` 的 `Namespace`，或者填 `Robot Namespace Override`。`Command Topic Override` 非空时，它替代整个话题。
+
+   运行时用 `Get Resolved Command Topic` 查看实际订阅的话题。
+
+3. **确定谁来执行指令**
+
+   `Target Component` 为空时，指令交给 Actor 本身；Actor 本身没有实现 `UBot Velocity Commandable` 时，交给第一个实现它的组件。也可以在 `Target Component` 里指定一个组件。
+
+   Actor 上找不到目标不是错误：组件照常解码、触发事件并运行超时，指令只在蓝图里处理。
+
+4. **让载具实现接口**
+
+   在载具或无人机的蓝图里，打开 **Class Settings**，在 Interfaces 里添加 [`UBot Velocity Commandable`](/reference/ubotcore/uubotvelocitycommandable/)，然后实现两个函数：
+
+   - `Apply Velocity Command`：收到 `Command`，返回 `false` 表示拒绝这条指令。
+   - `Stop Motion`：停车。
+
+   `Command` 是机体系的 UE 轴向（X 向前、Y 向右、Z 向上），线速度单位 m/s，角速度单位 rad/s，转向用 UE 的约定：+Z 是向右偏航。油门、转向映射和控制器都写在这两个函数里。
+
+5. **从 ROS 2 发指令**
+
+   ```bash
+   ros2 topic pub -r 10 /robot1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z: 0.2}}"
+   ```
+
+</Steps>
+
+## 关键属性
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Auto Start Receiver` | true | `Begin Play` 时订阅；关闭后调用 `Restart Command Receiver` |
+| `Robot Namespace Override` | 空 | 空则用 `uBot Identity` 的命名空间；只填 `/` 表示根命名空间，话题是 `/cmd_vel` |
+| `Command Topic Override` | 空 | 非空时替代 `/<namespace>/cmd_vel`，缺少前导 `/` 会补上 |
+| `Target Component` | 空 | 接收指令的组件，必须实现 `UBot Velocity Commandable`；空则自动查找 |
+| `Command Timeout Seconds` | 0.5 s | 超过这么久（仿真时间）没有新指令，就让目标停车；0 关闭超时 |
+| `Max Linear Speed Meters Per Second` | 0 | 线速度的上限（向量模长），保持方向；0 表示不限制 |
+| `Max Angular Speed Radians Per Second` | 0 | 角速度的上限（向量模长），保持轴向；0 表示不限制 |
+
+## 输出与事件
+
+### 消息如何转换
+
+`Twist` 的 `linear` 和 `angular` 都在机体系，从 ROS 约定换成 UE 的轴向：
+
+| 量 | ROS `Twist` | `UBot Velocity Command` |
+| --- | --- | --- |
+| 线速度 | `(x, y, z)`，m/s | `(x, -y, z)`，m/s |
+| 角速度 | `(x, y, z)`，rad/s | `(-x, y, -z)`，rad/s |
+
+ROS 的 `angular.z = +0.25`（向左转）对应 UE 的 `Z = -0.25`，因为 UE 里 +Z 是向右偏航。结果的 `Source` 是 `ROS`，`Timestamp Seconds` 是收到指令时的仿真时间。
+
+处理顺序是：解码 → 换算 → 限速 → 交给目标的 `Apply Velocity Command` → 触发 `On Velocity Command`。畸形的消息，或含非有限值的消息，会被丢弃并触发 `On Command Error`。
+
+### 节点和事件
+
+| 节点 | 作用 |
+| --- | --- |
+| `On Velocity Command` | 每条有效指令换算、限速并交给目标之后触发，有没有目标都触发；`Command` 是结果 |
+| `On Command Timeout` | 每次超时触发一次，在目标收到 `Stop Motion` 之后 |
+| `On Command Error` | 订阅失败、消息畸形或含非有限值、目标不可用或拒绝了指令；`Error Message` 是原因 |
+| `Is Command Receiver Ready` | 已订阅时为 true，与桥是否连上无关 |
+| `Is Command Active` | 从收到有效指令到超时为 true；超时关闭时，收到过指令后一直为 true |
+| `Get Last Command` | 最近一条有效指令（限速之后），收到第一条之前全为 0 |
+| `Get Resolved Command Topic` | 正在订阅的话题；没有订阅时，是下一次启动会用的话题 |
+| `Get Command Target` | 指令交给的对象，没有目标时为空 |
+| `Get Command Error` | 最近一条错误的文字 |
+| `Set Target Component` | 用一个组件直接替换 `Target Component`；传空则恢复自动查找 |
+| `Restart Command Receiver` | 取消订阅后用当前设置重新订阅，超时计时继续 |
+| `Stop Command Receiver` | 取消订阅；已经生效的指令仍然按时超时 |
+
+### 超时与安全
+
+- 超过 `Command Timeout Seconds` 的仿真时间没有新指令，目标收到一次 `Stop Motion`，随后触发 `On Command Timeout`。
+- 暂停时仿真时间不前进，超时也不会触发。组件 `End Play` 时若指令仍然有效，同样让目标 `Stop Motion`。
+- ROS 2 端要持续发布：发布间隔超过 `Command Timeout Seconds`，车就会停。上面的例子用 `-r 10`，即 10 Hz。
+
+```blueprint
+caption: 超时停车后，或指令出错时提示
+nodes:
+  A: { ref: UUBotROSVelocityCommandComponent.OnCommandTimeout, component: CmdVel }
+  B: { ref: UKismetSystemLibrary.PrintString, set: { InString: cmd_vel timed out } }
+  C: { ref: UUBotROSVelocityCommandComponent.OnCommandError, component: CmdVel }
+  D: UKismetSystemLibrary.PrintString
+wires:
+  - A.then -> B.execute
+  - C.then -> D.execute
+  - C.ErrorMessage -> D.InString
+```
+
+## 注意事项
+
+- 组件只做解码、换算、限速、分发和超时，不含控制逻辑。
+- 目标拒绝指令（`Apply Velocity Command` 返回 false）时，只报告一次。
+- 订阅在 `Begin Play` 时建立，不等桥连上；桥连上之后订阅才生效。
+- 旧版 `Agent ROS Vehicle Command` 和 `Agent ROS Drone Command` 里的比例速度控制器、油门 / 刹车 / 转向映射和失效制动，不在 uBotROS 里，要写在目标里。这两个组件没有重定向，需要手工替换，见[从旧插件迁移](/develop/migration/)。
+
+## 相关参考
+
+- [uBot ROS Velocity Command](/reference/ubotros/uubotrosvelocitycommandcomponent/)：全部节点和属性。
+- [UBot Velocity Commandable](/reference/ubotcore/uubotvelocitycommandable/)：接口的两个函数。
+- [UBot Velocity Command](/reference/ubotcore/structs/fubotvelocitycommand/)：结构体的字段。
+- [插件之间怎么对接](/concepts/interfaces/)：uBot 的几个公共接口。
+- [坐标系与单位](/concepts/coordinates-and-units/)：UE 与 ROS 的轴向换算。

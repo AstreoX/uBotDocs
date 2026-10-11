@@ -1,0 +1,35 @@
+UUBotROSSettings:
+  summary: uBot ROS 的项目设置（Project Settings > Plugins > uBot ROS），保存在工程的 Config/DefaultUBotROS.ini 的 [/Script/UBotROS.UBotROSSettings] 段，uBot Manager 也读写其中的 BridgeHost 和 BridgePort。世界的桥子系统连接时读取。
+  sourceHash: "c5980b893d90"
+
+UUBotROSSettings.BridgeHost:
+  summary: ubot_ros_bridge 的地址，IP 或主机名；优先使用 IPv4 结果。
+  sourceHash: "8efb9151e860"
+
+UUBotROSSettings.BridgePort:
+  summary: ubot_ros_bridge 的 TCP 端口，范围 1 到 65535。
+  sourceHash: "4ec85b7ac37e"
+
+UUBotROSSettings.ClockTopic:
+  summary: /clock 发布者的话题，必须是绝对话题。
+  sourceHash: "fe8f6e137f63"
+
+UUBotROSSettings.MaxPayloadBytes:
+  summary: 单帧负载的上限，收发都适用，需与桥的 max_payload_bytes 一致。默认 64 MiB。
+  sourceHash: "723df3a06c54"
+
+UUBotROSSettings.MaxQueuedBytes:
+  summary: 等待发送的数据和等待分发的接收消息的字节预算。超出时先丢弃最旧的 best_effort 数据，再拒绝新的 reliable 数据并警告；小于 Max Payload Bytes + 12 时，连接时自动提高到这个值并警告。
+  sourceHash: "89b7f6e24ec2"
+
+UUBotROSSettings.ReconnectIntervalSeconds:
+  summary: 桥不可达或连接丢失后，两次连接尝试的间隔，单位秒。
+  sourceHash: "443e02c5e717"
+
+UUBotROSSettings.bAutoConnect:
+  summary: Game 或 PIE 世界开始时自动连接。
+  sourceHash: "1188867ead2b"
+
+UUBotROSSettings.bPublishClock:
+  summary: 桥已连接时，每个世界 Tick 发布一条带 uBot 仿真时间的 rosgraph_msgs/msg/Clock。
+  sourceHash: "4e1dcfde91e6"

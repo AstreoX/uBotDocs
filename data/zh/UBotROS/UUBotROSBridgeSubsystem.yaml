@@ -1,0 +1,39 @@
+UUBotROSBridgeSubsystem:
+  summary: 每个 Game 或 PIE 世界一个，管理这个世界到 ubot_ros_bridge 的 TCP 连接：声明发布者和订阅者，发布 /tf、/tf_static 和 /clock，断线重连并重新注册。套接字读写在后台线程，游戏线程不会阻塞。
+  sourceHash: "bb3b80ecdf9d"
+
+UUBotROSBridgeSubsystem.Connect:
+  summary: 按项目设置里的 Bridge Host 和 Bridge Port 连接；对同一个地址重复调用什么也不做。
+  sourceHash: "617a98ba9784"
+
+UUBotROSBridgeSubsystem.ConnectTo:
+  summary: 连到指定的主机和端口，只对当前世界生效，不改项目设置。
+  sourceHash: "0fb57de1a1fd"
+
+UUBotROSBridgeSubsystem.Disconnect:
+  summary: 关闭连接并停止重连，丢弃还没发出的数据。
+  sourceHash: "5efd0edf8eb6"
+
+UUBotROSBridgeSubsystem.GetBridgeEndpoint:
+  summary: 正在连接（或最后连过）的 host:port，从没连过时为空。ConnectTo 拒绝了无效地址时，返回被拒绝的那个，主机为空显示 (no host)。
+  sourceHash: "607bc2daa7ee"
+
+UUBotROSBridgeSubsystem.GetBridgeStatus:
+  summary: 连接状态。Disabled：没有在连接；Connecting：正在尝试第一次连接；Connected：握手完成；Error：最近一次尝试失败或连接断开，每隔 Reconnect Interval Seconds 重试。
+  sourceHash: "cf1fe8fface5"
+
+UUBotROSBridgeSubsystem.GetLastBridgeError:
+  summary: 最近一次连接失败、连接丢失或协议错误的原因，没有时为空。
+  sourceHash: "1f824c48f249"
+
+UUBotROSBridgeSubsystem.IsBridgeConnected:
+  summary: 桥用兼容的 HELLO_ACK 回复了 HELLO（握手完成）之后为 true。
+  sourceHash: "a90b1e38a6f5"
+
+UUBotROSBridgeSubsystem.OnBridgeConnected:
+  summary: 与桥的握手完成时触发，每次重连之后都会触发。
+  sourceHash: "2c2e76036097"
+
+UUBotROSBridgeSubsystem.OnBridgeDisconnected:
+  summary: 已建立的连接结束时触发（连接丢失、协议错误或调用 Disconnect），Reason 是原因。
+  sourceHash: "0295f40e5bc6"

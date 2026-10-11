@@ -6,8 +6,110 @@ sidebar:
   order: 90
 ---
 
-{/* STUB */}
-{/*
-待写章节（常见问题，章节顺序见 docs-templates/faq.mdx）：
-- [ ] 按问题分组，每题 1–3 句加链接
-*/}
+这一页回答 uBotROS 最常被问到的问题，按主题分组。
+
+## 连接
+
+### UE 连不上桥怎么办？
+
+先确认桥已经启动，启动日志里的 `listening on` 地址和端口与 `Bridge Host`、`Bridge Port` 一致；跨机器时还要检查防火墙和端口占用。逐项排查见[连接与状态](/ros/connection/)。
+
+### Windows 上的 UE 怎么连 WSL 里的桥？
+
+`Bridge Host` 保持默认的 `127.0.0.1` 即可，WSL2 的 localhost 转发会把 `127.0.0.1:8268` 转到 WSL 里的桥。见[准备 ROS 2 端](/ros/ros2-setup/)。
+
+### 桥可以放在另一台机器上吗？
+
+可以。把 `Bridge Host` 设成那台机器的地址，桥保持默认的 `0.0.0.0` 监听，并在防火墙上放行 TCP 8268。见[准备 ROS 2 端](/ros/ros2-setup/)。
+
+### 桥提示 `too_many_clients` 是怎么回事？
+
+桥默认最多同时接受 32 个客户端，一个 Game 或 PIE 世界占一个。关闭过的 PIE 会话还没释放，或多个 UE 进程共用一个桥时会出现，见[连接与状态](/ros/connection/)。
+
+### 为什么编辑器视口里不发布数据？
+
+桥子系统只存在于 Game 和 PIE 世界，编辑器视口世界里没有，所以点 **Play** 之后才会发布。见[uBotROS 概述](/ros/)。
+
+### 桥安全吗？
+
+协议没有认证和加密，任何能连上端口的人都能让桥发布和订阅话题。在可能被不可信网络访问的机器上，用 `--bind-address 127.0.0.1` 或防火墙限制来源，见[协议说明](/ros/protocol/)。
+
+## 数据与话题
+
+### `ros2 topic list` 里有话题，却收不到数据？
+
+没有订阅者的话题默认不编码、不发送（`Skip when No Subscribers`），所以话题存在不代表 UE 一直在发。传感器话题是 best_effort，订阅者也要用 best_effort，见[发布传感器数据](/ros/publish-sensors/)。
+
+### RViz 里看不到传感器数据？
+
+传感器话题是 best_effort。`ros2 topic echo` 会自动适配，在 RViz 里显示或自己写订阅者时，要把 QoS 设为 best_effort。见[发布传感器数据](/ros/publish-sensors/)。
+
+### 怎么改话题名？
+
+用 `Topic Overrides` 按逻辑键替换单个话题，或者用 `Robot Namespace Override` 改整个命名空间。见[发布传感器数据](/ros/publish-sensors/)。
+
+### 同一个 Actor 上有两个同类型的传感器会怎样？
+
+默认话题改用各自净化后的 `Sensor Id`，所以同类型传感器的 `Sensor Id` 不能重复，任意两个传感器的 `Frame Id` 也不能重复，否则组件进入 `Error`。见[发布传感器数据](/ros/publish-sensors/)。
+
+### 图像或点云很卡怎么办？
+
+话题频率就是传感器的 `Update Rate Hz`，图像和点云的编码在游戏线程完成，所以降低分辨率或采样频率最直接。用 `ros2 topic hz` 和 `ros2 topic bw` 实测，桥日志里出现 dropped 说明链路或订阅者跟不上。见[发布传感器数据](/ros/publish-sensors/)。
+
+## TF 与时间
+
+### 为什么没有 `base_link → odom` 的静态 TF？
+
+里程计传感器的 `Frame Id`（默认 `odom`）是基坐标系的父坐标系，再发布静态 TF 会和动态的 `odom → base_link` 成环。见[TF 与 /clock](/ros/tf-and-clock/)。
+
+### TF 树里为什么没有 `map`？
+
+`map` 由 SLAM 或 AMCL 发布，uBotROS 不发布。见[TF 与 /clock](/ros/tf-and-clock/)。
+
+### 动态的 `odom → base_link` 为什么没有发布？
+
+里程计传感器跟踪的组件必须就是基组件，它的 `Odometry Frame Id` 和 `Child Frame Id` 也要与组件的设置一致，否则日志里记 Error 并关闭动态 TF。见[TF 与 /clock](/ros/tf-and-clock/)。
+
+### 怎么让 ROS 2 节点使用仿真时间？
+
+启动节点时加 `--ros-args -p use_sim_time:=true`，它会订阅 uBotROS 发布的 `/clock`。见[TF 与 /clock](/ros/tf-and-clock/)。
+
+### 每次 Play，ROS 2 里的时间都回到 0？
+
+是的。每个新的 PIE 或 Game 会话从 0 开始，对 ROS 2 来说是时间回跳，TF 缓冲等通常会被清空。见[TF 与 /clock](/ros/tf-and-clock/)。
+
+### 多个机器人的 TF 重名怎么办？
+
+开启 `Prefix Frames with Namespace`，所有 frame id 变成 `<namespace>/<frame>`；或者给每个机器人设不同的 `Base Frame Override` 和传感器 `Frame Id`。见[TF 与 /clock](/ros/tf-and-clock/)。
+
+## cmd_vel
+
+### 指令收到了，车却不动？
+
+组件只负责转交。Actor 上要有实现了 `UBot Velocity Commandable` 的对象，或者设置 `Target Component`；用 `Get Command Target` 看目标是不是空。见[接收 cmd_vel](/ros/cmd-vel/)。
+
+### 车为什么走一会儿就停？
+
+超过 `Command Timeout Seconds`（默认 0.5 s）没有新指令，组件就让目标停车。让 ROS 2 端持续发布，比如 `ros2 topic pub -r 10`，见[接收 cmd_vel](/ros/cmd-vel/)。
+
+### 左转和右转反了？
+
+UE 里 +Z 是向右偏航，所以 ROS 的 `angular.z = +0.25`（向左转）换算成 UE 的 `Z = -0.25`，目标收到的已经是换算后的 `Command`。在 `Apply Velocity Command` 里按 UE 的约定处理，见[接收 cmd_vel](/ros/cmd-vel/)。
+
+## 迁移与版本
+
+### 旧的 Agent ROS Sensor Suite Publisher 怎么办？
+
+资产里的旧类、属性和结构由重定向自动换成 `uBot ROS Sensor Bridge`，重定向只在编辑器启动时生效。旧的车辆和无人机命令组件没有重定向，要手工替换，见[从旧插件迁移](/develop/migration/)。
+
+### 还需要 TempoROS 吗？
+
+不需要。UE 侧不依赖 TempoROS 或 rclcpp，ROS 2 侧只有 `ubot_ros_bridge`。见[uBotROS 概述](/ros/)。
+
+### 支持哪些 ROS 2 版本？
+
+只验证了 ROS 2 Humble，测试环境是 Ubuntu 22.04。见[准备 ROS 2 端](/ros/ros2-setup/)。
+
+### 支持 Linux 上的 UE 吗？
+
+插件的代码只用引擎的 Sockets 模块，没有平台相关部分，但开发和测试都在 Windows 上，Linux 上的 UE 没有单独验证。见[uBotROS 概述](/ros/)。
