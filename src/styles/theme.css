@@ -96,15 +96,23 @@
   --sl-color-border-badge: var(--sl-color-gray-4);
 }
 
+/* Buttons are rectangles with a small radius, not pills. */
+.sl-link-button {
+  border-radius: 0.5rem;
+}
+
 /* Home page (the splash template with a hero; components: Hero.astro, HomePlugins.astro) */
 :root[data-has-hero] body {
-  /* a soft accent glow behind the hero and a faint dot grid that fades out downwards */
+  /* a soft accent glow and a fine grid behind the hero; the grid fades into the page colour below it */
+  --home-line: color-mix(in srgb, var(--sl-color-gray-3) 18%, transparent);
   background-image:
+    linear-gradient(to bottom, transparent 30%, var(--sl-color-bg) 100%),
     radial-gradient(56rem 26rem at 12% 3rem, color-mix(in srgb, var(--sl-color-accent) 14%, transparent), transparent 70%),
-    radial-gradient(color-mix(in srgb, var(--sl-color-gray-3) 22%, transparent) 1px, transparent 1.5px);
-  background-size: auto, 22px 22px;
-  background-repeat: no-repeat, repeat;
-  background-position: 0 0, 0 0;
+    repeating-linear-gradient(to right, var(--home-line) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(to bottom, var(--home-line) 0 1px, transparent 1px 32px);
+  background-size: 100% 36rem, auto, 100% 36rem, 100% 36rem;
+  background-repeat: no-repeat;
+  background-position: 0 0;
 }
 .home-hero .bp-figure {
   margin: 0;
