@@ -18,7 +18,9 @@
     "test": "node --test \"test/**/*.test.mjs\"",
     "find": "node scripts/find-node.mjs",
     "zh": "node scripts/zh.mjs",
-    "sync-api": "node scripts/sync-api.mjs"
+    "sync-index": "node scripts/sync-index.mjs",
+    "sync-api": "node scripts/sync-api.mjs",
+    "add-package": "node scripts/add-package.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.3",

@@ -1,9 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { checkPage, checkEngineList, checkLockfile, sentenceCount, admonitions, splitPage, textLength, proseParagraphs, contentFiles } from "../lib/check.mjs";
-import { tinyRegistry, site, root } from "./helpers.mjs";
+import { spawn } from "node:child_process";
+import { cpSync, mkdtempSync, readFileSync } from "node:fs";
+import { join, relative } from "node:path";
+import { tmpdir } from "node:os";
+import { pathToFileURL } from "node:url";
+import { generateReference } from "../lib/reference/index.mjs";
+import { checkPage, checkEngineList, checkLockfile, checkContent, contentGroups, sentenceCount, admonitions, splitPage, textLength, proseParagraphs, contentFiles } from "../lib/check.mjs";
+import { groupDefaults } from "../lib/content-packages.mjs";
+import { createPackageRegistry } from "../lib/packages.mjs";
+import { tinyRegistry, site, root, repoPackages, removeDir } from "./helpers.mjs";
 
 const page = (body, fm = "title: 测试\ndescription: 说明") => `---\n${fm}\n---\n\n${body}`;
 const msgs = (fs, sev) => fs.filter((f) => !sev || f.severity === sev).map((f) => `${f.line}: ${f.message}`).join("\n");
@@ -53,11 +59,11 @@ test("frontmatter and first sentence are checked", () => {
 });
 
 test("engine node list format", () => {
-  const ok = checkEngineList("l.txt", readPage("data/engine-nodes.txt"));
+  const ok = checkEngineList("l.txt", readPage("data/engine-nodes/core.txt"));
   assert.deepEqual(ok, []);
-  const bad = checkEngineList("l.txt", "/Script/Engine.KismetMathLibrary:VSize\nKismetMathLibrary.VSize\n/Script/Engine.KismetMathLibrary:VSize\nnode /Script/BlueprintGraph.IfThenElse\n");
-  assert.deepEqual(bad.map((f) => f.line), [2, 3, 4]);
-  assert.match(bad[1].message, /listed twice \(first on line 1\)/);
+  const bad = checkEngineList("l.txt", "# comment\n/Script/Engine.KismetMathLibrary:VSize  # trailing comment\nKismetMathLibrary.VSize\n/Script/Engine.KismetMathLibrary:VSize\nnode /Script/BlueprintGraph.IfThenElse\n");
+  assert.deepEqual(bad.map((f) => f.line), [3, 4, 5]);
+  assert.match(bad[1].message, /listed twice \(first on line 2\)/);
 });
 
 test("text length counts Han characters and Latin words", () => {
@@ -67,9 +73,132 @@ test("text length counts Han characters and Latin words", () => {
 
 test("every hand-written page in the repository passes the checks without errors", () => {
   const { registry } = site();
+  const packages = repoPackages();
+  const defaults = groupDefaults(contentGroups(root));
   for (const rel of contentFiles(root).filter((f) => /\.mdx?$/.test(f))) {
-    const findings = checkPage(rel, readPage(rel), registry).filter((f) => f.severity === "error");
+    const findings = checkPage(rel, readPage(rel), registry, { packages, defaults }).filter((f) => f.severity === "error");
     assert.deepEqual(findings, [], rel);
+  }
+  assert.deepEqual(checkContent(root, registry, { packages }).filter((f) => f.severity === "error"), []);
+});
+
+// ------------------------------------------------------------------ packages pages declare
+
+const IMU = "  I: UUBotImuSensorComponent.GetLatestIMUData";
+const FRAME = "  F: Break:FUBotFrameHeader";
+const ROS = "  R: UUBotROSBridgeSubsystem.GetBridgeEndpoint";
+const BRANCH = "  B: K2Node_IfThenElse";
+const FENCE = "```";
+const graph = (...nodes) => `\n\n${FENCE}blueprint\nnodes:\n${nodes.join("\n")}\n${FENCE}\n`;
+const withPackages = (list, body) => page(`这一页说明一件事。${body}`, `title: 测试\ndescription: 说明${list === null ? "" : `\npackages: ${JSON.stringify(list)}`}`);
+function checkWith(rel, text, defaults = new Map(), packages = repoPackages()) {
+  const findings = checkPage(rel, text, site().registry, { packages, defaults });
+  return { errors: msgs(findings, "error"), warnings: msgs(findings, "warning"), findings };
+}
+
+/** The repository's packages plus one that is only planned, so the test never depends on which packages the index plans. */
+function registryWithPlanned(name) {
+  const { index } = repoPackages();
+  const entry = { name, friendlyName: name, description: { en: "Not released." }, layer: "Capability", repository: `https://github.com/AstreoX/${name}.git`, versions: [{ version: "0.1.0", planned: true, requires: [], enginePlugins: [], provides: [] }] };
+  return createPackageRegistry({ ...index, packages: [...index.packages, entry] });
+}
+
+test("guides declare their packages, directly or through the folder's _group.yml", () => {
+  const none = checkWith("src/content/docs/guides/x/a.mdx", withPackages(null, graph(IMU)));
+  assert.match(none.errors, /guides declare the packages they are about/);
+  const empty = checkWith("src/content/docs/guides/x/a.mdx", withPackages([], graph(IMU)));
+  assert.match(empty.errors, /guides declare the packages they are about/);
+  const viaFolder = checkWith("src/content/docs/guides/x/a.mdx", withPackages(null, graph(IMU)), new Map([["guides/x", ["UBotSensor"]]]));
+  assert.equal(viaFolder.errors, "");
+  assert.equal(viaFolder.warnings, "");
+  const pageWins = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotROS"], graph(ROS)), new Map([["guides/x", ["UBotSensor"]]]));
+  assert.equal(pageWins.errors, "", "the page's own list replaces the folder default");
+  const released = repoPackages().released().map((p) => p.name).join(", ");
+  assert.ok(none.errors.includes(`add packages: [<Package>] to the frontmatter (released: ${released})`), "the hint is a placeholder plus the released packages, not one package's name");
+});
+
+test("pages that declare no package may use engine nodes only", () => {
+  for (const rel of ["src/content/docs/concepts/a.mdx", "src/content/docs/start/a.mdx"]) {
+    const engine = checkWith(rel, withPackages(null, graph(BRANCH)));
+    assert.equal(engine.errors, "", `${rel}: engine nodes need no package`);
+    const sensor = checkWith(rel, withPackages(null, graph(IMU, "  J: UUBotImuSensorComponent.GetLatestIMUData", ROS)));
+    assert.match(sensor.errors, /^10: blueprint: node I \("Get Latest IMUData"\) comes from UBotSensor, but the page declares no package; add packages: \[UBotSensor\] to the frontmatter/m, rel);
+    assert.match(sensor.errors, /^12: blueprint: node R \("Get Bridge Endpoint"\) comes from UBotROS, but the page declares no package/m);
+    assert.equal(sensor.findings.filter((f) => f.severity === "error").length, 2, "one error per package, not per node");
+    const empty = checkWith(rel, withPackages([], graph(IMU)));
+    assert.match(empty.errors, /comes from UBotSensor, but the page declares no package/, "an empty list declares nothing either");
+    assert.equal(checkWith(rel, withPackages(["UBotSensor"], graph(IMU))).errors, "", "declaring the package fixes it");
+  }
+  const viaFolder = checkWith("src/content/docs/concepts/a.mdx", withPackages(null, graph(IMU)), new Map([["concepts", ["UBotSensor"]]]));
+  assert.equal(viaFolder.errors, "", "a folder default counts as a declaration");
+  const guide = checkWith("src/content/docs/guides/x/a.mdx", withPackages(null, graph(IMU)));
+  assert.equal(guide.findings.filter((f) => f.severity === "error").length, 1, "a guide without packages gets the one error that says how to fix it");
+  assert.equal(checkWith("src/content/docs/index.mdx", withPackages(null, graph(IMU))).errors, "", "the home page shows what a graph looks like and is about no package");
+});
+
+test("unknown names and ranges that match no released version are errors on the packages: line", () => {
+  const unknown = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotNope"], graph(IMU)));
+  const known = repoPackages().released().map((p) => p.name).join(", ");
+  assert.ok(unknown.errors.includes(`4: frontmatter packages: unknown package "UBotNope" (known: ${known})`), unknown.errors);
+  const range = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotSensor@^9"], graph(IMU)));
+  assert.match(range.errors, /"UBotSensor@\^9" matches no released version of UBotSensor/);
+  const planned = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotPlannedOnly"], graph(IMU)), new Map(), registryWithPlanned("UBotPlannedOnly"));
+  assert.match(planned.errors, /UBotPlannedOnly has no released version yet/);
+  const ok = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotSensor@^0.1"], graph(IMU)));
+  assert.equal(ok.errors, "");
+});
+
+test("graphs may use nodes of declared packages, their transitive dependencies and the engine", () => {
+  const sensor = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotSensor"], graph(IMU, FRAME, BRANCH)));
+  assert.equal(sensor.errors, "", "UBotCore is a dependency of UBotSensor; engine nodes are always fine");
+  const ros = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotROS"], graph(ROS, IMU, FRAME)));
+  assert.equal(ros.errors, "", "UBotROS -> UBotSensor -> UBotCore");
+  const missing = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotSensor"], graph(IMU, ROS)));
+  assert.match(missing.errors, /^12: blueprint: node R \("Get Bridge Endpoint"\) comes from UBotROS, which the page does not declare/m);
+  const variable = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotCore"], graph("  V: { var: IMU, class: UUBotImuSensorComponent }")));
+  assert.match(variable.errors, /node V \("IMU"\) comes from UBotSensor/, "a variable counts for its class's package");
+});
+
+test("a declared package that no graph uses is a warning", () => {
+  const unused = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotROS"], graph(IMU)));
+  assert.equal(unused.errors, "");
+  assert.match(unused.warnings, /package UBotROS is declared but no graph on the page uses its nodes/);
+  const noGraphs = checkWith("src/content/docs/concepts/a.mdx", withPackages(["UBotROS"], "\n\n| a |\n| - |\n"));
+  assert.doesNotMatch(noGraphs.warnings, /declared but no graph/, "only pages with graphs");
+});
+
+test("the content walker never enters the generated reference, so regenerating it cannot break a walk", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ubot-walk-"));
+  try {
+    const docs = join(root, "src", "content", "docs");
+    cpSync(join(root, "data"), join(dir, "data"), { recursive: true });
+    cpSync(docs, join(dir, "src", "content", "docs"), { recursive: true, filter: (src) => relative(docs, src) !== "reference" });
+    generateReference({ root: dir });
+    const files = contentFiles(dir);
+    assert.ok(files.length > 3 && files.every((f) => f.startsWith("src/content/docs/") && !f.startsWith("src/content/docs/reference/")), files.join(", "));
+
+    // another process deletes and rewrites src/content/docs/reference over and over while this one walks
+    const generator = `import { generateReference } from ${JSON.stringify(pathToFileURL(join(root, "lib", "reference", "index.mjs")).href)};
+for (let i = 0; i < 12; i++) generateReference({ root: ${JSON.stringify(dir)} });`;
+    const child = spawn(process.execPath, ["--input-type=module", "-e", generator], { stdio: "ignore" });
+    let running = true;
+    const exited = new Promise((resolve) => child.on("exit", (code) => { running = false; resolve(code); }));
+    let walks = 0;
+    const errors = [];
+    while (running) {
+      try {
+        contentFiles(dir);
+      } catch (e) {
+        errors.push(e.message);
+      }
+      walks++;
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+    assert.equal(await exited, 0, "the generator ran");
+    assert.ok(walks > 0);
+    assert.deepEqual(errors.slice(0, 3), []);
+  } finally {
+    removeDir(dir);
   }
 });
 

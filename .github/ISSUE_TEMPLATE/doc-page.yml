@@ -15,6 +15,16 @@ body:
       placeholder: guides/sensors/imu-angular-velocity.mdx
     validations:
       required: true
+  - type: input
+    id: packages
+    attributes:
+      label: 插件
+      description: |
+        这一页讲哪个插件，写进页面 frontmatter 的 `packages:`（所在目录的 `_group.yml` 已声明时可以不写）。可以带版本范围，例如 `UBotSensor@^0.1`。
+        可用的插件见参考概览页 /reference/ 和 `data/index.json`，只能写已发布的插件。
+      placeholder: UBotSensor
+    validations:
+      required: true
   - type: dropdown
     id: kind
     attributes:
@@ -65,4 +75,5 @@ body:
         - label: 第一句话说明这一页解决什么问题；每段不超过 3 句，优先用步骤、表格和蓝图
         - label: 节点、引脚、属性名与蓝图编辑器一致（英文、代码样式）；数字带单位，默认值取自参考数据
         - label: 中文排版：全角标点，中文与英文、数字之间有空格
-        - label: 需要的类或节点中文说明写进 `data/zh/<插件>.yaml`，没有修改生成的参考页面
+        - label: 页面（或所在目录的 `_group.yml`）声明了 `packages`，蓝图只用到声明的插件及其依赖的节点
+        - label: 需要的类或节点中文说明写进 `data/zh/<插件>/<类名>.yaml`，没有修改生成的参考页面

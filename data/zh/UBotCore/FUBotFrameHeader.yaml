@@ -1,0 +1,23 @@
+FUBotFrameHeader:
+  summary: 所有 uBot 传感器帧共用的帧头。
+  sourceHash: "df200008a274"
+
+FUBotFrameHeader.Sequence:
+  summary: 帧序号，每次采样加 1。
+  sourceHash: "e3b0c44298fc"
+
+FUBotFrameHeader.TimestampSeconds:
+  summary: 采样时刻的 uBot 仿真时间，单位秒。它就是 World 的游戏时间，会随暂停停止、随时间膨胀变快或变慢。
+  sourceHash: "d5a344c3f61a"
+
+FUBotFrameHeader.bValid:
+  summary: 本帧数据是否可用；只有 Status 为 Valid 时为 true。
+  sourceHash: "e3b0c44298fc"
+
+FUBotFrameHeader.Status:
+  summary: 本次采样的结果，取值见 UBot Sample Status。
+  sourceHash: "e3b0c44298fc"
+
+Break:FUBotFrameHeader:
+  summary: 把帧头拆成 Sensor Id、Frame Id、Sequence、Timestamp Seconds、Valid 和 Status。
+  sourceHash: "0be725a9f8e3"

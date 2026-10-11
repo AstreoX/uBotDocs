@@ -1,3 +1,8 @@
+# UE engine nodes that pages about any package use: events, flow control, math, strings, printing.
+# One entry per line: /Script/Module.Class:Function, event /Script/Module.Class:Event,
+# node /Script/Module.K2Node_X or macro /Path/Lib.Lib:Macro. scripts/export-api.ps1 merges every
+# data/engine-nodes/*.txt and writes data/api/engine.json. A new area gets its own file (vehicles.txt).
+
 event /Script/Engine.Actor:ReceiveBeginPlay
 event /Script/Engine.Actor:ReceiveTick
 node /Script/BlueprintGraph.K2Node_IfThenElse

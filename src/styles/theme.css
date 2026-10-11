@@ -151,12 +151,12 @@
 }
 .ref-filter {
   display: flex;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.75rem;
   align-items: center;
   margin: 1rem 0;
 }
-.ref-filter input {
-  flex: 1;
+.ref-filter :is(input, select) {
   min-width: 0;
   font: inherit;
   padding: 0.45rem 0.7rem;
@@ -165,9 +165,24 @@
   background: var(--sl-color-black);
   color: var(--sl-color-white);
 }
-.ref-filter input:focus-visible {
+.ref-filter input {
+  flex: 1 1 14rem;
+}
+.ref-filter select {
+  flex: 0 1 auto;
+  padding-inline-end: 0.4rem;
+}
+.ref-filter :is(input, select):focus-visible {
   outline: 2px solid var(--sl-color-accent);
   outline-offset: 1px;
+}
+
+/* "需要：uBot Sensor 0.1+（含依赖 uBot Core）" under the title of pages that declare packages */
+.ubot-requires {
+  /* Starlight spaces the title panel's children 1.5rem apart; this line belongs to the title */
+  margin-top: 0.35rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
 }
 .ref-filter output {
   color: var(--sl-color-gray-3);
@@ -203,6 +218,10 @@
 }
 .ref-props td:nth-child(4) {
   min-width: 11rem;
+}
+/* Description columns (overview, package pages): a readable width on phones; the table scrolls instead. */
+.ref-table td.ref-desc {
+  min-width: 12rem;
 }
 .sl-markdown-content .ref-from {
   margin-bottom: 0.4rem;

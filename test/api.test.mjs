@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { validateApiShape, loadApi, makeLineFinder } from "../lib/blueprint/api.mjs";
-import { loadZh, sourceHash } from "../lib/blueprint/zh.mjs";
-import { root, tinyRegistry } from "./helpers.mjs";
+import { sourceHash } from "../lib/blueprint/zh.mjs";
+import { root } from "./helpers.mjs";
 
 const errors = (ds) => ds.filter((d) => d.severity === "error");
 
@@ -92,41 +92,6 @@ test("loadApi reports invalid JSON, BOMs and ids defined twice", () => {
     assert.match(msgs, /b\.json: file starts with a BOM/);
     assert.match(msgs, /b\.json: node "AActor.ReceiveTick" is also defined in a\.json/);
     assert.match(msgs, /c\.json: invalid JSON/);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test("zh overlay: fresh, stale and unknown entries", () => {
-  const registry = tinyRegistry();
-  const dir = mkdtempSync(join(tmpdir(), "ubot-zh-"));
-  try {
-    mkdirSync(dir, { recursive: true });
-    writeFileSync(
-      join(dir, "Tiny.yaml"),
-      [
-        "UChild.Fire:",
-        "  summary: 开火。",
-        `  sourceHash: ${sourceHash("")}`,
-        "UChild.GetValue:",
-        "  summary: 旧说明。",
-        "  sourceHash: 000000000000",
-        "UChild.Gone:",
-        "  summary: 已删除的节点。",
-        "  sourceHash: 000000000000",
-      ].join("\n"),
-    );
-    const { overlay, diagnostics } = loadZh(dir, registry, { root: dir });
-    assert.deepEqual(overlay.summary("UChild.Fire", ""), { text: "开火。", lang: "zh", stale: false });
-    assert.deepEqual(overlay.summary("UChild.GetValue", ""), { text: "", lang: "en", stale: true });
-    assert.equal(overlay.summary("UChild.OnHit", "Fires on hit.").text, "Fires on hit.");
-    const e = errors(diagnostics);
-    assert.equal(e.length, 1);
-    assert.match(e[0].message, /"UChild.Gone" is not an id in data\/api/);
-    assert.equal(e[0].line, 7);
-    const w = diagnostics.filter((d) => d.severity === "warning");
-    assert.equal(w.length, 1);
-    assert.match(w[0].message, /stale/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

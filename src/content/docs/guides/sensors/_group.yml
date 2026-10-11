@@ -1,1 +1,3 @@
 label: 传感器
+# Pages in this folder are about UBotSensor unless their frontmatter declares packages: itself.
+packages: [UBotSensor]

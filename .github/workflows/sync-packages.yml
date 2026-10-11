@@ -1,0 +1,122 @@
+# Keeps the docs in step with plugin releases, without Unreal Engine: downloads the package index from
+# uBotCore main into data/index.json and, for every released package, docs/api.json at the latest
+# released version's ref (the tag; the default branch when the tag has no docs/api.json, which the PR
+# body says). Then tests, checks and builds; when the data changed, opens or updates one pull request
+# from the branch bot/sync-packages. The branch is pushed only when its data would change, and never
+# over a commit by a person (scripts/sync-branch.mjs), so a maintainer can fix a page on the PR.
+#
+# Triggers: daily, by hand, and a repository_dispatch of type "package-released" that a plugin's
+# release workflow can send (POST /repos/<owner>/<this repo>/dispatches {"event_type":"package-released"}).
+# Pull requests opened with GITHUB_TOKEN do not start other workflows, so this job runs the same
+# test, check and build as CI before it opens one.
+name: Sync packages
+
+on:
+  schedule:
+    - cron: "23 2 * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [package-released]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-packages
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+      BRANCH: bot/sync-packages
+    steps:
+      - name: Check out (no stored credentials; the token is only used to push the branch)
+        uses: actions/checkout@v7
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up Node from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Log the trigger
+        env:
+          EVENT: ${{ github.event_name }}
+          PAYLOAD_PACKAGE: ${{ github.event.client_payload.package }}
+        run: |
+          printf 'trigger: %s %s\n' "$EVENT" "$PAYLOAD_PACKAGE"
+
+      - name: Download the index and the API data
+        run: |
+          node scripts/sync-index.mjs --from-url
+          node scripts/sync-api.mjs --from-github --report "$RUNNER_TEMP/sync-report.md"
+
+      - name: Did the data change?
+        id: diff
+        run: |
+          if [ -n "$(git status --porcelain -- data/index.json data/api)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git status --short -- data/index.json data/api
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Up to date::data/index.json and data/api match the released packages"
+          fi
+
+      - name: Test, check and build
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          npm test
+          npm run check
+          npm run build
+
+      # scripts/sync-branch.mjs: pushed (new data), unchanged (the branch already holds exactly this data:
+      # nothing is pushed, so the pull request keeps its history), foreign (a person committed on the
+      # branch: it is left alone and a warning explains), none.
+      - name: Push the branch
+        id: branch
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/sync-branch.mjs --branch "$BRANCH" --remote "https://github.com/$GITHUB_REPOSITORY.git" --message "chore(data): sync the package index and API data" -- data/index.json data/api
+
+      - name: Open or update the pull request
+        if: steps.diff.outputs.changed == 'true' && (steps.branch.outputs.result == 'pushed' || steps.branch.outputs.result == 'unchanged')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_RESULT: ${{ steps.branch.outputs.result }}
+        run: |
+          {
+            echo "插件发布后自动同步：\`data/index.json\` 来自 uBotCore 的 main 分支，\`data/api/<插件>.json\` 来自各插件最新发布版本的 tag。"
+            echo
+            cat "$RUNNER_TEMP/sync-report.md"
+            echo
+            echo "“来源”为 default branch 的插件：发布的 tag 里没有 \`docs/api.json\`，改用了默认分支上的文件，版本可能与发布版本不同。"
+            echo
+            echo "本次运行已通过 \`npm test\`、\`npm run check\`、\`npm run build\`。合并前请检查参考页面的变化。"
+          } > "$RUNNER_TEMP/pr-body.md"
+          number="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number' | head -n 1)"
+          if [ -n "$number" ]; then
+            if [ "$BRANCH_RESULT" = "pushed" ]; then
+              gh pr edit "$number" --body-file "$RUNNER_TEMP/pr-body.md"
+              echo "::notice title=Updated::pull request #$number"
+            else
+              echo "::notice title=Unchanged::pull request #$number already has this data"
+            fi
+          else
+            gh pr create --base main --head "$BRANCH" --title "chore(data): 同步插件索引和 API 数据" --body-file "$RUNNER_TEMP/pr-body.md"
+          fi

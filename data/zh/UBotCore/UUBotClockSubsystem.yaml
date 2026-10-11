@@ -1,0 +1,3 @@
+UUBotClockSubsystem.GetSimTimeSeconds:
+  summary: 当前 World 的 uBot 仿真时间（秒）。所有 uBot 时间戳都用这个时间。
+  sourceHash: "9d98974e9ecf"

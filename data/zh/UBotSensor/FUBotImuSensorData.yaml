@@ -1,0 +1,23 @@
+FUBotImuSensorData:
+  summary: 一次 IMU 采样：帧头、世界姿态、本地角速度和比力，以及三组方差。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.Header:
+  summary: 帧头，含 Valid 和 Status。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.OrientationQuaternion:
+  summary: 组件在 UE 世界坐标系下的旋转，不加噪声；无效样本也有值。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.AngularVelocityRadPerSecond:
+  summary: 传感器本地坐标系（X 前、Y 右、Z 上）下的角速度，单位 rad/s；非 Valid 样本为 0。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.LinearAccelerationMetersPerSecondSquared:
+  summary: 本地坐标系下的比力（运动加速度减去重力），单位 m/s²；静止水平时约为 (0, 0, 9.8)。
+  sourceHash: "e3b0c44298fc"
+
+Break:FUBotImuSensorData:
+  summary: 把 UBot Imu Sensor Data 拆成帧头、姿态、角速度、比力和三组方差。
+  sourceHash: "30460fda8aae"

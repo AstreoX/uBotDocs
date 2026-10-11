@@ -3,8 +3,12 @@
 //
 //   label: 传感器
 //   collapsed: false      # optional
+//   packages: [UBotSensor] # optional default for the pages inside (see lib/content-packages.mjs)
 //
 // The file lives next to the pages it labels, so adding a folder never touches a central file.
+// A group is matched to its folder by name: the group's label (the folder name Starlight used) is
+// looked up among the path segments of its first link, so it works at any depth, also inside the
+// groups astro.config.mjs builds (参考 > 能力 > UBotSensor > structs).
 import { defineRouteMiddleware } from "@astrojs/starlight/route-data";
 import { parse } from "yaml";
 
@@ -26,17 +30,19 @@ function firstHref(group) {
   return null;
 }
 
-function relabel(entries, depth) {
+/** `start` is the first path segment a group at this level can stand for. */
+function relabel(entries, start) {
   for (const entry of entries) {
     if (entry.type !== "group") continue;
-    if (depth > 0) {
-      const href = firstHref(entry);
-      const dir = href ? href.split("/").filter(Boolean).slice(0, depth + 1).join("/") : "";
-      const meta = groups.get(dir);
+    const segments = (firstHref(entry) ?? "").split(/[?#]/)[0].split("/").filter(Boolean);
+    const name = String(entry.label).toLowerCase();
+    const at = segments.findIndex((s, i) => i >= start && s.toLowerCase() === name);
+    if (at >= 0) {
+      const meta = groups.get(segments.slice(0, at + 1).join("/"));
       if (typeof meta?.label === "string") entry.label = meta.label;
       if (typeof meta?.collapsed === "boolean") entry.collapsed = meta.collapsed;
     }
-    relabel(entry.entries, depth + 1);
+    relabel(entry.entries, at >= 0 ? at + 1 : start);
   }
 }
 

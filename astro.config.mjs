@@ -5,8 +5,15 @@ import starlight from "@astrojs/starlight";
 import starlightLinksValidator from "starlight-links-validator";
 import { satteri } from "@astrojs/markdown-satteri";
 import { blueprintPlugin, blueprintBuildGate, headingIdsPlugin } from "./src/plugins/blueprint.mjs";
+import { loadPackages } from "./lib/packages.mjs";
+import { referenceSidebar } from "./lib/reference/index.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
+const dataDir = fileURLToPath(new URL("./data", import.meta.url));
+
+// The 参考 section comes from the package registry (data/index.json): 概览, 节点索引, 引擎节点, then
+// one group per layer with released packages. A new package needs no edit here.
+const reference = referenceSidebar({ packages: loadPackages({ root, dataDir }).registry, dataDir });
 
 // The public URL is set per deployment (GitHub repository variable SITE_URL). The fallback keeps
 // local builds working until the domain exists; `.invalid` can never resolve by accident.
@@ -46,11 +53,13 @@ export default defineConfig({
         { label: "开始", items: [{ autogenerate: { directory: "start" } }] },
         { label: "指南", items: [{ autogenerate: { directory: "guides" } }] },
         { label: "概念", items: [{ autogenerate: { directory: "concepts" } }] },
-        { label: "参考", items: [{ autogenerate: { directory: "reference" } }] },
+        reference,
       ],
       customCss: ["./src/styles/theme.css", "./src/styles/blueprint.css"],
       components: {
         Head: "./src/components/Head.astro",
+        // The "需要：…" line under the title and the Pagefind "package" filter.
+        PageTitle: "./src/components/PageTitle.astro",
       },
       routeMiddleware: "./src/route-middleware.mjs",
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },

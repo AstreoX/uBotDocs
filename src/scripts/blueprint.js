@@ -273,6 +273,8 @@ function setupFilters() {
     const rows = [...table.tBodies[0].rows].filter((row) => row.hasAttribute("data-search"));
     const empty = table.tBodies[0].querySelector(".ref-empty");
     const counter = document.querySelector(`[data-node-count="${input.dataset.nodeFilter}"]`);
+    // Optional package select: rows carry data-package (a package name, or "Engine").
+    const select = document.querySelector(`select[data-node-package="${input.dataset.nodeFilter}"]`);
     // Latin words match at the start of a word ("imu" finds "IMU Data", not "Simulation");
     // Chinese text matches anywhere.
     const matcher = (t) => {
@@ -282,19 +284,24 @@ function setupFilters() {
     };
     const apply = () => {
       const tests = input.value.toLowerCase().split(/\s+/).filter(Boolean).map(matcher);
+      const pkg = select?.value || "";
       let shown = 0;
       for (const row of rows) {
         const hay = row.dataset.search || "";
-        const hit = tests.every((test) => test(hay));
+        const hit = (!pkg || row.dataset.package === pkg) && tests.every((test) => test(hay));
         row.hidden = !hit;
         if (hit) shown++;
       }
       if (empty) empty.hidden = shown > 0;
-      if (counter) counter.textContent = tests.length ? `${shown} / ${rows.length}` : String(rows.length);
+      if (counter) counter.textContent = tests.length || pkg ? `${shown} / ${rows.length}` : String(rows.length);
     };
-    const q = new URLSearchParams(location.search).get("q");
+    const params = new URLSearchParams(location.search);
+    const q = params.get("q");
     if (q) input.value = q;
+    const p = params.get("package");
+    if (select && p && [...select.options].some((o) => o.value === p)) select.value = p;
     input.addEventListener("input", apply);
+    select?.addEventListener("change", apply);
     apply();
   }
 }
