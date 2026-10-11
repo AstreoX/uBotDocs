@@ -11,6 +11,7 @@ macro /Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForLoop
 /Script/Engine.Actor:K2_GetActorLocation
 /Script/Engine.KismetMathLibrary:BreakRotator
 /Script/Engine.KismetMathLibrary:BreakVector
+/Script/Engine.KismetMathLibrary:NotEqual_Int64Int64
 /Script/Engine.KismetMathLibrary:Quat_Rotator
 /Script/Engine.KismetMathLibrary:Subtract_IntInt
 /Script/Engine.KismetMathLibrary:VSize

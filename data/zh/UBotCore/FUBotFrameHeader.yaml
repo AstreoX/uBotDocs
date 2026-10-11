@@ -21,3 +21,15 @@ FUBotFrameHeader.Status:
 Break:FUBotFrameHeader:
   summary: 把帧头拆成 Sensor Id、Frame Id、Sequence、Timestamp Seconds、Valid 和 Status。
   sourceHash: "0be725a9f8e3"
+
+FUBotFrameHeader.FrameId:
+  summary: 传感器所在的坐标系名（Frame Id）。传感器上留空时等于传感器 id。
+  sourceHash: "e3b0c44298fc"
+
+FUBotFrameHeader.SensorId:
+  summary: 传感器 id（Sensor Id）。传感器上留空时用组件名。
+  sourceHash: "e3b0c44298fc"
+
+Make:FUBotFrameHeader:
+  summary: 用各字段构造一个 UBot Frame Header。
+  sourceHash: "2b905319365a"

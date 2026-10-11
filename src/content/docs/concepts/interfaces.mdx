@@ -7,11 +7,102 @@ sidebar:
   order: 50
 ---
 
-{/* STUB */}
-{/*
-待写章节（概念页，章节顺序见 docs-templates/concept.mdx）：
-- [ ] 四个接口（表）：UBot Sensor、Actuator、Velocity Commandable、Perception Medium
-- [ ] 例子：ROS 的速度指令驱动实现了 Velocity Commandable 的对象
-- [ ] 例子：感知介质影响传感器
-- [ ] 在蓝图里实现接口（节点图）
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明 uBot 的插件怎样通过四个接口对接，而不是互相依赖对方的类，以及怎样在蓝图里实现这些接口。
+
+| 接口 | 描述的是 |
+| --- | --- |
+| `UBot Sensor` | 能产生 uBot 样本的对象 |
+| `UBot Actuator` | 一个执行器（驱动、机械臂、夹爪等），与怎样给它下指令无关 |
+| `UBot Velocity Commandable` | 接受机体系（body frame）速度指令的对象 |
+| `UBot Perception Medium` | 影响感知的介质，比如烟、雾 |
+
+每个接口有几个函数，在蓝图里是调用这些节点：
+
+- `UBot Sensor`：`Get Sensor Id`、`Get Sensor Frame Id`、`Get Sensor Type`、`Is Sensor Running`、`Get Latest Sensor Header`、`Get Sensor Frame Component`。
+- `UBot Actuator`：`Get Actuator Id`、`Get Actuator Type`、`Is Actuator Ready`。
+- `UBot Velocity Commandable`：`Apply Velocity Command`、`Stop Motion`。
+- `UBot Perception Medium`：`Get Medium Snapshot`。
+
+四个接口都可以由 C++ 组件或蓝图 Actor 实现。谁实现、谁使用：
+
+| 接口 | 谁实现 | 谁使用 |
+| --- | --- | --- |
+| `UBot Sensor` | uBotSensor 的全部传感器组件，也可以是你自己的 | uBotROS 的 `uBot ROS Sensor Bridge` 用它找出 Actor 上的传感器并发布 |
+| `UBot Actuator` | 已发布的插件里还没有现成的实现 | 已发布的插件还没有用到它 |
+| `UBot Velocity Commandable` | 你自己的车辆、无人机等，Actor 或组件均可 | uBotROS 的 `uBot ROS Velocity Command` 把 `cmd_vel` 交给它 |
+| `UBot Perception Medium` | 你自己的烟雾、雾等 Actor | uBotSensor 的激光雷达和相机 |
+
+`UBot Velocity Commandable` 是独立的能力接口，实现它不要求同时实现 `UBot Actuator`。
+
+## 例子：ROS 的速度指令驱动一个对象
+
+uBotROS 只负责把 ROS 的 `cmd_vel` 翻译成 uBot 的速度指令（`UBot Velocity Command`），怎样让车辆动起来，由实现了 `UBot Velocity Commandable` 的对象决定。
+
+| 步骤 | 发生了什么 |
+| --- | --- |
+| 1 | `uBot ROS Velocity Command` 收到 `geometry_msgs/msg/Twist`，换算成机体系的 UE 坐标轴，`Source` 填 `ROS` |
+| 2 | 限速后调用目标的 `Apply Velocity Command`；目标返回 false 表示拒绝 |
+| 3 | 超过 `Command Timeout Seconds`（默认 0.5 s）没有新指令，调用一次目标的 `Stop Motion` |
+
+目标由 `Target Component` 指定；留空时用 Actor 本身，否则用 Actor 上第一个实现了接口的组件。
+
+收到的指令已经是 UE 的约定：机体系，X 前、Y 右、Z 上，线速度 m/s，角速度 rad/s，+Z 是向右偏航。ROS 里的符号差异由 uBotROS 换算好，见[坐标系与单位](/concepts/coordinates-and-units/)。
+
+## 例子：感知介质影响传感器
+
+烟、雾这类介质由球形单元组成，每个单元有位置和半径（单位 cm）、密度和边缘衰减（0 到 1）。实现了 `UBot Perception Medium` 的 Actor 在 `Get Medium Snapshot` 里交出当前的单元，传感器采样时收集世界里所有处于激活状态的介质，再各自处理：
+
+- 激光雷达：射线进入有效密度不低于阈值的单元时，在入口处被截断，按命中处理。
+- 深度相机：把深度换成射线进入介质的距离。
+- RGB 相机：像素向介质的颜色混合。
+
+介质 Actor 不需要知道有哪些传感器，传感器也不需要知道介质是谁做的。实现一个介质见[感知介质](/sensor/medium/)。
+
+## 在蓝图里实现接口
+
+下面以 `UBot Velocity Commandable` 为例，给一个 Actor 蓝图 `BP_Rover` 加上接口。
+
+<Steps>
+
+1. **添加接口**
+
+   打开 `BP_Rover`，点工具栏的 **Class Settings**，在 Details 面板的 Interfaces 区点 **Add**，选择 `UBot Velocity Commandable`。
+
+2. **打开函数**
+
+   在 My Blueprint 面板的 Interfaces 下，双击 `Apply Velocity Command`，打开它的函数图。没有输出的函数，比如 `Stop Motion`，作为事件实现：在事件图里右键，搜索 `Event Stop Motion`。
+
+3. **照图实现**
+
+   `Command` 是收到的速度指令。实现完成后，用返回值告诉调用方有没有接受这条指令。
+
+</Steps>
+
+```blueprint
+caption: 在 BP_Rover 里实现 Apply Velocity Command：打印线速度的大小，并接受指令
+nodes:
+  E: { inline: { title: Apply Velocity Command, kind: event, outputs: [{ name: "", type: exec }, { name: Command, type: "struct:FUBotVelocityCommand" }] } }
+  B: { ref: Break:FUBotVelocityCommand, hideUnconnected: true }
+  L: UKismetMathLibrary.VSize
+  S: UKismetStringLibrary.Conv_DoubleToString
+  P: UKismetSystemLibrary.PrintString
+  R: { inline: { title: Return Node, kind: node, inputs: [{ name: "", type: exec }, { name: Return Value, type: bool, default: true }] } }
+wires:
+  - E.then -> P.execute
+  - E.Command -> B.UBotVelocityCommand
+  - B.LinearVelocityMetersPerSecond -> L.A
+  - L.ReturnValue -> S.InDouble
+  - S.ReturnValue -> P.InString
+  - P.then -> R.execute
+notes:
+  E: 接口函数的入口，`Command` 是调用方传进来的速度指令。
+  R: 返回 false 表示拒绝这条指令。
+```
+
+## 相关页面
+
+- [接收 cmd_vel](/ros/cmd-vel/)：`uBot ROS Velocity Command` 组件的属性、超时和限速。
+- [感知介质](/sensor/medium/)：在蓝图里实现一个介质。
+- [在 C++ 中使用传感器与接口](/develop/cpp/)：查找实现了接口的对象，调用和实现接口。

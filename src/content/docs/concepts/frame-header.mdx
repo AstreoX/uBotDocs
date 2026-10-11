@@ -1,13 +1,13 @@
 ---
 title: 帧头与采样状态
-description: 每次采样的帧头里有什么，状态码是什么意思，怎样判断一帧数据能不能用。
+description: 每次采样的帧头里有什么，状态码是什么意思，怎样判断一帧数据能不能用、有没有新数据。
 pageKind: concept
 packages: [UBotSensor]
 sidebar:
   order: 10
 ---
 
-这一页说明帧头（Frame Header）里有什么，以及怎样判断一帧数据能不能用。
+这一页说明帧头（Frame Header）里有什么，以及怎样判断一帧数据能不能用、有没有新数据。
 
 ## 帧头字段
 
@@ -16,11 +16,13 @@ sidebar:
 | 字段 | 类型 | 含义 |
 | --- | --- | --- |
 | `Sensor Id` | String | 传感器 id；留空时用组件名 |
-| `Frame Id` | String | 坐标系名；留空时等于 `Sensor Id` |
-| `Sequence` | Integer64 | 帧序号，每次采样加 1 |
+| `Frame Id` | String | 传感器所在的坐标系名；留空时等于 `Sensor Id` |
+| `Sequence` | Integer64 | 帧序号，每个传感器组件各算各的，每次采样加 1 |
 | `Timestamp Seconds` | Float (double) | 采样时的仿真时间，单位秒 |
 | `Valid` | Boolean | 只有 `Status` 为 `Valid` 时为 true |
 | `Status` | EUBot Sample Status | 本次采样的结果，见下表 |
+
+`Sensor Id` 和 `Frame Id` 怎样取值，见[标识与命名](/concepts/identity/)。
 
 ## 状态码
 
@@ -28,12 +30,14 @@ sidebar:
 
 | `Status` | 什么时候出现 |
 | --- | --- |
-| `Valid` | 正常样本 |
-| `Warming Up` | IMU 等靠差分计算的传感器，启动或重置后的前两次采样 |
-| `Invalid Delta Time` | 与上次采样的间隔为 0，或超过 `Max Sample Delta Seconds` |
-| `Teleport Detected` | 两次采样间的位移或转角超过阈值，视为瞬移 |
-| `Disabled` | `Sensor Enabled` 为 false 时的采样 |
-| `Error` | 还没采样过（帧头的默认值），或采样出错 |
+| `Valid` | 正常样本，数据可以直接使用 |
+| `Warming Up` | IMU 和里程计要靠相邻样本的差分算速度，刚启动或刚被重置时历史不够，这几次采样是预热样本 |
+| `Invalid Delta Time` | 与上次采样的间隔为 0 或过长（IMU 和里程计默认超过 0.5 s），历史被清空 |
+| `Teleport Detected` | 两次采样间的位移或转角超过阈值（IMU 和里程计默认 5 m 或 120°），视为瞬移，历史被清空 |
+| `Disabled` | `Sensor Enabled` 为 false 时手动调用 `Sample Sensor` 得到的样本 |
+| `Error` | 采样出错，比如激光雷达的扫描范围无效；帧头的默认值也是它，表示还没采样过 |
+
+各传感器什么时候给出哪个状态，见它自己的页面，比如 [IMU 传感器](/sensor/imu/)。
 
 ## 判断一帧能不能用
 
@@ -51,12 +55,43 @@ wires:
   - B.bValid -> C.Condition
 ```
 
-{/*
-待补章节（概念页，章节顺序见 docs-templates/concept.mdx）：
-- [ ] 用 `Sequence` 判断是否有新数据
-*/}
+差分得到的速度和加速度只在有效样本里有值。
+
+## 用 Sequence 判断是否有新数据
+
+用事件取数时，每个样本触发一次事件，不需要比较 `Sequence`。在 `Event Tick` 里用 `Get Latest …` 主动读取时，同一个样本可能被读到好几次，`Sequence` 和上次处理的不同，才是新样本：
+
+```blueprint
+caption: 轮询时，只在 Sequence 变化时处理样本
+nodes:
+  T: AActor.ReceiveTick
+  V: { var: IMU, class: UUBotImuSensorComponent }
+  G: UUBotSensorComponent.GetLatestFrameHeader
+  B: { ref: Break:FUBotFrameHeader, hideUnconnected: true }
+  L: { inline: { title: Last Sequence, kind: pure, outputs: [{ name: Last Sequence, type: int64 }] } }
+  N: { inline: { title: "!= (Integer64)", kind: pure, inputs: [{ name: A, type: int64 }, { name: B, type: int64 }], outputs: [{ id: ReturnValue, name: "", type: bool }] } }
+  C: K2Node_IfThenElse
+wires:
+  - T.then -> C.execute
+  - V.IMU -> G.Target
+  - G.ReturnValue -> B.UBotFrameHeader
+  - B.Sequence -> N.A
+  - L.LastSequence -> N.B
+  - N.ReturnValue -> C.Condition
+notes:
+  L: 一个 Integer64 变量，保存上次处理的序号。
+  C: 为 True 时处理样本，然后把 `Last Sequence` 设为这次的 `Sequence`。
+```
+
+序号的规则：
+
+- 每个传感器组件的第一个样本是 1，之后每个样本加 1。无效样本和手动 `Sample Sensor` 得到的样本也算。
+- `Stop Sensor` 再 `Start Sensor` 不会让序号回到 1。
+- 两次读到的序号相差大于 1，说明中间有样本没读到。
+- 因帧率太低而跳过的采样时刻不占序号，它们只计入 `Get Dropped Sample Count`。
 
 ## 相关页面
 
 - [仿真时钟与采样调度](/concepts/clock-and-scheduling/)：采样什么时候发生，时间戳取哪一帧的仿真时间。
+- [标识与命名](/concepts/identity/)：`Sensor Id` 和 `Frame Id` 的取值与回退。
 - [五分钟上手](/start/quickstart/)：在屏幕上打印采样序号。

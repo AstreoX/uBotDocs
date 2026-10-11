@@ -1,6 +1,6 @@
 ---
 title: 仿真时钟与采样调度
-description: uBot 传感器什么时候采样：采样时刻怎么排，一帧里最多采几次，帧率低时会发生什么。
+description: uBot 的时间从哪里来，传感器什么时候采样，一帧里最多采几次，以及怎样暂停、单步和固定步长。
 pageKind: concept
 packages: [UBotSensor]
 sidebar:
@@ -9,25 +9,61 @@ sidebar:
 
 import SamplingTimeline from "../../../components/SamplingTimeline.astro";
 
-这一页解释 uBot 传感器什么时候采样，以及帧率低于采样频率时会发生什么。
+这一页说明 uBot 的时间从哪里来，传感器按什么规则在这条时间轴上采样，以及帧率低于采样频率时会发生什么。
 
-{/*
-待补章节（概念页，章节顺序见 docs-templates/concept.mdx）：
-- [ ] 仿真时间从哪里来
-- [ ] 固定步长、暂停与单步
-*/}
+## 仿真时间从哪里来
+
+所有 uBot 时间戳都用同一个时间基准，叫仿真时间（simulation time）：World 的游戏时间（`UWorld::GetTimeSeconds()`）。它遵循暂停和时间膨胀，不是墙上时间。
+
+| 量 | 是什么 | 在哪里读 |
+| --- | --- | --- |
+| 仿真时间 | World 的游戏时间，单位秒；每次新的 PIE 或 Game 会话从 0 开始 | `Get Sim Time Seconds`；帧头的 `Timestamp Seconds` |
+| 仿真帧号 | 游戏时间前进过的 world tick 数；暂停时冻结 | `Get Sim Frame` |
+| ROS 的 `/clock` | uBotROS 把同一个仿真时间发布出去 | [TF 与 /clock](/ros/tf-and-clock/) |
+
+两个 `Get Sim …` 节点在 `UBot Clock Subsystem` 上，用法见 [uBotCore 的仿真时钟](/core/clock/)。
+
+## 固定步长、暂停与单步
+
+时钟子系统（`UBot Clock Subsystem`）只在 Game 和 PIE 世界里存在，蓝图类别是 `uBot|Clock`。
+
+| 节点 | 作用 |
+| --- | --- |
+| `Set Fixed Time Step` | 开关引擎的固定步长（fixed time step）。`Step Hz` 默认 60，限制在 1 到 1000 Hz |
+| `Pause Simulation`、`Resume Simulation` | 暂停和恢复游戏，同时取消还没走完的单步 |
+| `Step Simulation` | 恢复运行恰好 `Num Frames`（默认 1）个 world tick，然后再暂停 |
+| `Get Remaining Step Frames` | 还剩几个单步帧 |
+
+- 固定步长让引擎每帧使用固定的时间增量 1 / `Step Hz`。它是整个进程共用的：第一次修改时记下原值，最后一个修改过它的世界销毁时恢复。
+- 暂停需要本地的 PlayerController，GameMode 要允许暂停。没有达到目标状态时，日志里有 `LogUBot` 警告。编辑器自己的 PIE 暂停会让世界一直保持暂停，此时恢复也不会成功。
+- `Step Simulation` 在 `Num Frames` 小于 1 或无法取消暂停时返回 false。单步进行中再次调用，剩余帧数累加。
+
+暂停时仿真时间不前进，传感器也不采样。固定步长加单步，就是每次推进固定的 1 / `Step Hz` 秒。
+
+要让每个 Game 或 PIE 世界一开始就用固定步长，不用写蓝图：在 **Project Settings > Plugins > uBot Core** 的 `Clock` 分类里勾选 `Use Fixed Time Step`（默认 false），再设 `Fixed Time Step Hz`（默认 60 Hz）。取消勾选不会关掉已经开着的固定步长。
 
 ## 采样调度
 
-传感器启动时立即采样一次，之后按 `Update Rate Hz` 在仿真时间上排出固定的采样时刻。每帧最多采样一次：一帧跨过多个时刻时只采一次，其余的计入 [`Get Dropped Sample Count`](/reference/ubotsensor/uubotsensorcomponent/#GetDroppedSampleCount)。
+传感器按 `Update Rate Hz`（0.1 到 240 Hz）在仿真时间上排采样时刻，由采样调度器（sample scheduler）负责，规则是：
+
+- `Start Sensor` 立即采样一次，第一个计划时刻是启动时刻加 1 / `Update Rate Hz`。
+- 采样时刻在一条网格上：第一个计划时刻加 k / `Update Rate Hz`。它按序号算，不累加，长时间运行也不会漂移。
+- 每帧最多采样一次。一帧跨过多个时刻时只采一次，其余的计入 [`Get Dropped Sample Count`](/reference/ubotsensor/uubotsensorcomponent/#GetDroppedSampleCount)，`Start Sensor` 时清零。
+- 运行中调用 `Set Update Rate Hz` 只改间隔，下一次采样时刻不变。
+- 暂停时不采样。
+
+调度不用循环定时器，所以一帧耗时很长时，也不会采到时间戳相同的重复样本。
 
 ## 采样频率与帧率的关系
 
 <SamplingTimeline />
 
-所以帧率低于 `Update Rate Hz` 时，实际采样频率等于帧率。时间戳取实际采样那一帧的仿真时间，也就是 World 的游戏时间：暂停时不走，跟随时间膨胀。
+所以帧率低于 `Update Rate Hz` 时，实际采样频率等于帧率。例如 0.5 s 的单帧在 100 Hz 下只采一次，跳过 49 个采样时刻。
+
+时间戳取实际采样那一帧的仿真时间，而不是网格上的采样时刻，所以定时采样的时间戳严格递增。
 
 ## 相关页面
 
 - [帧头与采样状态](/concepts/frame-header/)：时间戳和 `Sequence` 在帧头里的位置。
 - [uBotCore 的仿真时钟](/core/clock/)：读取仿真时间，固定步长，暂停与单步。
+- [性能与采样频率](/sensor/performance/)：各传感器的开销和建议频率。
