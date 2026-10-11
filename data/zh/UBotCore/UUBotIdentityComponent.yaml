@@ -1,0 +1,35 @@
+UUBotIdentityComponent:
+  summary: 给机器人命名，供 ROS 桥等 uBot 使用方读取。所有字段都可以留空，带 Resolved 的节点按规则回退。名字取自 AActor::GetName()，不是编辑器里的标签，打包后结果不变。
+  sourceHash: "49d63fe7786e"
+
+UUBotIdentityComponent.BaseComponent:
+  summary: 作为机器人基座的场景组件。留空、解析不到或不是场景组件时，用所属 Actor 的根组件。
+  sourceHash: "09240b82e713"
+
+UUBotIdentityComponent.BaseFrameId:
+  summary: 机器人基座的 TF frame id。留空时用 base_link。
+  sourceHash: "2cea611347ad"
+
+UUBotIdentityComponent.GetBaseComponent:
+  summary: 返回指定的场景组件；没有时返回所属 Actor 的根组件，也可能为空。
+  sourceHash: "90bf3ef3ed41"
+
+UUBotIdentityComponent.GetBaseFrameId:
+  summary: 返回 Base Frame Id；留空时返回 base_link。
+  sourceHash: "5d3d26aba5df"
+
+UUBotIdentityComponent.GetResolvedNamespace:
+  summary: 返回 Namespace；留空时返回净化后的机器人 ID。
+  sourceHash: "4d623755400a"
+
+UUBotIdentityComponent.GetResolvedRobotId:
+  summary: 返回 Robot Id；留空时返回所属 Actor 的名字，没有所属 Actor 时为空。
+  sourceHash: "44a1918d0b9c"
+
+UUBotIdentityComponent.Namespace:
+  summary: ROS 命名空间。留空时用净化后的机器人 ID；首尾的空白和 / 会被去掉。
+  sourceHash: "b10cd976311e"
+
+UUBotIdentityComponent.RobotId:
+  summary: 机器人 ID。留空时用所属 Actor 的名字；首尾的空白会被去掉。
+  sourceHash: "ef1c18bcf853"

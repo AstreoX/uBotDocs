@@ -6,11 +6,88 @@ sidebar:
   order: 40
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 添加组件
-- [ ] 字段与默认值（表）
-- [ ] 在蓝图里读取解析结果（节点图）
-- [ ] 哪些插件会用到它
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明怎样给机器人 Actor 加上 `uBot Identity` 组件，统一它的机器人 ID（`Robot Id`）、命名空间（`Namespace`）和基座坐标系（`Base Frame Id`），并在蓝图里读取最终生效的值。
+
+uBotROS 从这个组件读取机器人的名字，所以名字只需要在一处设置。
+
+## 快速用法
+
+`Get Resolved Namespace` 返回回退之后的结果：`Namespace` 留空时，用机器人 ID 净化后的名字。
+
+```blueprint
+caption: 开始运行时打印机器人的 Namespace
+nodes:
+  A: AActor.ReceiveBeginPlay
+  V: { var: Identity, class: UUBotIdentityComponent }
+  G: UUBotIdentityComponent.GetResolvedNamespace
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - A.then -> P.execute
+  - V.Identity -> G.Target
+  - G.ReturnValue -> P.InString
+notes:
+  V: 从 Components 面板把 Identity 组件拖进事件图。
+```
+
+## 步骤
+
+<Steps>
+
+1. **添加组件**
+
+   打开机器人的 Actor 蓝图，在 Components 面板点 **Add**，搜索 `uBot Identity`（分类 uBot）。
+
+2. **填写字段**
+
+   在 Details 面板里按需要填 `Robot Id`、`Namespace` 等。全部字段都可以留空，留空时按下表回退。
+
+3. **读取结果**
+
+   需要名字时，从组件上拖出 `Get Resolved …` 节点。直接读 `Robot Id` 等属性拿到的是没有回退的原始值，可能是空的。
+
+</Steps>
+
+## 关键属性
+
+| 属性 | 默认值 | 留空或无效时 |
+| --- | --- | --- |
+| `Robot Id` | 空 | 用所属 Actor 的名字；首尾的空白会被去掉 |
+| `Namespace` | 空 | 用净化后的机器人 ID，规则同 `Sanitize ROS Name`；填写的值只去掉首尾的空白和 `/`，不会净化 |
+| `Base Frame Id` | `base_link` | 用 `base_link` |
+| `Base Component` | 空 | 用所属 Actor 的根组件 |
+
+Actor 的名字是 `AActor::GetName()` 的结果，不是 Outliner 里显示的标签，所以打包后结果不变。`Base Component` 指向的必须是场景组件（Scene Component），否则同样回退到根组件。
+
+## 输出与事件
+
+组件没有事件，下面四个节点都是纯函数：
+
+| 节点 | 输出 |
+| --- | --- |
+| `Get Resolved Robot Id` | String，`Robot Id` 或所属 Actor 的名字；没有所属 Actor 时为空 |
+| `Get Resolved Namespace` | String，`Namespace` 或净化后的机器人 ID |
+| `Get Base Frame Id` | String，`Base Frame Id` 或 `base_link` |
+| `Get Base Component` | Scene Component，指定的组件或根组件，也可能为空 |
+
+### 谁会读取它
+
+| 使用方 | 读取什么 | 页面 |
+| --- | --- | --- |
+| `uBot ROS Sensor Bridge` | `Namespace`（话题前缀）、`Base Frame Id`、`Base Component` | [发布传感器数据](/ros/publish-sensors/) |
+| `uBot ROS Velocity Command` | `Namespace`（话题 `/<namespace>/cmd_vel`） | [接收 cmd_vel](/ros/cmd-vel/) |
+
+这两个组件上各有 `Robot Namespace Override`，Sensor Bridge 上还有 `Base Frame Override`。填了覆盖项就以覆盖项为准。
+
+## 注意事项
+
+- 组件是可选的。Actor 没有它时，使用方按同样的规则回退：Actor 名、净化后的 Actor 名、`base_link` 和根组件。
+- 每个机器人加一个组件就够了。
+- 在 Outliner 里改 Actor 的标签不会改变机器人的名字；要改名，填 `Robot Id`。
+
+## 相关参考
+
+- [uBot Identity](/reference/ubotcore/uubotidentitycomponent/)：全部节点和属性。
+- [标识与命名](/concepts/identity/)：Sensor Id、Frame Id 和命名建议。
+- [UE/ROS 约定库](/core/conventions/)：`Sanitize ROS Name` 的规则。

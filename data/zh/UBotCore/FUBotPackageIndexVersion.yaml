@@ -1,0 +1,23 @@
+Break:FUBotPackageIndexVersion:
+  summary: 把索引里的一个版本拆成 Version、Ref 和 Planned。
+  sourceHash: "5d4b50eae465"
+
+Make:FUBotPackageIndexVersion:
+  summary: 用各个字段拼出一个 UBot Package Index Version。
+  sourceHash: "41d32e74a5a7"
+
+FUBotPackageIndexVersion:
+  summary: Package 索引（格式 2）里 versions 列表的一项。
+  sourceHash: "9dc7ec3b75c0"
+
+FUBotPackageIndexVersion.Ref:
+  summary: 安装这个版本时检出的 git 标签、分支或提交。规划中的版本为空，这样的版本不能安装。
+  sourceHash: "5e0a4fecbaa5"
+
+FUBotPackageIndexVersion.Version:
+  summary: 索引里写的语义化版本，例如 0.1.0。
+  sourceHash: "3a6b43529fcd"
+
+FUBotPackageIndexVersion.bPlanned:
+  summary: 已公布，但还不能安装。
+  sourceHash: "bd12dc9474ea"

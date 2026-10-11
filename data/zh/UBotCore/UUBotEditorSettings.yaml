@@ -1,0 +1,7 @@
+UUBotEditorSettings:
+  summary: uBot 的编辑器偏好（Editor Preferences > Plugins > uBot），每个用户、每个工程各存一份。
+  sourceHash: "57e8a503f93c"
+
+UUBotEditorSettings.ManagerExecutable:
+  summary: "uBot 面板启动的 ubot-manager.exe。留空或文件不存在时，依次用 uBot Manager 注册的路径（HKCU\\Software\\AstreoX\\uBot Manager 的 Executable 值）和 %LOCALAPPDATA%\\uBot Manager\\ubot-manager.exe。"
+  sourceHash: "0aee451707a9"

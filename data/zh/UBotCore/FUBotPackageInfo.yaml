@@ -1,0 +1,99 @@
+Break:FUBotPackageInfo:
+  summary: 把 Package 信息拆成 Name、Friendly Name、Version、State、Enabled、Requires 等字段。
+  sourceHash: "779aa306b3c5"
+
+Make:FUBotPackageInfo:
+  summary: 用各个字段拼出一个 UBot Package Info。
+  sourceHash: "bfc4221f995e"
+
+FUBotPackageInfo:
+  summary: 一个 uBot Package 的全部已知信息，由插件描述文件和 Package 索引合并而成。
+  sourceHash: "bc00bc4a6afb"
+
+FUBotPackageInfo.AvailableVersions:
+  summary: 索引里列出的可安装（非规划）版本，新的在前。
+  sourceHash: "ec47645bd0a6"
+
+FUBotPackageInfo.BaseDir:
+  summary: 插件目录的绝对路径。未安装时为空。
+  sourceHash: "f005ebdb3457"
+
+FUBotPackageInfo.Description:
+  summary: 描述文件里的简介。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageInfo.DescriptorPath:
+  summary: .uplugin 文件的绝对路径。未安装时为空。
+  sourceHash: "b8944d918c7b"
+
+FUBotPackageInfo.DocsUrl:
+  summary: 文档地址。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageInfo.ExternalRequires:
+  summary: Package 需要的引擎插件或其他非 uBot 插件（描述文件和索引里的 EnginePlugins，旧描述文件可能仍用 ExternalRequires）。不会被自动安装。
+  sourceHash: "24a5972c8a45"
+
+FUBotPackageInfo.FriendlyName:
+  summary: 显示名，例如 uBot Sensor。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageInfo.IndexVersions:
+  summary: 索引里列出的所有版本（含规划版本），新的在前，并带有每个可安装版本克隆时检出的 git 引用（ref）。不在任何索引里的 Package 为空。
+  sourceHash: "60e3519ea9d3"
+
+FUBotPackageInfo.InstallFolder:
+  summary: 索引条目里的 folder：Package 克隆到安装目录下的文件夹名。为空时取仓库地址的最后一段并去掉 .git。
+  sourceHash: "61a2fcbda1c2"
+
+FUBotPackageInfo.Name:
+  summary: 插件名，例如 UBotSensor。
+  sourceHash: "15a3c6feee98"
+
+FUBotPackageInfo.ProblemDetails:
+  summary: Problems 的结构化形式，顺序和数量相同。
+  sourceHash: "22aaa5fa4d65"
+
+FUBotPackageInfo.Problems:
+  summary: 可读的问题描述，由依赖校验填写。
+  sourceHash: "9e11fecf8012"
+
+FUBotPackageInfo.Provides:
+  summary: Package 提供的功能标识，例如 Sensor.IMU。
+  sourceHash: "61168270b3a9"
+
+FUBotPackageInfo.Repository:
+  summary: 安装 Package 用的 git 仓库地址。
+  sourceHash: "c76d84d0e556"
+
+FUBotPackageInfo.Requires:
+  summary: 依赖的 Package 列表：名称、版本约束、是否可选。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageInfo.State:
+  summary: 安装状态：NotInstalled、Disabled 或 Enabled。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageInfo.Tags:
+  summary: 标签。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageInfo.Version:
+  summary: 语义化版本号。已安装的 Package 取描述文件的 VersionName；只在索引里的取最新的可安装版本，规划中的取最新的规划版本。
+  sourceHash: "d5524fb1d15d"
+
+FUBotPackageInfo.bEnabled:
+  summary: 是否已启用。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageInfo.bFromIndex:
+  summary: 是否列在某个 Package 索引里。
+  sourceHash: "2e29ed86de00"
+
+FUBotPackageInfo.bInstalled:
+  summary: 是否已安装。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageInfo.bPlanned:
+  summary: 索引里只有规划版本：已公布，但还不能安装。
+  sourceHash: "e87343ea2889"

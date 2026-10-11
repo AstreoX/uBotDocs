@@ -1,0 +1,27 @@
+Break:FUBotPackageProblem:
+  summary: 把 Package 问题拆成 Kind、Dependency、Constraint 和 Message。
+  sourceHash: "34937c5d58b4"
+
+Make:FUBotPackageProblem:
+  summary: 用各个字段拼出一个 UBot Package Problem。
+  sourceHash: "766a5835f049"
+
+FUBotPackageProblem:
+  summary: Problems 里一条问题的结构化形式。
+  sourceHash: "0b37b56f1c75"
+
+FUBotPackageProblem.Constraint:
+  summary: 依赖项里写的版本约束，原样保留；接受任意版本时为空。
+  sourceHash: "c14e95e531da"
+
+FUBotPackageProblem.Dependency:
+  summary: 涉及的被依赖 Package；依赖环和没有名字的依赖项为空。
+  sourceHash: "bf6f819f00d8"
+
+FUBotPackageProblem.Kind:
+  summary: 问题的类型。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPackageProblem.Message:
+  summary: 与 Problems 里对应那一条相同的文字。
+  sourceHash: "b12ce55fbd5f"

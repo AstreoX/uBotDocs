@@ -1,0 +1,27 @@
+UUBotCoreSettings:
+  summary: uBot Core 的项目设置（Project Settings > Plugins > uBot Core），保存在 DefaultEngine.ini。
+  sourceHash: "ed2a55533cf9"
+
+UUBotCoreSettings.AdditionalPackageIndexFiles:
+  summary: 额外的 Package 索引文件（格式 2，绝对路径或相对工程目录），在主索引之后加载。主索引是 uBot Manager 写入的 Saved/uBot/index.json，没有时用 UBotCore 自带的 Index/index.json。
+  sourceHash: "b8570b49f88a"
+
+UUBotCoreSettings.FixedTimeStepHz:
+  summary: 固定步长的频率，单位 Hz，范围 1 到 1000。需要先勾选 Use Fixed Time Step。
+  sourceHash: "c6a1970584c9"
+
+UUBotCoreSettings.GitExecutable:
+  summary: 命令行（commandlet）安装和更新 Package 时用的 git 可执行文件。
+  sourceHash: "de0a0b0b9a60"
+
+UUBotCoreSettings.PackageInstallDirectory:
+  summary: 命令行（commandlet）安装 Package 的目录，相对工程目录。
+  sourceHash: "351679543ff9"
+
+UUBotCoreSettings.bUseFixedTimeStep:
+  summary: 勾选后，每个 Game 或 PIE 世界开始运行（BeginPlay）时，把引擎切到固定步长。
+  sourceHash: "cbaf81e2bd10"
+
+UUBotCoreSettings.bValidatePackagesOnStartup:
+  summary: 所有模块加载完后，检查已安装的 uBot Package，并把每个问题写进日志。
+  sourceHash: "08b7884e1267"

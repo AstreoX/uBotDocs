@@ -1,0 +1,23 @@
+EUBotPackageProblemKind:
+  summary: Package 问题的类型。
+  sourceHash: "054f8936c64b"
+
+EUBotPackageProblemKind.DependencyCycle:
+  summary: 这个 Package 处在依赖环上。
+  sourceHash: "77281320335c"
+
+EUBotPackageProblemKind.InvalidRequirement:
+  summary: 依赖项没有 Package 名，或版本约束无法解析。
+  sourceHash: "7327b02daa87"
+
+EUBotPackageProblemKind.RequiresDisabled:
+  summary: 已启用的 Package 依赖了一个被禁用的 Package。
+  sourceHash: "f509f6d35b55"
+
+EUBotPackageProblemKind.RequiresMissing:
+  summary: 必需的 Package 没有安装。
+  sourceHash: "1e6c2470e717"
+
+EUBotPackageProblemKind.RequiresVersion:
+  summary: 已安装的 Package 不满足版本约束，或它的版本号不是语义化版本。
+  sourceHash: "909548f82476"
