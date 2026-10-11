@@ -43,7 +43,7 @@ export default defineConfig({
     ...(strict ? [blueprintBuildGate()] : []),
     starlight({
       title: "uBot 文档",
-      description: "uBot 是一组 Unreal Engine 5.5 插件，用来在 UE 里搭建机器人仿真，按需组合，蓝图里直接可用。",
+      description: "uBot 是一套用 Unreal Engine 搭建具身智能仿真的插件：高质量场景、多种传感器，可接入 ROS 2、MuJoCo、PhysX 等，按需组合，蓝图里就能上手。",
       logo: {
         light: "./src/assets/ubot-mark-dark.svg",
         dark: "./src/assets/ubot-mark-light.svg",
