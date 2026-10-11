@@ -200,7 +200,7 @@ page edit. Import them with a relative path (`import PackageList from "../../../
 | `<RecipeTable />` | the recipes of the index with their packages, planned ones marked 规划中; `<RecipeTable available />` only those that can be applied today |
 | `<PackageStatus name="UBotX" />` | status line, description, required packages (links), engine plugins, what it provides, the recipes that include it |
 | `<DependencyGraph />` | the dependency graph, drawn like uBot Manager's 依赖图 view |
-| `<HomePlugins />` | the home page only: a card per released package (version, description, what it needs) and one row of links for the planned ones |
+| `<HomePlugins />` | the home page only: every package as one row of a plain list (name, description, version or 规划中), released first |
 
 The dependency graph (`src/components/DependencyGraph.astro`, layout in `lib/dependency-graph.mjs`,
 tests in `test/dependency-graph.test.mjs`): columns by dependency depth from left to right (a package
