@@ -1,6 +1,6 @@
 ---
 title: 简介
-description: uBot 是什么，有什么特色，适合做什么，由哪些插件组成，这份文档怎么读。
+description: uBot 是什么，能做什么，由哪些插件组成，这份文档怎么读。
 pageKind: concept
 sidebar:
   order: 10
@@ -9,39 +9,17 @@ sidebar:
 import DependencyGraph from "../../../components/DependencyGraph.astro";
 import PackageList from "../../../components/PackageList.astro";
 
-uBot 是一组在虚幻引擎（Unreal Engine，UE）5.5 里搭建具身智能（Embodied AI）仿真的插件：给机器人装上传感器，在蓝图里读数据，或者发布到 ROS 2。
+uBot 是一套面向 Unreal Engine（UE）5.5 的具身智能（Embodied AI）仿真插件，具备传感器、统一的仿真时钟、ROS 2 接入等多种功能。借助 UE 的 Lumen、Nanite、物理系统和 Fab 上丰富的资产，可以搭建画面接近真机、场景足够复杂的仿真环境。
 
-## uBot 的特色
+搭配 [uBot Manager](/manager/)，可以按需安装，根据需求下载最合适的插件。对新手来说，uBot 也是不错的起点：功能在蓝图中就能使用，不写 C++ 也能上手，文档里面提供直观的蓝图节点展示。
 
-| 特色 | 具体是什么 | 详见 |
-| --- | --- | --- |
-| 装进已有的 UE 项目 | uBot 是一组插件，不是单独的仿真器。它装在原版 UE 5.5 上，不用改引擎，已有的场景、数字孪生或游戏项目加上传感器就能用 | [安装 uBot](/start/install/) |
-| 不用编译就能装 | uBot Manager 下载预编译包（UE 5.5 Win64），处理依赖，也能一次装好一个[组合](/start/recipes/)（Recipe） | [安装、更新、移除插件](/manager/packages/) |
-| 场景用 UE 搭 | 可以直接用 Fab 上的资产（包括 Quixel 的扫描资产）和大世界（World Partition），相机传感器用 UE 的渲染器出图 | [RGB 相机](/sensor/rgb-camera/) |
-| 蓝图就能用 | 传感器是组件，在「Components」面板的「Add」菜单里添加；属性、函数和事件都在蓝图里可用，不用写 C++ | [传感器通用用法](/sensor/basics/) |
-| 七种传感器 | 位姿、里程计、IMU、2D 和 3D 激光雷达、RGB 相机、深度相机；IMU、里程计和激光雷达可以加噪声 | [uBotSensor](/sensor/) |
-| 时间对得上 | 所有数据用同一个仿真时钟打时间戳，支持固定步长、暂停和单步；每帧数据带序号和状态码；同组相机同时触发，共用序号和时间戳 | [仿真时钟与采样调度](/concepts/clock-and-scheduling/)、[相机采集协调器](/sensor/capture-coordinator/) |
-| 环境会干扰感知 | 烟雾等感知介质会截断激光雷达的射线、改写深度相机的深度、给 RGB 相机的像素染色 | [感知介质](/sensor/medium/) |
-| ROS 2 可选 | 传感器话题、TF 和 `/clock` 发布到 ROS 2，`cmd_vel` 驱动机器人；不用 ROS 2 时不必安装 uBotROS | [uBotROS](/ros/) |
-| 插件之间用接口对接 | 插件通过 uBotCore 的接口和扩展点协作，物理引擎也能这样接入（[uBotMuJoCo](/mujoco/)，规划中），自己写的插件同样能接进来 | [插件之间怎么对接](/concepts/interfaces/)、[编写自己的 uBot Package](/develop/package-authoring/) |
+uBot 既有提供仿真时钟、坐标系和统一接口的 [uBotCore](/core/)，也有多样的传感器 [uBotSensor](/sensor/)，还可以通过 [uBotROS](/ros/) 对接 ROS 2，让实机上使用的 ROS 2 算法直接连上仿真。
 
-已发布的插件目前都是 Beta 版本。
-
-## 适合做什么
-
-| 场景 | 现在怎么做 | 规划中的插件 |
-| --- | --- | --- |
-| 移动机器人的感知与导航（SLAM、Nav2） | uBotSensor 加 uBotROS，车辆自己用 Chaos 搭 | [uBotVehicles](/vehicles/) |
-| 无人机 | uBotSensor，飞行器自己搭 | [uBotAerial](/aerial/) |
-| 烟雾、雾里的感知 | uBotSensor 的[感知介质](/sensor/medium/) | [uBotEnvironment](/environment/) |
-| 机械臂抓取、足式机器人等需要精确接触的任务 | 用 Chaos 搭，接触和关节的精度有限 | [uBotMuJoCo](/mujoco/) |
-| 大模型控制机器人 | 通过 uBotROS 的话题自己接 | [uBotMCP](/mcp/) |
-| 强化学习 | 引擎自带的 Learning Agents | [uBotLearning](/learning/)；或在 MuJoCo 里训练、在 UE 里验证（[uBotMuJoCo](/mujoco/)） |
-| 对抗与作战场景 | 用 UE 的 Gameplay 功能自己搭 | [uBotCombat](/combat/) |
+后续还会提供 [uBotVehicles](/vehicles/)、[uBotAerial](/aerial/) 等插件，面向自动驾驶、低空无人机导航等场景，并接入 [MuJoCo](/mujoco/)、PhysX 等物理引擎，让同一个 UE 项目、同一个场景里的不同对象，可以由不同的物理内核计算。
 
 ## 插件依赖图
 
-插件按依赖深度从左到右排列，箭头 A → B 表示 B 依赖 A，卡片样式参照 uBot Manager 的「依赖图」视图。
+插件按依赖深度从左到右排列，箭头 A → B 表示 B 依赖 A。
 
 <DependencyGraph />
 
@@ -49,15 +27,13 @@ uBot 是一组在虚幻引擎（Unreal Engine，UE）5.5 里搭建具身智能�
 
 <PackageList />
 
-规划中的插件只有一个占位页，说明它打算做什么。发布以后，同一个地址会换成它的手册。
-
 ## 怎么读这份文档
 
 | 你想 | 去这里 |
 | --- | --- |
 | 把插件装进工程 | [安装 uBot](/start/install/) |
 | 先跑起来看看 | [五分钟上手](/start/quickstart/) |
-| 选一组要装的插件 | [选择组合](/start/recipes/) |
+| 不知道该装哪些插件 | 在 [uBot Manager](/manager/recipes/) 里选一个组合方案（Recipe），各适合什么场景见[选择组合](/start/recipes/) |
 | 弄懂各插件共用的机制 | 核心概念：[帧头与采样状态](/concepts/frame-header/)、[仿真时钟与采样调度](/concepts/clock-and-scheduling/)、[坐标系与单位](/concepts/coordinates-and-units/)、[标识与命名](/concepts/identity/)、[插件之间怎么对接](/concepts/interfaces/) |
 | 在蓝图里使用传感器 | [uBotSensor](/sensor/) |
 | 把数据发布到 ROS 2 | [uBotROS](/ros/) |
