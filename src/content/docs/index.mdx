@@ -1,10 +1,10 @@
 ---
 title: uBot 文档
-description: uBot 是一组用来在 Unreal Engine 5.5 里搭建机器人仿真的插件，按需组合，蓝图里直接可用。
+description: uBot 是一组在 Unreal Engine 5.5 里搭建具身智能仿真的插件：装进已有的 UE 项目，蓝图里直接可用，可以接 ROS 2。
 template: splash
 hero:
-  title: uBot 文档
-  tagline: 在 Unreal Engine 5.5 里搭建机器人仿真的一组插件：按需组合，用 uBot Manager 安装，蓝图里直接可用。
+  title: uBot
+  tagline: 在原版 Unreal Engine 5.5 里搭建具身智能仿真的一组插件。装进已有的 UE 项目，蓝图里直接可用，需要时接上 ROS 2。
   image:
     light: ../../assets/ubot-mark-dark.svg
     dark: ../../assets/ubot-mark-light.svg
@@ -13,14 +13,39 @@ hero:
     - text: 开始使用
       link: /start/introduction/
       icon: right-arrow
+    - text: 五分钟上手
+      link: /start/quickstart/
+      variant: minimal
     - text: 节点索引
       link: /reference/nodes/
       variant: minimal
 ---
 
-## 文档里的蓝图
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+import DependencyGraph from "../../components/DependencyGraph.astro";
 
-示例都画成蓝图编辑器里的样子，点任意节点可以看说明和引脚。
+## uBot 的特色
+
+<CardGrid>
+  <Card title="装进已有的 UE 项目" icon="puzzle">原版 UE 5.5，不用改引擎；uBot Manager 装预编译包，不用编译。</Card>
+  <Card title="蓝图就能用" icon="pencil">传感器是组件，属性、函数和事件都在蓝图里。</Card>
+  <Card title="七种传感器" icon="magnifier">位姿、里程计、IMU、2D 和 3D 激光雷达、RGB 和深度相机。</Card>
+  <Card title="时间对得上" icon="clock">统一的仿真时钟，固定步长、暂停和单步；多台相机同时触发。</Card>
+  <Card title="环境会干扰感知" icon="random">烟雾会截断激光雷达、改写深度、给相机画面染色。</Card>
+  <Card title="ROS 2 可选" icon="link">话题、TF、`/clock` 和 `cmd_vel`；不用 ROS 2 时不必安装。</Card>
+</CardGrid>
+
+## 一个插件一件事
+
+只装用得上的插件，uBot Manager 会处理依赖。规划中的插件点开可以看它打算做什么。
+
+<DependencyGraph />
+
+规划中的 [uBotMuJoCo](/mujoco/) 让 MuJoCo 计算机械臂、足式机器人等的物理，算完映射回 UE：接触更精确，画面、传感器和 ROS 2 照常工作。
+
+## 蓝图里直接用
+
+文档里的示例都画成蓝图编辑器里的样子，点任意节点可以看说明和引脚。
 
 ```blueprint
 caption: 每次采样时把 IMU 姿态换算成角度
@@ -37,8 +62,11 @@ wires:
 
 ## 从这里开始
 
-- [简介](/start/introduction/)：uBot 是什么，有哪些插件，它们怎么依赖。
-- [安装 uBot](/start/install/)：用 uBot Manager 给工程装上插件。
-- [五分钟上手](/start/quickstart/)：给 Actor 加一个 IMU，在屏幕上看到采样序号。
-- [IMU 传感器](/sensor/imu/)：上图的完整写法。
-- [参考](/reference/)：每个类、节点和属性；按名称找节点用[节点索引](/reference/nodes/)。
+<CardGrid>
+  <LinkCard title="简介" description="uBot 的特色、适合做什么、各插件的关系。" href="/start/introduction/" />
+  <LinkCard title="安装 uBot" description="用 uBot Manager 给工程装上插件。" href="/start/install/" />
+  <LinkCard title="五分钟上手" description="给 Actor 加一个 IMU，在屏幕上看到采样序号。" href="/start/quickstart/" />
+  <LinkCard title="发布到 ROS 2" description="传感器话题、TF、/clock 和 cmd_vel。" href="/ros/" />
+</CardGrid>
+
+每个类、节点和属性的完整说明在[参考](/reference/)里，按名称找节点用[节点索引](/reference/nodes/)。
