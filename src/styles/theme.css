@@ -122,6 +122,10 @@
   border-radius: 14px;
   box-shadow: 0 24px 48px -28px rgba(15, 20, 40, 0.55);
 }
+.home-hero .bp-stage {
+  /* a little closer than in the manuals, so that the graph is scaled down less in a column of about 40rem */
+  column-gap: 16px;
+}
 .home-hero .bp-bar {
   margin-top: 0.5rem;
 }

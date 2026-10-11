@@ -1,8 +1,10 @@
 ---
 // The hero of the home page (replaces Starlight's Hero, which only a page with `hero` frontmatter
-// renders): title, tagline and buttons, and below them one Blueprint graph at full width. The graph is
-// the thing the manuals are made of, so the first screen shows it. It is compiled here with the
-// same code as a ```blueprint block; an invalid graph fails the build.
+// renders): title, tagline and buttons on the left, one Blueprint graph on the right. The graph is
+// the thing the manuals are made of, so the first screen shows it. It is compiled here with the same
+// code as a ```blueprint block; an invalid graph fails the build. The nodes sit in a fixed grid (`at`):
+// the exec line on the top row, the data nodes below it, so that ten nodes stay four columns wide and
+// the graph fits the right column without being scaled down much.
 //
 // Texts and buttons come from the `hero` frontmatter of src/content/docs/index.mdx.
 import { LinkButton } from "@astrojs/starlight/components";
@@ -14,14 +16,18 @@ const { data } = Astro.locals.starlightRoute.entry;
 const { title = data.title, tagline, actions = [] } = data.hero || {};
 
 const SOURCE = `
-caption: 3D 激光雷达每扫描一帧，打印第 0 个点到传感器的距离；点任意节点可以看说明和引脚
+caption: 激光雷达的距离和 IMU 的姿态；点任意节点可以看说明和引脚
 nodes:
-  A: { ref: UUBot3DLidarSensorComponent.On3DLidarFrameReady, component: Lidar3D }
-  B: { ref: UUBotPointCloudFrame.GetPointByIndex, set: { Index: 0 } }
-  C: K2Node_IfThenElse
-  D: UKismetMathLibrary.VSize
-  E: UKismetStringLibrary.Conv_DoubleToString
-  F: UKismetSystemLibrary.PrintString
+  A: { ref: UUBot3DLidarSensorComponent.On3DLidarFrameReady, component: Lidar3D, at: [0, 0] }
+  C: { ref: K2Node_IfThenElse, at: [1, 0] }
+  F: { ref: UKismetSystemLibrary.PrintString, at: [3, 0] }
+  B: { ref: UUBotPointCloudFrame.GetPointByIndex, set: { Index: 0 }, at: [0, 1] }
+  D: { ref: UKismetMathLibrary.VSize, at: [1, 1] }
+  E: { ref: UKismetStringLibrary.Conv_DoubleToString, at: [2, 1] }
+  G: { ref: UUBotImuSensorComponent.OnImuDataUpdated, component: IMU, at: [0, 2] }
+  H: { ref: Break:FUBotImuSensorData, hideUnconnected: true, at: [1, 2] }
+  I: { ref: UKismetMathLibrary.Quat_Rotator, at: [2, 2] }
+  J: { ref: UKismetMathLibrary.BreakRotator, at: [3, 2] }
 wires:
   - A.then -> C.execute
   - A.Frame -> B.Target
@@ -30,6 +36,9 @@ wires:
   - D.ReturnValue -> E.InDouble
   - C.then -> F.execute
   - E.ReturnValue -> F.InString
+  - G.Data -> H.UBotImuSensorData
+  - H.OrientationQuaternion -> I.Q
+  - I.ReturnValue -> J.Rotation
 `;
 
 const site = loadSite();
@@ -81,15 +90,16 @@ const graphHtml = renderGraph(graph, { graphId: "bp-hero", registry: site.regist
       color: var(--sl-color-white);
     }
     .tagline {
-      max-width: 52ch;
-      font-size: clamp(var(--sl-text-base), calc(0.0625rem + 1.6vw), var(--sl-text-lg));
+      max-width: 38ch;
+      text-wrap: balance;
+      font-size: clamp(var(--sl-text-base), calc(0.0625rem + 1.6vw), var(--sl-text-base));
       line-height: 1.7;
       color: var(--sl-color-gray-2);
     }
     .actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem 1.5rem;
+      gap: 0.75rem 1rem;
       align-items: center;
       margin-top: 0.5rem;
     }
@@ -99,8 +109,10 @@ const graphHtml = renderGraph(graph, { graphId: "bp-hero", registry: site.regist
 
     @media (min-width: 60rem) {
       .home-hero {
-        gap: 2.5rem;
-        padding-block: clamp(1rem, 4vmin, 3rem) 2.5rem;
+        grid-template-columns: minmax(0, 3.5fr) minmax(0, 7fr);
+        align-items: center;
+        gap: 2rem;
+        padding-block: clamp(2rem, 7vmin, 5rem);
       }
     }
   }
