@@ -8,8 +8,255 @@ sidebar:
   order: 20
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 骨架没有列这一页的章节：按功能页的固定结构写
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明怎样为自己的传感器写一个发布器（publisher），让 uBot ROS Sensor Bridge 把它的数据也发布到 ROS 2 话题。
+
+Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为每个传感器选择扩展点（extension point）`UBotROS.SensorPublisher` 上支持它、优先级最高的工厂（factory）。你要写两样东西：一个发布器类和一个工厂。
+
+## 步骤
+
+<Steps>
+
+1. **准备传感器**
+
+   下面为一个假想的距离传感器 `UMyRangeSensorComponent` 发布 `sensor_msgs/msg/Range`。它的写法见[在 C++ 中使用传感器与接口](/develop/cpp/)：实现 `IUBotSensor`，每次采样触发 `OnRangeUpdated(const FMyRangeData&)`，`FMyRangeData` 带一个 `FUBotFrameHeader` 类型的 `Header`。
+
+2. **添加模块依赖**
+
+   发布器放在自己的模块里（这里叫 `MyRangeROS`），它依赖 `UBotROS`、`UBotCore` 和传感器所在的模块。
+
+   ```csharp
+   PublicDependencyModuleNames.AddRange(new[]
+   {
+       "Core", "CoreUObject", "Engine", "UBotCore", "UBotROS", "MyRangeSensor"
+   });
+   ```
+
+   插件的 `.uplugin` 里要声明对 `UBotROS` 的依赖，写法见[编写自己的 uBot Package](/develop/package-authoring/)。
+
+3. **写发布器类**
+
+   继承 `UUBotROSSensorPublisher`，重写 `Initialize` 和 `Shutdown`。`Initialize` 先调 `Super::Initialize`，再声明话题并绑定传感器事件；`Shutdown` 先解绑，再调 `Super::Shutdown`，它会取消声明所有话题。
+
+   ```cpp
+   // MyRangePublisher.h
+   #pragma once
+
+   #include "CoreMinimal.h"
+   #include "MyRangeSensorComponent.h"
+   #include "UBotROSSensorPublisher.h"
+   #include "MyRangePublisher.generated.h"
+
+   UCLASS(Transient)
+   class UMyRangePublisher : public UUBotROSSensorPublisher
+   {
+       GENERATED_BODY()
+
+   public:
+       virtual bool Initialize(UObject* Sensor, const FUBotROSPublisherContext& Context, FString& OutError) override;
+       virtual void Shutdown() override;
+
+   private:
+       UFUNCTION()
+       void HandleRange(const FMyRangeData& Data);
+
+       int32 TopicId = 0;
+   };
+   ```
+
+   `Range` 在 `UBotROSMessageTypes.h` 里没有结构体，所以用 `FUBotCdrWriter` 按 `.msg` 的字段顺序手写。有结构体的消息（`FUBotRos…`）直接 `PublishMessage(TopicId, Message)`。
+
+   ```cpp
+   // MyRangePublisher.cpp
+   #include "MyRangePublisher.h"
+
+   bool UMyRangePublisher::Initialize(UObject* Sensor, const FUBotROSPublisherContext& Context, FString& OutError)
+   {
+       if (!Super::Initialize(Sensor, Context, OutError))   // 缓存传感器、桥和 frame id
+       {
+           return false;
+       }
+
+       UMyRangeSensorComponent* RangeSensor = Cast<UMyRangeSensorComponent>(Sensor);
+       if (!RangeSensor)
+       {
+           OutError = FString::Printf(TEXT("Sensor '%s' is not a range sensor."), *GetSensorId());
+           Shutdown();
+           return false;
+       }
+
+       // 逻辑键（TopicOverrides 的键）和默认路径都是 range，话题是 /<namespace>/range。
+       // 同一个 Actor 上有多个同类型传感器时改用各自的 SensorId。
+       const FString Key = IsSoleSensorOfType() ? FString(TEXT("range")) : GetSensorToken();
+       TopicId = AdvertiseTopic(Key, Key, TEXT("sensor_msgs/msg/Range"), GetContext().SensorQos, OutError);
+       if (TopicId <= 0)
+       {
+           Shutdown();
+           return false;
+       }
+
+       RangeSensor->OnRangeUpdated.AddUniqueDynamic(this, &UMyRangePublisher::HandleRange);
+       return true;
+   }
+
+   void UMyRangePublisher::Shutdown()
+   {
+       if (UMyRangeSensorComponent* RangeSensor = Cast<UMyRangeSensorComponent>(GetSensor()))
+       {
+           RangeSensor->OnRangeUpdated.RemoveDynamic(this, &UMyRangePublisher::HandleRange);
+       }
+       TopicId = 0;
+       Super::Shutdown();   // 取消声明所有话题
+   }
+
+   void UMyRangePublisher::HandleRange(const FMyRangeData& Data)
+   {
+       if (!ShouldPublishSample(Data.Header) || !WantsMessage(TopicId))   // 样本无效，或没有订阅者时不编码
+       {
+           return;
+       }
+
+       FUBotRosHeader Header;
+       Header.stamp = FUBotRosTime::FromSeconds(Data.Header.TimestampSeconds);
+       Header.frame_id = GetSensorFrameId();   // 已净化，必要时带命名空间前缀
+
+       FUBotCdrWriter Writer;
+       Header.Serialize(Writer);
+       Writer.WriteU8(1);   // radiation_type = INFRARED
+       Writer.WriteF32(Data.FieldOfViewRadians);
+       Writer.WriteF32(Data.MinRangeMeters);
+       Writer.WriteF32(Data.MaxRangeMeters);
+       Writer.WriteF32(Data.RangeMeters);
+       PublishCdr(TopicId, Writer.Finish());
+   }
+   ```
+
+4. **写工厂并注册**
+
+   工厂告诉 Sensor Bridge 它支持哪些传感器，以及怎样创建发布器。在 `StartupModule` 里注册到扩展点，在 `ShutdownModule` 里用 `UnregisterAllFromPackage` 全部移除，免得扩展比实现它的代码活得更久。
+
+   ```cpp
+   // MyRangeROSModule.cpp
+   #include "Modules/ModuleManager.h"
+   #include "MyRangePublisher.h"
+   #include "MyRangeSensorComponent.h"
+   #include "UBotExtensionRegistry.h"
+   #include "UBotROSSensorPublisher.h"
+
+   namespace
+   {
+       class FMyRangePublisherFactory final : public IUBotROSSensorPublisherFactory
+       {
+       public:
+           virtual FName GetExtensionName() const override { return FName(TEXT("MyRangeROS.Range")); }
+           virtual bool SupportsSensor(const UObject* Sensor) const override
+           {
+               return Sensor && Sensor->IsA<UMyRangeSensorComponent>();
+           }
+           virtual UUBotROSSensorPublisher* CreatePublisher(UObject* Outer, UObject* Sensor) const override
+           {
+               return NewObject<UMyRangePublisher>(Outer, NAME_None, RF_Transient);
+           }
+       };
+   }
+
+   class FMyRangeROSModule final : public IModuleInterface
+   {
+   public:
+       virtual void StartupModule() override
+       {
+           FUBotExtensionRegistry::Get().RegisterExtension(UBot::ROSPublishing::GetExtensionPointName(),
+               FName(TEXT("MyRangeROS")), MakeShared<FMyRangePublisherFactory>());   // OwnerPackage 用插件名
+       }
+
+       virtual void ShutdownModule() override
+       {
+           FUBotExtensionRegistry::Get().UnregisterAllFromPackage(FName(TEXT("MyRangeROS")));
+       }
+   };
+
+   IMPLEMENT_MODULE(FMyRangeROSModule, MyRangeROS)
+   ```
+
+   要替换内置传感器的发布器，让工厂的 `GetPriority()` 返回大于 0 的值：优先级相同时保持注册顺序，优先级 0 的内置工厂赢得平局。
+
+5. **编译并验证**
+
+   先启动 ROS 2 端的桥，见[准备 ROS 2 端](/ros/ros2-setup/)。在机器人 Actor 上添加 `UMyRangeSensorComponent` 和 **uBot ROS Sensor Bridge**，再加 **uBot Identity** 并把 `Namespace` 设为 `robot1`。进入 Play 后，Sensor Bridge 发现传感器并创建发布器，话题出现在 ROS 侧。
+
+   ```bash
+   ros2 topic list
+   ros2 topic echo /robot1/range --once
+   ```
+
+6. **不经过传感器直接收发（可选）**
+
+   不需要传感器组件时，可以直接用桥子系统声明话题、发布和订阅。订阅回调在游戏线程里执行，数据视图只在回调期间有效。
+
+   ```cpp
+   #include "UBotCdr.h"
+   #include "UBotROSBridgeSubsystem.h"
+   #include "UBotROSMessageTypes.h"
+
+   void UseBridgeDirectly(UObject* WorldContext)
+   {
+       if (UUBotROSBridgeSubsystem* Bridge = UUBotROSBridgeSubsystem::Get(WorldContext))
+       {
+           const int32 Id = Bridge->Advertise(TEXT("/robot1/battery"), TEXT("std_msgs/msg/Float32"),
+               FUBotROSQos::State());
+           FUBotCdrWriter Writer;
+           Writer.WriteF32(0.87f);
+           Bridge->Publish(Id, Writer.Finish());
+
+           Bridge->Subscribe(TEXT("/robot1/cmd_vel"), FUBotRosTwist::TypeName(),
+               FUBotROSQos(EUBotROSReliability::BestEffort, EUBotROSDurability::Volatile, 10),
+               [](TConstArrayView<uint8> Cdr)
+               {
+                   FUBotRosTwist Twist;
+                   if (UBot::Ros::Decode(Cdr, Twist)) { /* 使用 Twist */ }
+               });
+       }
+   }
+   ```
+
+</Steps>
+
+## 关键属性
+
+| 成员 | 作用 |
+| --- | --- |
+| `Initialize(Sensor, Context, OutError)` | `Super::Initialize` 缓存传感器、桥、`Context` 和 frame id；失败时返回 `false` 并写入 `OutError` |
+| `Shutdown()` | 解绑传感器事件，再调 `Super::Shutdown()` 取消声明所有话题；可以重复调用 |
+| `AdvertiseTopic(LogicalKey, DefaultRelativePath, MessageType, Qos, OutError)` | 按 `TopicOverrides`、话题校验和冲突检测得到话题并声明；返回发布者 ID（大于 0），失败返回 0 |
+| `ShouldPublishSample(Header)` | 已初始化，并且样本有效（或 `bPublishInvalidSamples` 开启） |
+| `WantsMessage(PublisherId)` | 没有订阅者（`bSkipWhenNoSubscribers` 开启时），或 best_effort 话题而桥没连上时返回 `false`，这时不必编码 |
+| `PublishMessage(Id, Message)`、`PublishCdr(Id, Cdr)` | 发送一条消息；前者接受 `FUBotRos…` 结构体，后者接受编码好的 CDR 字节 |
+| `GetContext().SensorQos`、`StateQos` | 传感器数据（默认 best_effort / volatile / 5）和状态（默认 reliable / volatile / 10）的 QoS，已包含 Sensor Bridge 上的覆盖 |
+| `GetSensorFrameId()`、`GetOpticalFrameId()` | 传感器 frame id，和加了 `_optical` 后缀的光学坐标系 id |
+| `IsSoleSensorOfType()`、`GetSensorToken()` | 同类型传感器是否只有一个；净化后的 `SensorId`，用在多个同类型传感器的话题路径里 |
+| `PublishesPhysicalFrame()` | 默认 `true`；传感器 frame 不是机器人上的物理连杆时返回 `false`，不发布 base 到它的静态 TF |
+| `UsesOpticalFrame()` | 默认 `false`；发布光学坐标系（相机）时返回 `true` |
+| 工厂的 `GetPriority()` | 默认 0；大于 0 的工厂优先于内置工厂 |
+
+## 输出与事件
+
+- 话题是 `/<namespace>/range`；同一个 Actor 上有多个同类型传感器时是 `/<namespace>/<SensorId>`。
+- `AdvertiseTopic` 的 `LogicalKey` 就是 Sensor Bridge 的 `TopicOverrides` 的键，这里是 `range`，所以话题可以在 Details 面板里替换。
+- 传感器 frame 的静态 TF 由 Sensor Bridge 按 `GetSensorFrameComponent` 自动发布，发布器不用管。
+- `Get Active Publisher Topics` 返回所有已声明的话题，`On ROSPublishers Refreshed` 在发布器重建后触发。
+
+## 注意事项
+
+- 消息类型必须是 ROS 侧已经安装的接口，否则桥回 `unknown_type`。示例按 ROS 2 Humble 的 `sensor_msgs/msg/Range` 字段顺序写，只在 Humble 上验证过 uBotROS。
+- 编码在游戏线程完成，所以先用 `ShouldPublishSample` 和 `WantsMessage` 过滤，再编码。
+- Sensor Bridge 只搜索所属 Actor 本身和它的组件，不搜索子 Actor。
+- 没有对应工厂的传感器会被跳过。
+- Sensor Bridge 会检查配置：`SensorId` 或 `FrameId` 为空、同类型内 `SensorId` 重复、`FrameId` 重复，或话题不合法、被分配两次时，组件进入 `Error`，不发布任何话题。
+
+## 相关参考
+
+- [uBot ROS Sensor Bridge](/reference/ubotros/uubotrossensorbridgecomponent/)：组件的属性、事件和函数。
+- [UBot ROSBridge Subsystem](/reference/ubotros/uubotrosbridgesubsystem/)：连接状态和事件。
+- [发布传感器数据](/ros/publish-sensors/)：内置话题、QoS、话题覆盖与校验。
+- [在 C++ 中使用传感器与接口](/develop/cpp/)：怎样写 `UMyRangeSensorComponent`。

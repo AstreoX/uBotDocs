@@ -7,10 +7,147 @@ sidebar:
   order: 40
 ---
 
-{/* STUB */}
-{/*
-待写章节（概念页，章节顺序见 docs-templates/concept.mdx）：
-- [ ] AgentSensorCore → uBotSensor
-- [ ] 旧 ROS 桥 → uBotROS
-- [ ] CoreRedirects
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明从旧插件迁移到 uBot 要做什么：哪些由插件自带的重定向（CoreRedirects）自动处理，哪些要手工改。
+
+| 旧插件 | 现在用什么 | 资产里的旧引用 |
+| --- | --- | --- |
+| `AgentSensorCore` | uBotSensor，帧头和状态枚举移到 uBotCore | 自动重定向 |
+| `AgentSensorROSBridge` 的 `Agent ROS Sensor Suite Publisher` | uBotROS 的 `uBot ROS Sensor Bridge` | 自动重定向 |
+| `AgentVehicleROSBridge` 的 `Agent ROS Vehicle Command` | `uBot ROS Velocity Command`，加上车辆自己实现 `IUBotVelocityCommandable` | 手工替换组件 |
+| `AgentDroneROSBridge` 的 `Agent ROS Drone Command` | 同上，由无人机实现 `IUBotVelocityCommandable` | 手工替换组件 |
+| TempoROS | 不再需要，启动随 uBotROS 附带的 `ubot_ros_bridge` | 不适用 |
+
+重定向只处理资产里序列化的数据，引用旧名称的 C++ 代码要手工改名。
+
+## AgentSensorCore 到 uBotSensor
+
+`UFUNCTION` 和 `UPROPERTY` 的名字没有变，所以蓝图里的引脚在类重定向之后继续有效。
+
+<Steps>
+
+1. **安装 uBotSensor**
+
+   用 uBot Manager 安装 `UBotSensor`，缺失的 `UBotCore` 会一起装好，见[安装、更新、移除插件](/manager/packages/)。
+
+2. **禁用 AgentSensorCore**
+
+   新旧同时启用时，uBot Manager 和编辑器的 uBot 面板（Problems 分区）都会报告冲突。快速修复是禁用旧插件，也可以忽略。
+
+3. **重启编辑器**
+
+   重定向只在编辑器启动时加载。在运行中的编辑器里新启用 uBotSensor，旧资产不会被重定向。
+
+4. **重新保存资产**
+
+   打开并保存用到旧传感器的蓝图和关卡，让它们用新名称序列化。
+
+5. **改 C++ 代码**
+
+   按下表改名，`Build.cs` 里同时加入 `UBotSensor` 和 `UBotCore`。
+
+6. **移除旧插件**
+
+   确认一切正常后，从工程里移除 `AgentSensorCore`。
+
+</Steps>
+
+蓝图里的显示名也变了：组件由 `Agent IMU Sensor` 变为 `uBot IMU Sensor`（其余同理），类别 `Agent Sensor` 变为 `uBot Sensor`，函数类别加前缀 `uBot Sensor|`，插件分类由 Simulation 变为 uBot。
+
+### C++ 里的改名
+
+| 旧名称 | 新名称 |
+| --- | --- |
+| `UAgentImuSensorComponent` 等 `UAgentXxx` 类 | `UUBotImuSensorComponent` 等 `UUBotXxx`；文件 `AgentXxx.h/.cpp` 改为 `UBotXxx.h/.cpp` |
+| `FAgentPoseSensorData`、`FAgentImuSensorData`、`FAgentOdometrySensorData` | `FUBotPoseSensorData`、`FUBotImuSensorData`、`FUBotOdometrySensorData` |
+| `EAgentPoseReferenceFrame`、`EAgentImageEncoding`、`EAgentDepthPreviewMode` | `EUBotPoseReferenceFrame`、`EUBotImageEncoding`、`EUBotDepthPreviewMode` |
+| `FAgentSensorFrameHeader`、`EAgentSensorSampleStatus` | `FUBotFrameHeader`、`EUBotSampleStatus`，移到 uBotCore（`UBotTypes.h`），字段和枚举值不变 |
+| 动态委托 `FAgent…Event` | `FUBot…Event` |
+| `AgentSensorMath` | `UBot::SensorMath`；`WorldCentimetersToMeters` 已删除，改用 `UBot::Units::CentimetersToMeters` |
+| `AgentSensorSmoke` | `UBot::SensorMedium` |
+| `AgentLidarVisualizer`（编辑器模块） | `UBot::LidarVisualizer` |
+| 模块 `AgentSensorCore`、`AgentSensorCoreEditor` | `UBotSensor`、`UBotSensorEditor`；导出宏 `AGENTSENSORCORE_API` 改为 `UBOTSENSOR_API` |
+| 日志类别 `LogAgent*` | 合并为 `LogUBotSensor` |
+| 网格 `SM_AgentSensor_<Kind>`，路径 `/AgentSensorCore/Models/` | `SM_UBotSensor_<Kind>`，路径 `/UBotSensor/Models/` |
+
+### 行为差异
+
+除了改名，行为与旧版一致，有意的差异只有这些：
+
+| 项目 | 变化 |
+| --- | --- |
+| 采样调度 | 旧版用循环 `FTimerManager` 定时器：一帧超过采样间隔时同一帧触发多次，同一个仿真时间被采样多次，IMU 和里程计会报告 `InvalidDeltaTime`。现在由组件 tick 加 `FUBotSampleScheduler` 驱动，每个 world tick 最多一个样本，跳过的间隔计入 `GetDroppedSampleCount()` |
+| 时间戳 | 取自 `UBot::Clock::GetSimTimeSeconds`，时间基准与旧版相同 |
+| 强度 | 2D 激光雷达帧和点云帧各多了 `GetIntensities()`，范围 0 到 255 |
+| 枚举传感器 | 所有传感器实现 `IUBotSensor`，可以用 `UBot::Sensors::FindSensors` 统一枚举；C++ 里新增虚函数 `GetSensorTypeName()` |
+| 烟雾 | 基于 uBotCore 的 `UBot::Medium`，新增 `IUBotPerceptionMedium` 发现路径。Actor 标签 `AgentSensor.SmokeVolume` 的旧路径行为不变，标签不要改名 |
+
+## 旧 ROS 桥到 uBotROS
+
+<Steps>
+
+1. **启动新的桥**
+
+   不再需要 TempoROS 和 rclcpp，UE 一侧也没有第三方依赖。在 ROS 2 一侧启动 `ubot_ros_bridge`，见[准备 ROS 2 端](/ros/ros2-setup/)。
+
+2. **安装 uBotROS，禁用旧插件**
+
+   uBotROS 依赖 uBotCore 和 uBotSensor。目前的索引只登记了 `AgentSensorCore` 的替代关系，所以 `AgentSensorROSBridge`、`AgentVehicleROSBridge` 和 `AgentDroneROSBridge` 要自己在 `Edit > Plugins` 里禁用。
+
+3. **重启编辑器并重新保存资产**
+
+   `Agent ROS Sensor Suite Publisher` 组件会重定向为 `uBot ROS Sensor Bridge`，它的属性、结构体、枚举和事件一起重定向。蓝图的函数名和事件名不变，引脚继续有效。
+
+4. **检查命名空间**
+
+   旧属性 `RobotNamespace` 默认是 `robot`，新属性 `RobotNamespaceOverride` 默认为空，意思是改用 uBot 身份（Identity）的命名空间（namespace）。想保持旧的话题名，就显式填写 `RobotNamespaceOverride`，或者在机器人上加 **uBot Identity** 并设置 `Namespace`，见 [Identity 组件](/core/identity/)。
+
+5. **替换速度指令组件**
+
+   `Agent ROS Vehicle Command` 和 `Agent ROS Drone Command` 没有重定向：删掉旧组件，添加 **uBot ROS Velocity Command**，并让车辆或无人机实现 `IUBotVelocityCommandable`，见[在 C++ 中使用传感器与接口](/develop/cpp/)和[接收 cmd_vel](/ros/cmd-vel/)。旧组件里的比例速度控制器、油门、刹车、转向映射和失效制动不在 uBotROS 里，要在目标里自己实现。
+
+6. **检查 ROS 侧的消费者**
+
+   输出数据有几处有意的修正，见下表。
+
+</Steps>
+
+### 输出数据的修正
+
+| 项目 | 旧版 | 现在 |
+| --- | --- | --- |
+| 角速度符号 | Odometry 的 `twist.angular` 和 IMU 的 `angular_velocity` 当作普通向量，用 `(x, -y, z)` | 角速度是轴向量，用 `(-x, y, -z)`：UE 里向右偏航现在得到负的 ROS `z`。Odometry 的 6x6 协方差按镜像 `diag(+,-,+,-,+,-)` 换号 |
+| LaserScan | 角度和距离原样发布，扫描是镜像的，强度被清空 | 角度按 ROS 约定镜像（`angle_min`、`angle_max` 对调并取反），`ranges` 和 `intensities` 倒序，未命中为 `+inf`，帧里有强度时发布 |
+| PointCloud2 | `point_step = 18`，没有强度 | 增加 `intensity`（float32，偏移 12），`ring` 在 16，`time` 在 18，`point_step = 22`。按 `fields` 里的偏移读取的消费者不受影响，写死偏移的代码需要更新 |
+| 相机坐标系 | Image 和 CameraInfo 用相机自己的 frame，没有光学坐标系（optical frame）的 TF | 使用 `<frame>_optical`，并发布静态 TF `<frame> -> <frame>_optical` |
+| 里程计的静态 TF | 里程计传感器也发布静态 `base_link -> frame`，与动态 `odom -> base_link` 成环 | 里程计传感器没有静态 TF |
+| `/tf_static` | 每个组件通过自己的 ROS 节点各自发布 | 所有组件合并成一条锁存（latched）消息，变化时和重连后重新发布 |
+
+位置和四元数的映射与旧版相同，默认话题路径、逻辑键、校验规则和蓝图 API 保持不变。
+
+如果装过早期版本的 uBotROS，还要搬一次设置：早期版本把设置写在工程的 `Config/DefaultEngine.ini`，现在只读取 `Config/DefaultUBotROS.ini`。把 `[/Script/UBotROS.UBotROSSettings]` 整段剪切过去，或在 Project Settings 里重新设置一遍。
+
+## CoreRedirects
+
+重定向（CoreRedirects）列表各只有一份，放在插件自带的 `Config/` 里的 `[CoreRedirects]` 段，引擎在配置已启用的插件时加载。每一条把旧的类、结构体、枚举、委托签名或资产路径映射到新的，旧资产加载时就按新名称找到它们。
+
+| 插件 | 文件 | 条数 | 内容 |
+| --- | --- | --- | --- |
+| uBotSensor | `Config/DefaultUBotSensor.ini` | 47 | 脚本包 1，类 14，结构体 4，枚举 4，动态委托签名 10，网格 14（包 7、对象 7） |
+| uBotROS | `Config/DefaultUBotROS.ini` | 11 | 脚本包 1，类 1，属性 2，结构体 2，枚举 2，动态委托签名 3 |
+
+- 重定向只在编辑器启动时生效。在运行中的编辑器里新启用插件，旧资产不会被重定向，请重启编辑器。
+- 重定向只处理序列化数据。引用 `UAgent*` 等旧名称的 C++ 代码要手工改名。
+- 旧资产第一次打开后请重新保存，让它们用新名称序列化。
+- `FAgentROSQOSOverride`（`bOverride`、`Reliability`、`QueueSize`）变成 `FUBotROSQosOverride`（`bOverride`、`Qos`）：旧值加载后移入 `Qos.Reliability` 和 `Qos.Depth`。覆盖开启时日志里有一条 `Migrated a legacy QoS override` 警告，重新保存后用新格式存储。
+- `NodeNameOverride` 没有后继，因为不再有每个组件一个 ROS 节点，旧值被忽略。
+- 插件目录里的 `Config/DefaultUBotROS.ini` 只放重定向，工程的 `Config/DefaultUBotROS.ini` 存项目设置，是另一个文件。
+
+## 相关页面
+
+- [安装、更新、移除插件](/manager/packages/)：安装 uBotSensor 和 uBotROS。
+- [准备 ROS 2 端](/ros/ros2-setup/)：启动 `ubot_ros_bridge`。
+- [发布传感器数据](/ros/publish-sensors/)：默认话题、消息和 QoS。
+- [接收 cmd_vel](/ros/cmd-vel/)：uBot ROS Velocity Command 的属性和超时。
+- [在 C++ 中使用传感器与接口](/develop/cpp/)：用新的 API 重写旧的 C++ 代码。

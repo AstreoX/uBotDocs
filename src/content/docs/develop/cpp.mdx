@@ -8,10 +8,337 @@ sidebar:
   order: 10
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 查找传感器
-- [ ] 调用接口
-- [ ] 实现接口
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明怎样在自己的 C++ 模块里依赖 uBot、查找机器人上的传感器、通过接口读取数据和下发速度指令，以及让自己的类实现这些接口。
+
+## 步骤
+
+### 调用传感器和接口
+
+<Steps>
+
+1. **添加模块依赖**
+
+   在自己模块的 `Build.cs` 里加入 `UBotCore` 和 `UBotSensor`。只用接口、时钟和身份（Identity）时，只加 `UBotCore` 就够了。
+
+   ```csharp
+   PublicDependencyModuleNames.AddRange(new[]
+   {
+       "Core", "CoreUObject", "Engine", "UBotCore", "UBotSensor"
+   });
+   ```
+
+   插件要先在工程里启用。你自己的插件还要在 `.uplugin` 里声明依赖，见[编写自己的 uBot Package](/develop/package-authoring/)。
+
+2. **查找传感器并调用接口**
+
+   `UBot::Sensors::FindSensors` 返回 Actor 自身（如果它实现了接口）和所有实现 `IUBotSensor` 的组件，按组件顺序排列，不搜索子 Actor（Child Actor）。接口函数用 `IUBotSensor::Execute_*` 调用，这样 C++ 和蓝图写的实现都能走到。
+
+   ```cpp
+   #include "GameFramework/Actor.h"
+   #include "UBotSensorInterface.h"
+
+   void LogSensors(const AActor* Robot)
+   {
+       TArray<UObject*> Sensors;
+       UBot::Sensors::FindSensors(Robot, Sensors);
+       for (UObject* Sensor : Sensors)
+       {
+           const FString Id = IUBotSensor::Execute_GetSensorId(Sensor);
+           const FName Type = IUBotSensor::Execute_GetSensorType(Sensor);   // 例如 IMU、Lidar2D
+           const FUBotFrameHeader Header = IUBotSensor::Execute_GetLatestSensorHeader(Sensor);
+           UE_LOG(LogTemp, Log, TEXT("%s (%s): sequence %lld"), *Id, *Type.ToString(), Header.Sequence);
+       }
+   }
+   ```
+
+3. **读取某一种传感器的数据**
+
+   把 `FindSensors` 返回的对象转成具体的组件类，就能用它自己的函数。`GetLatestIMUData` 返回最近一次样本，不会触发新的采样。
+
+   ```cpp
+   #include "UBotImuSensorComponent.h"
+
+   void LogGyro(UObject* Sensor)
+   {
+       if (const UUBotImuSensorComponent* Imu = Cast<UUBotImuSensorComponent>(Sensor))
+       {
+           const FUBotImuSensorData Data = Imu->GetLatestIMUData();
+           if (Data.Header.bValid)
+           {
+               UE_LOG(LogTemp, Log, TEXT("gyro (rad/s): %s"), *Data.AngularVelocityRadPerSecond.ToString());
+           }
+       }
+   }
+   ```
+
+4. **下发速度指令**
+
+   `UBot::Actuation::FindVelocityCommandable` 先找 Actor 本身，再找它的组件，没有就返回 `nullptr`。`FUBotVelocityCommand` 在机体系下使用 UE 坐标轴（X 前、Y 右、Z 上）：线速度单位 m/s，角速度单位 rad/s，+Z 为向右偏航。
+
+   ```cpp
+   #include "GameFramework/Actor.h"
+   #include "UBotActuatorInterface.h"
+   #include "UBotClock.h"
+
+   bool DriveForward(AActor* Robot)
+   {
+       UObject* Drive = UBot::Actuation::FindVelocityCommandable(Robot);
+       if (!Drive)
+       {
+           return false;
+       }
+
+       FUBotVelocityCommand Command;
+       Command.LinearVelocityMetersPerSecond = FVector(0.5, 0.0, 0.0);
+       Command.AngularVelocityRadiansPerSecond = FVector(0.0, 0.0, 0.2);
+       Command.TimestampSeconds = UBot::Clock::GetSimTimeSeconds(Robot);
+       Command.Source = TEXT("MyCode");   // 自由格式的来源标签
+       return IUBotVelocityCommandable::Execute_ApplyVelocityCommand(Drive, Command);   // false 表示被拒绝
+   }
+   ```
+
+   其他坐标系的数据要先自己转换再填，转换函数见 [UE/ROS 约定库](/core/conventions/)。
+
+5. **读取仿真时间和机器人标识**
+
+   所有 uBot 时间戳都用 `UBot::Clock::GetSimTimeSeconds`，它的基准是 `UWorld::GetTimeSeconds()`，遵循暂停和时间膨胀。机器人的名字取自 `AActor::GetName()`，不是编辑器里的标签，所以打包后结果不变。
+
+   ```cpp
+   #include "GameFramework/Actor.h"
+   #include "UBotClock.h"
+   #include "UBotIdentityComponent.h"
+
+   void LogIdentity(const AActor* Robot)
+   {
+       const double Now = UBot::Clock::GetSimTimeSeconds(Robot);               // 秒；没有 World 时为 0
+       const FString RobotId = UBot::Identity::ResolveRobotId(Robot);          // 没有 uBot Identity 组件时用 Actor 名
+       const FString RobotNamespace = UBot::Identity::ResolveNamespace(Robot); // 没有组件时用净化后的 Actor 名
+       const FString BaseFrame = UBot::Identity::ResolveBaseFrameId(Robot);    // 没有组件时是 base_link
+       UE_LOG(LogTemp, Log, TEXT("t=%.3f %s ns=%s base=%s"), Now, *RobotId, *RobotNamespace, *BaseFrame);
+   }
+   ```
+
+</Steps>
+
+### 在 C++ 里实现接口
+
+<Steps>
+
+1. **实现传感器接口**
+
+   让组件继承 `IUBotSensor`，它就能被 `FindSensors` 找到，uBotROS 也是靠这个接口发现传感器的。接口函数是 `BlueprintNativeEvent`，在 C++ 里重写它们的 `_Implementation` 版本。
+
+   ```cpp
+   // MyRangeSensorComponent.h（模块 MyRangeSensor）
+   #pragma once
+
+   #include "CoreMinimal.h"
+   #include "Components/SceneComponent.h"
+   #include "UBotSensorInterface.h"
+   #include "UBotTypes.h"
+   #include "MyRangeSensorComponent.generated.h"
+
+   USTRUCT(BlueprintType)
+   struct MYRANGESENSOR_API FMyRangeData
+   {
+       GENERATED_BODY()
+
+       UPROPERTY(BlueprintReadOnly, Category = "MyRange")
+       FUBotFrameHeader Header;
+
+       UPROPERTY(BlueprintReadOnly, Category = "MyRange")
+       float FieldOfViewRadians = 0.0f;
+
+       UPROPERTY(BlueprintReadOnly, Category = "MyRange")
+       float MinRangeMeters = 0.0f;
+
+       UPROPERTY(BlueprintReadOnly, Category = "MyRange")
+       float MaxRangeMeters = 0.0f;
+
+       UPROPERTY(BlueprintReadOnly, Category = "MyRange")
+       float RangeMeters = 0.0f;
+   };
+
+   DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMyRangeEvent, const FMyRangeData&, Data);
+
+   UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+   class MYRANGESENSOR_API UMyRangeSensorComponent : public USceneComponent, public IUBotSensor
+   {
+       GENERATED_BODY()
+
+   public:
+       UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MyRange")
+       FString SensorId = TEXT("range");
+
+       UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "MyRange")
+       FString FrameId = TEXT("range_link");
+
+       UPROPERTY(BlueprintAssignable, Category = "MyRange")
+       FMyRangeEvent OnRangeUpdated;
+
+       /** 记录一个样本并触发 OnRangeUpdated。 */
+       void PublishSample(float RangeMeters);
+
+       //~ Begin IUBotSensor Interface
+       virtual FString GetSensorId_Implementation() const override { return SensorId; }
+       virtual FString GetSensorFrameId_Implementation() const override { return FrameId; }
+       virtual FName GetSensorType_Implementation() const override { return TEXT("Range"); }
+       virtual bool IsSensorRunning_Implementation() const override { return true; }
+       virtual FUBotFrameHeader GetLatestSensorHeader_Implementation() const override { return LatestHeader; }
+       virtual USceneComponent* GetSensorFrameComponent_Implementation() const override
+       {
+           return const_cast<UMyRangeSensorComponent*>(this);
+       }
+       //~ End IUBotSensor Interface
+
+   private:
+       UPROPERTY(Transient)
+       FUBotFrameHeader LatestHeader;
+
+       int64 Sequence = 0;
+   };
+   ```
+
+   `PublishSample` 由你自己调用，固定频率采样的做法见注意事项。帧头的时间戳取自 uBot 时钟，序号自己递增：
+
+   ```cpp
+   // MyRangeSensorComponent.cpp
+   #include "MyRangeSensorComponent.h"
+   #include "UBotClock.h"
+
+   void UMyRangeSensorComponent::PublishSample(float RangeMeters)
+   {
+       FMyRangeData Data;
+       Data.Header.SensorId = SensorId;
+       Data.Header.FrameId = FrameId;
+       Data.Header.Sequence = ++Sequence;
+       Data.Header.TimestampSeconds = UBot::Clock::GetSimTimeSeconds(this);
+       Data.Header.bValid = true;
+       Data.Header.Status = EUBotSampleStatus::Valid;
+       Data.RangeMeters = RangeMeters;
+
+       LatestHeader = Data.Header;
+       OnRangeUpdated.Broadcast(Data);
+   }
+   ```
+
+2. **实现速度指令接口**
+
+   `IUBotVelocityCommandable` 是独立的能力接口，不要求同时实现 `IUBotActuator`。返回 `false` 表示拒绝这条指令。
+
+   ```cpp
+   // MyDriveComponent.h
+   #pragma once
+
+   #include "CoreMinimal.h"
+   #include "Components/ActorComponent.h"
+   #include "UBotActuatorInterface.h"
+   #include "MyDriveComponent.generated.h"
+
+   UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+   class UMyDriveComponent : public UActorComponent, public IUBotVelocityCommandable
+   {
+       GENERATED_BODY()
+
+   public:
+       virtual bool ApplyVelocityCommand_Implementation(const FUBotVelocityCommand& Command) override;
+       virtual void StopMotion_Implementation() override;
+
+   private:
+       FVector TargetLinear = FVector::ZeroVector;
+       FVector TargetAngular = FVector::ZeroVector;
+   };
+
+   // MyDriveComponent.cpp
+   #include "MyDriveComponent.h"
+
+   bool UMyDriveComponent::ApplyVelocityCommand_Implementation(const FUBotVelocityCommand& Command)
+   {
+       const FVector& Linear = Command.LinearVelocityMetersPerSecond;      // 机体系，UE 轴，m/s
+       const FVector& Angular = Command.AngularVelocityRadiansPerSecond;   // rad/s，+Z 向右偏航
+       if (Linear.ContainsNaN() || Angular.ContainsNaN())
+       {
+           return false;
+       }
+       TargetLinear = Linear;
+       TargetAngular = Angular;
+       return true;
+   }
+
+   void UMyDriveComponent::StopMotion_Implementation()
+   {
+       TargetLinear = FVector::ZeroVector;
+       TargetAngular = FVector::ZeroVector;
+   }
+   ```
+
+   控制器、油门和转向的映射都写在这样的实现里，uBotROS 本身不含控制逻辑。
+
+</Steps>
+
+### 在蓝图里实现接口
+
+<Steps>
+
+1. **打开 Class Settings**
+
+   打开蓝图 Actor 或蓝图组件，点工具栏的 **Class Settings**。
+
+2. **添加接口**
+
+   在 Details 面板的 **Interfaces** 区点 **Add**，选择 `UBot Velocity Commandable`。传感器选 `UBot Sensor`。
+
+3. **实现函数**
+
+   在 My Blueprint 面板的 **Interfaces** 里，双击有返回值的函数（如 `Apply Velocity Command`）来实现它。没有返回值的函数（如 `Stop Motion`）在事件图表里右键添加为事件。
+
+4. **编译并保存**
+
+   之后 C++ 里的 `FindVelocityCommandable` 和 `Execute_ApplyVelocityCommand` 就会找到并调用这个蓝图。
+
+</Steps>
+
+## 关键属性
+
+| 名称 | 头文件 | 作用 |
+| --- | --- | --- |
+| `IUBotSensor` | `UBotSensorInterface.h` | `GetSensorId`、`GetSensorFrameId`、`GetSensorType`、`IsSensorRunning`、`GetLatestSensorHeader`、`GetSensorFrameComponent` |
+| `IUBotActuator` | `UBotActuatorInterface.h` | `GetActuatorId`、`GetActuatorType`、`IsActuatorReady` |
+| `IUBotVelocityCommandable` | `UBotActuatorInterface.h` | `ApplyVelocityCommand`、`StopMotion` |
+| `IUBotPerceptionMedium` | `UBotPerceptionMedium.h` | `GetMediumSnapshot`，见 [感知介质](/sensor/medium/) |
+| `UBot::Sensors::FindSensors` | `UBotSensorInterface.h` | Actor 自身（如果实现了接口）加上所有实现 `IUBotSensor` 的组件 |
+| `UBot::Actuation::FindVelocityCommandable` | `UBotActuatorInterface.h` | 第一个实现 `IUBotVelocityCommandable` 的对象，没有则为 `nullptr` |
+| `UBot::Interfaces::FindImplementers`、`FindFirstImplementer` | `UBotSensorInterface.h` | 上面两个函数的通用版本，参数是接口的 `UClass`，如 `UUBotActuator::StaticClass()` |
+| `UBot::Clock::GetSimTimeSeconds` | `UBotClock.h` | 仿真时间，单位秒 |
+| `UBot::Identity::Find`、`ResolveRobotId`、`ResolveNamespace`、`ResolveBaseFrameId`、`ResolveBaseComponent` | `UBotIdentityComponent.h` | 与 uBot Identity 组件相同的解析规则，Actor 没有组件时回退到默认值 |
+
+## 输出与事件
+
+- `Execute_*` 的返回值就是接口函数的返回值。`Execute_ApplyVelocityCommand` 返回 `false` 表示指令被拒绝（没准备好、数值无效等）。
+- `Execute_GetLatestSensorHeader` 返回最近一次采样的帧头，不会触发新的采样。
+- 传感器自己的事件用 `AddDynamic` 绑定，处理函数必须是 `UFUNCTION()`：
+
+```cpp
+// 头文件里声明：UFUNCTION() void HandleImu(const FUBotImuSensorData& Data);
+void UMyReceiver::Bind(UUBotImuSensorComponent* Imu)
+{
+    Imu->OnImuDataUpdated.AddDynamic(this, &UMyReceiver::HandleImu);
+}
+```
+
+## 注意事项
+
+- 用 `Execute_*` 调用接口，不要把对象 `Cast` 成 `IUBotSensor*` 再直接调用函数：蓝图里写的实现这样调用不到。
+- `FindSensors` 返回的对象一定实现了接口。其他对象先用 `Object->Implements<UUBotSensor>()` 检查。
+- 查找函数只搜索 Actor 自身和它的组件，不搜索子 Actor。
+- 要按固定频率采样，用 `FUBotSampleScheduler`（`UBotSampleScheduler.h`），不要用循环定时器。长帧时循环定时器会在同一帧触发多次，产生重复的时间戳，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+
+## 相关参考
+
+- [UBot Sensor](/reference/ubotcore/uubotsensor/)、[UBot Actuator](/reference/ubotcore/uubotactuator/)、[UBot Velocity Commandable](/reference/ubotcore/uubotvelocitycommandable/)、[UBot Perception Medium](/reference/ubotcore/uubotperceptionmedium/)：四个接口的全部函数。
+- [FUBotVelocityCommand](/reference/ubotcore/structs/fubotvelocitycommand/)：速度指令的字段。
+- [插件之间怎么对接](/concepts/interfaces/)：四个接口各自的用途。
+- [Identity 组件](/core/identity/)：身份字段和解析规则。
+- [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/)：让上面的 `UMyRangeSensorComponent` 发布到 ROS 2。
