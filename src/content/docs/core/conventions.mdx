@@ -20,9 +20,9 @@ UE 的单位是厘米，ROS 的单位是米，两边的 Y 轴方向也相反（R
 caption: 每帧打印 Actor 的 ROS 位置
 nodes:
   A: AActor.ReceiveTick
-  G: { inline: { title: Get Actor Location, kind: pure, outputs: [{ name: Return Value, type: vector }] } }
+  G: AActor.K2_GetActorLocation
   C: UUBotConventionsLibrary.PositionUEToROS
-  V: { inline: { title: To String (Vector), kind: pure, inputs: [{ name: In Vec, type: vector }], outputs: [{ name: Return Value, type: string }] } }
+  V: UKismetStringLibrary.Conv_VectorToString
   P: { ref: UKismetSystemLibrary.PrintString, set: { Key: ros_position } }
 wires:
   - A.then -> P.execute

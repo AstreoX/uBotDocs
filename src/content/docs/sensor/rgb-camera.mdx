@@ -19,7 +19,7 @@ nodes:
   B: UUBotImageFrame.RequestPixelReadback
   C: K2Node_IfThenElse
   D: UUBotImageFrame.GetPixelDataSizeBytes
-  E: { inline: { title: To String (Integer), kind: pure, inputs: [{ name: In Int, type: int }], outputs: [{ name: Return Value, type: string }] } }
+  E: UKismetStringLibrary.Conv_IntToString
   F: UKismetSystemLibrary.PrintString
 wires:
   - A.then -> B.execute

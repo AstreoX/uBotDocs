@@ -6,5 +6,4 @@
 
 # sensor-b
 /Script/Engine.KismetStringLibrary:Conv_IntToString
-/Script/Engine.Actor:K2_GetActorLocation
 node /Script/BlueprintGraph.K2Node_MakeArray

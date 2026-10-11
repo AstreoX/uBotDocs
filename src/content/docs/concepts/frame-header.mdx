@@ -69,7 +69,7 @@ nodes:
   G: UUBotSensorComponent.GetLatestFrameHeader
   B: { ref: Break:FUBotFrameHeader, hideUnconnected: true }
   L: { inline: { title: Last Sequence, kind: pure, outputs: [{ name: Last Sequence, type: int64 }] } }
-  N: { inline: { title: "!= (Integer64)", kind: pure, inputs: [{ name: A, type: int64 }, { name: B, type: int64 }], outputs: [{ id: ReturnValue, name: "", type: bool }] } }
+  N: UKismetMathLibrary.NotEqual_Int64Int64
   C: K2Node_IfThenElse
 wires:
   - T.then -> C.execute

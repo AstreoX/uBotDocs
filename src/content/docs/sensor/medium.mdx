@@ -16,7 +16,7 @@ import { Steps } from "@astrojs/starlight/components";
 caption: 在 Actor 蓝图的 Get Medium Snapshot 函数里返回一个半径 300 cm 的烟雾球
 nodes:
   A: { inline: { title: Get Medium Snapshot, kind: node, outputs: [{ name: "", type: exec }] } }
-  L: { inline: { title: Get Actor Location, kind: pure, inputs: [{ name: Target, type: "object:AActor", default: self }], outputs: [{ name: Return Value, type: vector }] } }
+  L: AActor.K2_GetActorLocation
   M: { ref: Make:FUBotMediumCell, set: { RadiusCentimeters: 300, Density: 0.8 } }
   N: { inline: { title: Make Array, kind: node, inputs: [{ name: "[0]", id: item0, type: "struct:FUBotMediumCell" }], outputs: [{ name: Array, type: "struct:FUBotMediumCell[]" }] } }
   S: Make:FUBotMediumSnapshot

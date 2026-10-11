@@ -10,6 +10,64 @@
   "classes": [],
   "nodes": [
     {
+      "id": "AActor.K2_GetActorLocation",
+      "kind": "pure",
+      "title": "Get Actor Location",
+      "titleZh": "获取Actor位置",
+      "subtitle": "Target is Actor",
+      "subtitleZh": "目标是Actor",
+      "owner": "AActor",
+      "member": "K2_GetActorLocation",
+      "category": "Transformation",
+      "tooltip": "Returns the location of the RootComponent of this Actor",
+      "keywords": "position",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "AActor",
+            "subtypeDisplay": "Actor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "AActor.ReceiveBeginPlay",
       "kind": "event",
       "title": "Event BeginPlay",
@@ -257,6 +315,63 @@
             "subtype": "",
             "subtypeDisplay": "",
             "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "K2Node_MakeArray",
+      "kind": "node",
+      "title": "Make Array",
+      "titleZh": "创建数组",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Array",
+      "tooltip": "Create an array from a series of items.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "[0]",
+          "name": "[ 0]",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Array",
+          "name": "Array",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
             "valueType": null,
             "byRef": false,
             "const": false
@@ -566,6 +681,79 @@
       ]
     },
     {
+      "id": "UKismetMathLibrary.NotEqual_Int64Int64",
+      "kind": "pure",
+      "title": "Not Equal (Integer64)",
+      "titleZh": "不相等（Integer64）",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "NotEqual_Int64Int64",
+      "category": "Math|Integer64",
+      "tooltip": "Returns true if A is not equal to B (A != B)",
+      "keywords": "!= not equal",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "!=",
+      "inputs": [
+        {
+          "id": "A",
+          "name": "A",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Right click this pin to convert its type."
+        },
+        {
+          "id": "B",
+          "name": "B",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Right click this pin to convert its type."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Returns true if A is not equal to B (A != B)\n\nRight click this pin to convert its type."
+        }
+      ]
+    },
+    {
       "id": "UKismetMathLibrary.Quat_Rotator",
       "kind": "pure",
       "title": "ToRotator (Quat)",
@@ -867,6 +1055,63 @@
       ]
     },
     {
+      "id": "UKismetStringLibrary.Conv_IntToString",
+      "kind": "pure",
+      "title": "To String (Integer)",
+      "titleZh": "转换为字符串（整型）",
+      "subtitle": "",
+      "owner": "UKismetStringLibrary",
+      "member": "Conv_IntToString",
+      "category": "Utilities|String",
+      "tooltip": "Converts an integer value to a string",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "•",
+      "inputs": [
+        {
+          "id": "InInt",
+          "name": "In Int",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "UKismetStringLibrary.Conv_RotatorToString",
       "kind": "pure",
       "title": "To String (Rotator)",
@@ -892,6 +1137,63 @@
           "name": "In Rot",
           "type": {
             "category": "rotator",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetStringLibrary.Conv_VectorToString",
+      "kind": "pure",
+      "title": "To String (Vector)",
+      "titleZh": "到字符串（向量）",
+      "subtitle": "",
+      "owner": "UKismetStringLibrary",
+      "member": "Conv_VectorToString",
+      "category": "Utilities|String",
+      "tooltip": "Converts a vector value to a string, in the form 'X= Y= Z='",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "•",
+      "inputs": [
+        {
+          "id": "InVec",
+          "name": "In Vec",
+          "type": {
+            "category": "vector",
             "subtype": "",
             "subtypeDisplay": "",
             "container": "none",
