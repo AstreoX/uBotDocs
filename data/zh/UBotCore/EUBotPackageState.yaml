@@ -1,0 +1,15 @@
+EUBotPackageState:
+  summary: Package 的安装状态。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPackageState.Disabled:
+  summary: 已安装，但没有启用。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPackageState.Enabled:
+  summary: 已安装并启用。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPackageState.NotInstalled:
+  summary: 没有安装。
+  sourceHash: "e3b0c44298fc"

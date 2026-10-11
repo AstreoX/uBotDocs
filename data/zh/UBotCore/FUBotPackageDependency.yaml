@@ -1,0 +1,23 @@
+Break:FUBotPackageDependency:
+  summary: 把依赖项拆成 Name、Version 和 Optional。
+  sourceHash: "13efe1c197c9"
+
+Make:FUBotPackageDependency:
+  summary: 用各个字段拼出一个 UBot Package Dependency。
+  sourceHash: "bd59bbdd4c4d"
+
+FUBotPackageDependency:
+  summary: Requires 列表里的一项。
+  sourceHash: "8269e9f81e92"
+
+FUBotPackageDependency.Name:
+  summary: 被依赖 Package 的插件名，例如 UBotCore。
+  sourceHash: "e9beb0349462"
+
+FUBotPackageDependency.Version:
+  summary: 版本约束；为空表示任意版本。
+  sourceHash: "bd1901cef9bc"
+
+FUBotPackageDependency.bOptional:
+  summary: 可选依赖，只在对方已安装时才检查。
+  sourceHash: "4f6774c207b9"

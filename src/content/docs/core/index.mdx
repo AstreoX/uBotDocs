@@ -6,11 +6,51 @@ sidebar:
   order: 10
 ---
 
-{/* STUB */}
-{/*
-待写章节（手册概述，章节顺序见 docs-templates/overview.mdx）：
-- [ ] 能做什么（表）
-- [ ] 依赖与安装
-- [ ] 组件一览（表，链到参考）
-- [ ] 下一步
-*/}
+import PackageStatus from "../../../components/PackageStatus.astro";
+
+uBotCore 放着所有 uBot 插件共用的东西：传感器帧头（Frame Header）、仿真时钟（Clock）、UE 与 ROS 的换算、机器人命名，以及 Package 的查询和编辑器面板。
+
+它只依赖 UE 引擎，不包含 ROS 代码。
+
+## 能做什么
+
+| 功能 | 做什么 | 页面 |
+| --- | --- | --- |
+| 仿真时钟 | 读取仿真时间，设置固定步长，暂停和单步 | [仿真时钟](/core/clock/) |
+| UE/ROS 约定库 | 在蓝图里转换时间、位置、旋转和角速度，净化 ROS 名称 | [UE/ROS 约定库](/core/conventions/) |
+| Identity 组件 | 给机器人起名：`Robot Id`、`Namespace`、`Base Frame Id` | [Identity 组件](/core/identity/) |
+| Package 查询与 uBot 面板 | 在编辑器、蓝图和命令行里查看已安装的 uBot Package | [Package 查询与编辑器面板](/core/packages/) |
+| 设置项 | 项目设置 `uBot Core` 和编辑器偏好 `uBot` | [uBotCore 设置项](/core/settings/) |
+| 帧头与采样状态 | 所有传感器帧共用的帧头和状态码 | [帧头与采样状态](/concepts/frame-header/) |
+| 采样调度 | 传感器按固定频率采样，每帧最多采一次 | [仿真时钟与采样调度](/concepts/clock-and-scheduling/) |
+| 传感器、执行器和感知介质接口 | 让不同插件的对象互相对接 | [插件之间怎么对接](/concepts/interfaces/) |
+
+## 依赖与安装
+
+<PackageStatus name="UBotCore" />
+
+用 [uBot Manager](/manager/) 安装时，依赖它的插件会自动带上它；也可以按[安装](/start/install/)手动安装。
+
+## 组件一览
+
+| 组件 | 作用 | 参考 |
+| --- | --- | --- |
+| `UBot Clock Subsystem` | 仿真时间，固定步长，暂停与单步 | [UBot Clock Subsystem](/reference/ubotcore/uubotclocksubsystem/) |
+| `UBot Conventions Library` | UE 与 ROS 之间的时间、坐标和名称换算节点 | [UBot Conventions Library](/reference/ubotcore/uubotconventionslibrary/) |
+| `uBot Identity` | 加在机器人 Actor 上的命名组件 | [uBot Identity](/reference/ubotcore/uubotidentitycomponent/) |
+| `UBot Package Library` | 在蓝图里查询已安装的 Package 和扩展点 | [UBot Package Library](/reference/ubotcore/uubotpackagelibrary/) |
+| `uBot Core` | 项目设置 | [uBot Core](/reference/ubotcore/uubotcoresettings/) |
+| `uBot` | 编辑器偏好 | [uBot](/reference/ubotcore/uuboteditorsettings/) |
+| `UBot Frame Header` | 所有传感器帧共用的帧头 | [UBot Frame Header](/reference/ubotcore/structs/fubotframeheader/) |
+| `UBot Sensor` | 传感器接口 | [UBot Sensor](/reference/ubotcore/uubotsensor/) |
+| `UBot Actuator` | 执行器接口 | [UBot Actuator](/reference/ubotcore/uubotactuator/) |
+| `UBot Velocity Commandable` | 能接收速度指令的对象的接口 | [UBot Velocity Commandable](/reference/ubotcore/uubotvelocitycommandable/) |
+| `UBot Perception Medium` | 烟、雾等感知介质的接口 | [UBot Perception Medium](/reference/ubotcore/uubotperceptionmedium/) |
+
+全部类、结构体和枚举见 [UBotCore 参考](/reference/ubotcore/)。
+
+## 下一步
+
+- [五分钟上手](/start/quickstart/)：给 Actor 加一个 IMU，在屏幕上看到采样序号。
+- [仿真时钟](/core/clock/)：读取仿真时间，暂停和单步。
+- [帧头与采样状态](/concepts/frame-header/)：所有传感器输出共用的帧头。

@@ -6,9 +6,57 @@ sidebar:
   order: 60
 ---
 
-{/* STUB */}
-{/*
-待写章节（设置页，章节顺序见 docs-templates/settings.mdx）：
-- [ ] 项目设置：uBot Core
-- [ ] 编辑器偏好：uBot
-*/}
+这一页列出 uBotCore 的所有设置：在哪里改，默认值是多少，改了有什么用。
+
+## 在哪里改
+
+| 种类 | 菜单 | 范围 |
+| --- | --- | --- |
+| 项目设置 `uBot Core` | **Edit > Project Settings > Plugins > uBot Core**（编辑 > 项目设置 > 插件 > uBot Core） | 整个工程，所有人共用 |
+| 编辑器偏好 `uBot` | **Edit > Editor Preferences > Plugins > uBot**（编辑 > 编辑器偏好设置 > 插件 > uBot） | 每个用户、每个工程各一份 |
+
+## 设置表
+
+### 项目设置 uBot Core：Clock 分类
+
+| 名称 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Use Fixed Time Step` | 未勾选 | 勾选后，每个 Game 或 PIE 世界开始运行（BeginPlay）时把引擎切到固定步长。取消勾选不会关掉已经启用的固定步长 |
+| `Fixed Time Step Hz` | 60 Hz | 固定步长的频率，范围 1 到 1000 Hz；勾选 `Use Fixed Time Step` 后才能编辑 |
+
+固定步长的用法见[仿真时钟](/core/clock/)。
+
+### 项目设置 uBot Core：Packages 分类
+
+| 名称 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Validate Packages on Startup` | 已勾选 | 所有模块加载完后检查已安装的 Package，把每个问题以 `LogUBot` 警告写进日志 |
+| `Package Install Directory` | `Plugins/uBot` | 命令行 `-Install` 安装新 Package 的目录，相对工程目录 |
+| `Additional Package Index Files` | 空 | 额外的 Package 索引文件（格式 2），绝对路径或相对工程目录；同名条目由后加载的覆盖 |
+| `Git Executable` | `git` | 命令行安装和更新用的 git，不能是 shell 或批处理脚本 |
+
+`Package Install Directory` 和 `Git Executable` 只影响命令行，见 [Package 查询与编辑器面板](/core/packages/)；uBot Manager 用自己的[设置](/manager/settings/)。主索引是 uBot Manager 写入的 `Saved/uBot/index.json`，没有它时用 uBotCore 自带的 `Index/index.json`，额外的索引文件在主索引之后按顺序加载。
+
+### 编辑器偏好 uBot
+
+| 名称 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Manager Executable` | 空 | uBot 面板的 **Open uBot Manager** 启动的 `ubot-manager.exe`；相对路径从工程目录算起 |
+
+`Manager Executable` 留空或文件不存在时，依次用 uBot Manager 注册的路径（注册表 `HKCU\Software\AstreoX\uBot Manager` 的 `Executable` 值）和 `%LOCALAPPDATA%\uBot Manager\ubot-manager.exe`。都找不到时，面板弹出带下载链接的通知。
+
+## 保存位置
+
+| 设置 | 文件 | 段 |
+| --- | --- | --- |
+| 项目设置 `uBot Core` | `Config/DefaultEngine.ini` | `[/Script/UBotCore.UBotCoreSettings]` |
+| 编辑器偏好 `uBot` | `Saved/Config/WindowsEditor/EditorPerProjectUserSettings.ini` | `[/Script/UBotCoreEditor.UBotEditorSettings]` |
+
+项目设置随工程提交。编辑器偏好在 `Saved/` 下，不要提交。也可以直接改 ini：
+
+```ini
+[/Script/UBotCore.UBotCoreSettings]
+bUseFixedTimeStep=True
+FixedTimeStepHz=60.0
++AdditionalPackageIndexFiles=Config/uBotPackages.json
+```

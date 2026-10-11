@@ -8,6 +8,7 @@ event /Script/Engine.Actor:ReceiveTick
 node /Script/BlueprintGraph.K2Node_IfThenElse
 node /Script/BlueprintGraph.K2Node_ExecutionSequence
 macro /Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForLoop
+/Script/Engine.Actor:K2_GetActorLocation
 /Script/Engine.KismetMathLibrary:BreakRotator
 /Script/Engine.KismetMathLibrary:BreakVector
 /Script/Engine.KismetMathLibrary:Quat_Rotator
@@ -16,5 +17,6 @@ macro /Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForLoop
 /Script/Engine.KismetStringLibrary:Conv_DoubleToString
 /Script/Engine.KismetStringLibrary:Conv_Int64ToString
 /Script/Engine.KismetStringLibrary:Conv_RotatorToString
+/Script/Engine.KismetStringLibrary:Conv_VectorToString
 /Script/Engine.KismetSystemLibrary:Delay
 /Script/Engine.KismetSystemLibrary:PrintString

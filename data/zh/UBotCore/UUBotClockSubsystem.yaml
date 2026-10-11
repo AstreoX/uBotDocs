@@ -1,3 +1,39 @@
 UUBotClockSubsystem.GetSimTimeSeconds:
   summary: 当前 World 的 uBot 仿真时间（秒）。所有 uBot 时间戳都用这个时间。
   sourceHash: "9d98974e9ecf"
+
+UUBotClockSubsystem:
+  summary: 一个 Game 或 PIE 世界的仿真时钟：读取仿真时间和帧数，设置固定步长，暂停、恢复和单步。
+  sourceHash: "e99f44b48ee5"
+
+UUBotClockSubsystem.GetRemainingStepFrames:
+  summary: 单步还剩多少个 world tick；没有单步在进行时为 0。
+  sourceHash: "e3b0c44298fc"
+
+UUBotClockSubsystem.GetSimFrame:
+  summary: 游戏时间前进过的 world tick 数。世界暂停时不增加。
+  sourceHash: "48265a0217b3"
+
+UUBotClockSubsystem.IsFixedTimeStepEnabled:
+  summary: 引擎当前是否启用了固定步长（整个进程共用）。
+  sourceHash: "e3b0c44298fc"
+
+UUBotClockSubsystem.IsSimulationPaused:
+  summary: 当前世界是否处于暂停。
+  sourceHash: "e3b0c44298fc"
+
+UUBotClockSubsystem.PauseSimulation:
+  summary: 暂停游戏，并取消尚未完成的单步。
+  sourceHash: "1c8f52e2e196"
+
+UUBotClockSubsystem.ResumeSimulation:
+  summary: 取消暂停并取消尚未完成的单步，世界自由运行。
+  sourceHash: "41bd54cba487"
+
+UUBotClockSubsystem.SetFixedTimeStep:
+  summary: 启用或关闭引擎的固定步长（整个进程共用）。Step Hz 限制在 1 到 1000 Hz；最后一个改过它的时钟销毁时，恢复原来的值。
+  sourceHash: "873900e3606f"
+
+UUBotClockSubsystem.StepSimulation:
+  summary: 取消暂停，恰好运行 Num Frames 个 world tick 后再暂停；只算调用之后开始的 tick。Num Frames 小于 1 或无法取消暂停时返回 false；单步进行中再调用，会累加剩余帧数。
+  sourceHash: "12b8167ee08d"
