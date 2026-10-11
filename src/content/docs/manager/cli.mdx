@@ -7,11 +7,267 @@ sidebar:
   order: 50
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 获取方式
-- [ ] 常用命令
-- [ ] 先看计划再执行
-- [ ] 组合方案
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+命令行 `ubot` 和桌面程序用同一个核心，同一份设置、缓存和任务历史，用来在脚本和 CI 里安装、更新和检查插件。
+
+## 步骤
+
+### 获取方式
+
+目前 uBot Manager 的安装包只含桌面程序 `ubot-manager.exe`，不含 `ubot`，`ubot` 要从源码构建。
+
+<Steps>
+
+1. **准备工具**
+
+   安装 Rust（stable，MSVC 工具链，1.88 或更新）和 Visual Studio 2022 的 C++ 生成工具。
+
+2. **取得源码**
+
+   克隆 `https://github.com/AstreoX/uBotManager`。
+
+3. **构建**
+
+   在仓库根目录运行 `cargo build --release -p ubot-cli`。
+
+4. **运行**
+
+   生成的程序是 `target\release\ubot.exe`。把它放进 `PATH` 里的目录，或者用完整路径运行。
+
+</Steps>
+
+```powershell
+git clone https://github.com/AstreoX/uBotManager
+cd uBotManager
+cargo build --release -p ubot-cli
+.\target\release\ubot.exe --version
+```
+
+### 常用命令
+
+```
+ubot [--project <.uproject>] [--index <文件或地址>]... [--offline] [--json] <命令>
+```
+
+| 命令 | 说明 |
+| --- | --- |
+| `status` | 项目、引擎、插件、问题和索引源 |
+| `info <Package>` | 一个插件的详情和相关问题 |
+| `problems` | 问题列表，带事实和快速修复 |
+| `plan <更改>...` | 只显示计划，不执行；有错误时退出码为 1 |
+| `apply <更改>... [--no-build] [--run-tests] [--reopen-editor] [--yes]` | 做计划并执行 |
+| `recipes` | 列出组合方案 |
+| `recipe <id> [--no-build] [--yes]` | 应用一个组合方案 |
+| `engines` | 已安装的 UE 引擎 |
+| `package <Name[@版本]>... --out <目录> [选项]` | 编译并打包预编译包，给插件发布者用，见下面的 [制作预编译包](#制作预编译包) |
+| `index validate <文件>` | 校验索引文件，有错误时退出码为 1 |
+| `index show` | 各索引源的状态和合并后的索引 |
+
+先看一个项目的状态：
+
+```powershell
+ubot --project E:\Sims\MyRobotSim\MyRobotSim.uproject status
+```
+
+```
+Project  MyRobotSim  E:\Sims\MyRobotSim\MyRobotSim.uproject
+Engine   5.5.4 (launcher) C:\Program Files\Epic Games\UE_5.5
+Build    UnrealEditor (content only)
+Editor   not running
+
+Packages
+  NAME             STATE          INSTALLED  LATEST   LOCATION  FROM
+  UBotCore         not installed  -          0.1.1    -
+  UBotAerial       planned        -          (0.1.0)  -
+  UBotEnvironment  planned        -          (0.1.0)  -
+  UBotSensor       not installed  -          0.1.1    -
+  UBotVehicles     planned        -          (0.1.0)  -
+  UBotLearning     planned        -          (0.1.0)  -
+  UBotMCP          planned        -          (0.1.0)  -
+  UBotROS          not installed  -          0.1.1    -
+  UBotCombat       planned        -          (0.1.0)  -
+
+No problems.
+```
+
+后面还有一节「Index sources」，列出各索引源的状态。`FROM` 列显示已安装插件是怎么装的：`git v0.1.0`（有本地修改时加 `(modified)`）、`prebuilt UE 5.5` 或 `local folder`。
+
+### 先看计划再执行
+
+更改写成 `kind:Name[@版本]`，kind 不分大小写：
+
+| 更改 | 例子 |
+| --- | --- |
+| 安装 | `install:UBotROS`、`install:UBotROS@0.1.0` |
+| 更新或降级 | `update:UBotSensor@0.1.1`，必须写明版本 |
+| 启用 | `enable:UBotSensor` |
+| 禁用 | `disable:UBotSensor` |
+| 卸载 | `uninstall:UBotROS` |
+
+只有 `install` 和 `update` 带版本，`install` 省略版本时装最新版本。
+
+<Steps>
+
+1. **用 plan 看计划**
+
+   `plan` 只显示计划，不做任何改动。计划里有错误时，退出码是 1。
+
+   ```powershell
+   ubot --project E:\Sims\MyRobotSim\MyRobotSim.uproject plan install:UBotROS
+   ```
+
+   ```
+   Download
+     1. Download UBotCore 0.1.1  (github.com/…/UBotCore-0.1.1-UE5.5-Win64.zip → Plugins/uBot/uBotCore)
+     2. Download UBotSensor 0.1.1  (github.com/…/UBotSensor-0.1.1-UE5.5-Win64.zip → Plugins/uBot/uBotSensor)
+     3. Download UBotROS 0.1.1  (github.com/…/UBotROS-0.1.1-UE5.5-Win64.zip → Plugins/uBot/uBotROS)
+   Project
+     4. Enable UBotCore  (required by UBotROS)
+     5. Enable UBotSensor  (required by UBotROS)
+     6. Enable UBotROS  (MyRobotSim.uproject)
+   ```
+
+2. **读懂计划**
+
+   步骤分组和界面里的「应用更改」一致：`Download`、`Project`、`Build`。所有代码都来自预编译包时没有 `Build`；索引里没有预编译包的版本会克隆再编译，并在末尾给出警告：
+
+   ```
+   Download
+     1. Download UBotCore 0.1.1  (github.com/…/UBotCore-0.1.1-UE5.5-Win64.zip → Plugins/uBot/uBotCore)
+     2. Clone UBotSensor 0.1.0  (github.com/AstreoX/uBotSensor → Plugins/uBot/uBotSensor)
+   Project
+     3. Enable UBotCore  (required by UBotSensor)
+     4. Enable UBotSensor  (MyRobotSim.uproject)
+   Build
+     5. Build UnrealEditor  (Win64 · Development)
+   warning: No prebuilt UBotSensor 0.1.0 for UE 5.5; it will be built from source.
+   ```
+
+3. **用 apply 执行**
+
+   `apply` 先打印同样的计划，再询问 `Apply these changes? [y/N]`；加 `--yes` 不再询问，`--no-build` 不编译项目。
+
+   ```powershell
+   ubot apply install:UBotROS --yes
+   ```
+
+4. **之后的操作**
+
+   省略 `--project` 时用的是上次的项目，更新、禁用和卸载都一样：
+
+   ```powershell
+   ubot apply update:UBotSensor@0.1.1 --yes
+   ubot apply disable:UBotROS --yes
+   ubot apply uninstall:UBotROS --yes
+   ```
+
+</Steps>
+
+规划中的插件不能安装，计划直接报错并以 1 退出：
+
+```
+error: UBotVehicles is planned and cannot be installed yet.
+```
+
+### 组合方案
+
+`ubot recipes` 列出索引里的和你保存的组合方案，`ubot recipe <id>` 应用其中一个：
+
+```powershell
+ubot recipes
+ubot recipe ros-sensors --yes
+```
+
+```
+sensors-only      Sensors Only       available      UBotCore, UBotSensor
+ros-sensors       ROS 2 Sensors      available      UBotCore, UBotSensor, UBotROS
+ros-ground-robot  ROS Ground Robot   not available  UBotCore, UBotSensor, UBotVehicles, UBotROS
+```
+
+- `recipe` 和桌面程序一样，只安装缺少的插件、启用被禁用的插件，不更新也不禁用别的插件，只接受 `--no-build` 和 `--yes`。
+- 含有规划中插件的组合显示为 `not available`，`ubot recipe` 会拒绝：`error: recipe 'ros-ground-robot' is not available: UBotVehicles is planned or not in the index`。
+- 所有插件都已安装并启用时，输出 `Every package of ROS 2 Sensors is installed and enabled.`，退出码为 0。
+
+### 校验索引
+
+`index validate` 不需要打开项目，适合放进 CI：
+
+```powershell
+ubot index validate Index/index.json
+```
+
+```
+Index/index.json: 0 error(s), 0 warning(s).
+```
+
+有错误时逐行打印 `error: …` 和 `warning: …`，退出码为 1。`ubot index show` 显示各索引源的状态，以及合并后的插件和组合方案，用来查看加载失败的索引源。
+
+### 制作预编译包
+
+`ubot package` 在 `<输出目录>\_work` 下建一个临时的纯内容工程，从源码安装并用启动器版本的引擎编译指定的插件，再把每个插件打成 zip，并给出可以写进包索引的 `binaries` 条目。它不需要打开项目，会忽略 `--project`。
+
+```powershell
+ubot package UBotCore UBotSensor UBotROS --out E:\release
+```
+
+| 选项 | 说明 |
+| --- | --- |
+| `--out <目录>` | 必填。压缩包和 `.sha256` 文件放在这里 |
+| `--engine <5.5 或引擎根目录>` | 启动器引擎的版本号或根目录，默认用最新的启动器引擎；源码构建的引擎会被拒绝 |
+| `--url-template <模板>` | 压缩包的下载地址模板，默认是 GitHub Release 的地址 |
+| `--update-index <索引文件>` | 把 `binaries` 条目写进这个索引文件，再校验一遍 |
+| `--with-symbols` | 压缩包里保留 `*.pdb`、`*.exp` 和 `*.lib`，默认不含 |
+| `--keep-work` | 保留临时工程，默认结束后删除 |
+
+只会打包你列出的插件。要让依赖也有预编译包，把它们一起列出。
+
+## 关键属性
+
+下面的选项对所有命令有效：
+
+| 选项 | 默认值 | 作用 |
+| --- | --- | --- |
+| `--project <.uproject>` | 上次打开的项目 | 指定项目，同时把它记为上次的项目，桌面程序下次也会打开它 |
+| `--index <文件或地址>` | 设置里的索引源 | 用给定的文件或地址替换设置里的索引源，可以重复；文件路径相对当前目录 |
+| `--offline` | 关 | 只用缓存的索引，不下载 |
+| `--json` | 关 | 输出 JSON，而不是文本 |
+
+命令自己的选项：
+
+| 选项 | 用在 | 作用 |
+| --- | --- | --- |
+| `--no-build` | `apply`、`recipe` | 不编译项目 |
+| `--yes` | `apply`、`recipe` | 不询问，直接执行 |
+| `--run-tests` | `apply` | 完成后运行本次更改的插件的自动化测试，默认关 |
+| `--reopen-editor` | `apply` | 完成后重新打开 UE 编辑器，默认关 |
+
+## 输出与事件
+
+- 文本输出是英文。仓库地址里内嵌的凭据（`https://user:token@host`）在所有输出里显示为 `https://***@host`。
+- `apply` 和 `recipe` 执行时，逐步打印 `[n/m] 步骤: 状态`，步骤自己的输出缩进显示在下面。
+- 加 `--json` 时，`status` 输出完整的快照，`plan` 输出计划，`apply` 和 `recipe` 输出结束后的任务，`index show` 输出索引源和合并后的索引。
+- `Ctrl+C` 取消正在运行的任务，再按一次立即退出。
+
+| 退出码 | 含义 |
+| --- | --- |
+| 0 | 成功 |
+| 1 | 失败：计划有错误、任务失败，或者没有确认 |
+| 130 | 被取消 |
+
+## 注意事项
+
+- 没有 `--project` 时用上次打开的项目；没有任何项目时，`status` 提示 `No project is open.`，`plan` 和 `apply` 报同样的错并以 1 退出。
+- 除 `index validate` 和 `engines` 外，每条命令先刷新：「启动时同步索引」开着就同步远程索引，加 `--offline` 只用缓存。
+- 只有 `apply` 和 `recipe` 会写入项目的 `Saved/uBot/index.json`，只读命令不改动项目。
+- `apply` 没有 `--yes` 时在标准输入询问；输入结束（没有人回答）算作不确认，退出码为 1。
+- 命令行不读取设置里的「编译后重新打开编辑器」和「编译后运行 Package 测试」，要用就加 `--reopen-editor` 和 `--run-tests`。
+- `uninstall` 把插件文件夹移到回收站。测试和 CI 里可以设置环境变量 `UBOT_MANAGER_PERMANENT_DELETE=1` 直接永久删除，桌面程序没有这个开关。
+- 设置环境变量 `UBOT_MANAGER_HOME` 可以把设置、任务历史和缓存放到另一个目录，CI 里应该设置它。
+
+## 相关参考
+
+- [安装、更新、移除插件](/manager/packages/)：计划和任务在桌面程序里的样子。
+- [组合方案](/manager/recipes/)：在桌面程序里应用组合方案。
+- [uBot Manager 设置](/manager/settings/)：命令行共用的设置和索引源。
+- [编写自己的 uBot Package](/develop/package-authoring/)：索引条目和校验。

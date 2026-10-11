@@ -8,14 +8,38 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
+uBotVehicles 是规划中的地面车辆插件，这一页说明它打算做什么，以及发布前可以先怎么做。
+
 <PackageStatus name="UBotVehicles" />
 
-{/* STUB */}
-{/*
-待写章节（占位页，章节顺序见 docs-templates/placeholder.mdx）：
-- [ ] 定位
-- [ ] 计划提供的能力
-- [ ] 与现有插件的关系
-- [ ] 发布前可以先怎么做
-- [ ] 定位：差速与阿克曼地面车辆，基于 Chaos Vehicles
-*/}
+## 定位
+
+给仿真里的机器人提供轮式地面车辆：差速（differential）和阿克曼（Ackermann）两种，基于 UE 的 Chaos Vehicles。
+
+在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+
+## 计划提供的能力
+
+包索引为它声明了两个能力标签（`provides`）：
+
+| 能力标签 | 含义 |
+| --- | --- |
+| `Actuation.Velocity` | 速度控制，按速度指令驱动车辆。uBotCore 里已有对应的接口 `UBot Velocity Commandable`，它的 `Apply Velocity Command` 接收机体坐标系下的线速度（m/s）和角速度（rad/s） |
+| `Body.Wheeled` | 轮式车体，简介里说的差速和阿克曼车辆属于这一类 |
+
+尚未确定：车辆组件和蓝图类的名称、属性与默认值，油门和转向怎么映射，是否提供现成的 `UBot Velocity Commandable` 实现。
+
+## 与现有插件的关系
+
+- uBotCore：它只依赖 uBotCore 0.1.x，不依赖 uBotSensor 和 uBotROS。
+- 引擎插件：需要 `ChaosVehiclesPlugin`。uBot Manager 只会在 `.uproject` 里启用引擎插件，不会安装；引擎里没有时报错。
+- uBotROS：它的 `uBot ROS Velocity Command` 组件把 ROS 2 的 cmd_vel 交给实现了 `UBot Velocity Commandable` 的对象，所以实现了该接口的车辆就能被 cmd_vel 驱动。uBotROS 不含控制逻辑，油门和转向的映射由被驱动的车辆自己实现。
+- uBotSensor：传感器可以装在同一辆车上。包索引里的组合「ROS 地面机器人」把它和 uBotSensor、uBotROS 放在一起，用途是「地面车辆接入 Nav2 和 SLAM」，见 [选择组合](/start/recipes/)。
+
+## 发布前可以先怎么做
+
+- 启用引擎自带的 Chaos Vehicles（`ChaosVehiclesPlugin`），自己做一辆车。
+- 让车辆（Actor 或其中的组件）实现 `UBot Velocity Commandable`：实现 `Apply Velocity Command` 和 `Stop Motion`。添加接口的做法见 [插件之间怎么对接](/concepts/interfaces/)。
+- 给同一个 Actor 添加 uBotROS 的 `uBot ROS Velocity Command` 组件，ROS 2 的 cmd_vel 就能驱动它，见 [接收 cmd_vel](/ros/cmd-vel/)。
+- 给车辆加上 uBotSensor 的传感器，再用 uBotROS 发布到 ROS 2，见 [发布传感器数据](/ros/publish-sensors/)。
+- uBotVehicles 发布后，自己做的车辆要不要改、怎么改，尚未确定。

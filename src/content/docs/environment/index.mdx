@@ -3,19 +3,43 @@ title: uBotEnvironment
 description: uBotEnvironment（规划中）：烟雾、雾等影响感知的环境效果。
 pageKind: placeholder
 sidebar:
-  order: 10
+  order: 30
 ---
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
+uBotEnvironment 是规划中的环境效果插件，这一页说明它打算做什么，以及发布前可以先怎么做。
+
 <PackageStatus name="UBotEnvironment" />
 
-{/* STUB */}
-{/*
-待写章节（占位页，章节顺序见 docs-templates/placeholder.mdx）：
-- [ ] 定位
-- [ ] 计划提供的能力
-- [ ] 与现有插件的关系
-- [ ] 发布前可以先怎么做
-- [ ] 定位：烟雾、雾等影响感知的环境效果
-*/}
+## 定位
+
+提供烟雾、雾等会影响感知的环境效果，用在需要让传感器受到干扰的场景里。
+
+在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+
+## 计划提供的能力
+
+包索引为它声明了两个能力标签（`provides`）：
+
+| 能力标签 | 含义 |
+| --- | --- |
+| `Env.Smoke` | 烟雾效果 |
+| `Env.Fog` | 雾效果 |
+
+uBotCore 已经定义了描述这类介质的接口 `UBot Perception Medium`：实现它的 Actor 通过 `Get Medium Snapshot` 交出若干球形单元，每个单元有位置、半径和密度。uBotSensor 的激光雷达、RGB 相机和深度相机会读取这样的 Actor，细节见 [感知介质](/sensor/medium/)。
+
+尚未确定：烟雾和雾 Actor 的名称与属性，以及它们是否就是这个接口的实现。
+
+## 与现有插件的关系
+
+- uBotCore：按包索引，它只依赖 uBotCore 0.1.x，不依赖 uBotSensor。
+- uBotSensor：已经能读取实现了 `UBot Perception Medium` 的 Actor。传感器受不受 uBotEnvironment 的影响，要看它使用的接口，这一点尚未确定。
+- uBotCombat：它依赖 uBotEnvironment。包索引里的组合「烟雾作战演示」把两者放在一起，用途是「带烟雾干扰的作战场景」，见 [选择组合](/start/recipes/)。
+
+## 发布前可以先怎么做
+
+- 自己做一个烟雾或雾的 Actor，让它实现 `UBot Perception Medium`：在 `Get Medium Snapshot` 里返回若干球形单元，每个单元有位置、半径（单位厘米）和密度（0 到 1）。
+- 把 uBotSensor 的激光雷达或相机放进场景，确认传感器上的 `Enable Smoke Interference` 是打开的（默认打开），就能看到介质对数据的影响。
+- 添加接口的做法见 [插件之间怎么对接](/concepts/interfaces/)，每种传感器受到的影响见 [感知介质](/sensor/medium/)。
+- uBotEnvironment 发布后，自己做的介质要不要改、怎么改，尚未确定。

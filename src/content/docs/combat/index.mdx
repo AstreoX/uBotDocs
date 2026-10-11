@@ -3,19 +3,40 @@ title: uBotCombat
 description: uBotCombat（规划中）：炮塔、弹药、CIWS 等作战场景内容。
 pageKind: placeholder
 sidebar:
-  order: 10
+  order: 60
 ---
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
+uBotCombat 是规划中的作战场景内容插件，这一页说明它打算做什么，以及发布前可以先怎么做。
+
 <PackageStatus name="UBotCombat" />
 
-{/* STUB */}
-{/*
-待写章节（占位页，章节顺序见 docs-templates/placeholder.mdx）：
-- [ ] 定位
-- [ ] 计划提供的能力
-- [ ] 与现有插件的关系
-- [ ] 发布前可以先怎么做
-- [ ] 定位：炮塔、弹药、CIWS 等作战场景内容
-*/}
+## 定位
+
+提供炮塔、弹药、近防武器系统（CIWS）等作战场景用的内容，用来搭建作战仿真。
+
+在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+
+## 计划提供的能力
+
+包索引为它声明了一个能力标签（`provides`）：
+
+| 能力标签 | 含义 |
+| --- | --- |
+| `Content.Combat` | 作战场景内容，包括炮塔、弹药、近防武器系统等 |
+
+尚未确定：内容的完整清单、各项的名称与属性，以及蓝图怎么使用它们。
+
+## 与现有插件的关系
+
+- uBotCore 和 uBotSensor：它依赖这两个插件的 0.1.x。
+- uBotEnvironment：它也依赖 uBotEnvironment，而后者同样在规划中，所以要等 uBotEnvironment 发布之后，uBotCombat 才能安装。包索引里的组合「烟雾作战演示」把它们放在一起，用途是「带烟雾干扰的作战场景」，见 [选择组合](/start/recipes/)。
+- 旧版 AgentCombatCore：uBotSensor 为它保留了旧的烟雾标签 `AgentSensor.SmokeVolume`，带这个标签的烟雾 Actor 现在仍然能被传感器读到，见 [感知介质](/sensor/medium/)。uBotCombat 与 AgentCombatCore 的关系，以及怎样迁移，尚未确定。
+
+## 发布前可以先怎么做
+
+- 用 uBotSensor 的传感器装在自己做的炮塔或其他 Actor 上，见 [传感器通用用法](/sensor/basics/)。
+- 自己的炮塔或其他执行器可以实现 `UBot Actuator`，提供 `Get Actuator Id`、`Get Actuator Type` 和 `Is Actuator Ready`。这个接口只描述执行器，不规定怎么下指令，见 [插件之间怎么对接](/concepts/interfaces/)。
+- 烟雾可以让自己的 Actor 实现 `UBot Perception Medium`，传感器会读到它，见 [感知介质](/sensor/medium/)。
+- uBotCombat 发布后，自己做的炮塔和烟雾要不要改、怎么改，尚未确定。
