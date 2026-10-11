@@ -1,0 +1,115 @@
+UUBotImageFrame:
+  summary: "一次相机采集。图像在 GPU 的 Render Target 里，像素只在调用 Request Pixel Readback 后才读到 CPU，并且只有最新一次采集的帧能读回。"
+  sourceHash: "61c2fe9268fb"
+
+UUBotImageFrame.CaptureGroupId:
+  summary: "所属采集组的 ID，不在采集组里时为空。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.CaptureSequence:
+  summary: "组序号，从 1 开始，每采集一组加 1，同一次组采集里的所有相机相同。不在采集组里时为 0。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.CaptureTimestampSeconds:
+  summary: "采集时间，单位 s。在采集组里是组时间戳，否则等于帧头里的时间戳。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.ClearCPUPixelData:
+  summary: "释放 CPU 上的像素或深度数据。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.CopyDepthValues:
+  summary: "返回全部深度的副本，单位 m，按行排列。每次调用都复制整个数组，开销高。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.CopyPixelBytes:
+  summary: "返回全部像素字节的副本，顺序为 B、G、R、A。每次调用都复制整个数组，开销高。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.Cx:
+  summary: "主点的横坐标，单位像素，等于 (Width - 1) / 2。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.Cy:
+  summary: "主点的纵坐标，单位像素，等于 (Height - 1) / 2。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.Encoding:
+  summary: "像素编码：BGRA8 或 Depth32FC1。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.Fx:
+  summary: "水平焦距，单位像素，等于 Width / (2 * tan(水平视场 / 2))。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.Fy:
+  summary: "垂直焦距，单位像素，与 Fx 相同（方形像素）。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.GeneratePointCloud:
+  summary: "从已读回的深度生成相机坐标系下的点云（X 前、Y 右、Z 上，单位 m）。只含深度有效的像素，没有强度。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.GetBGRAPixelByCoordinates:
+  summary: "读取坐标 (X, Y) 处的像素颜色，原点在左上角。坐标越界、不是 BGRA8 帧或像素还没读回时返回 false。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.GetDepthMetersByCoordinates:
+  summary: "读取坐标 (X, Y) 处的深度，单位 m，0 表示无效。坐标越界、不是深度帧或深度还没读回时返回 false。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.GetDepthPreviewTexture:
+  summary: "返回最近一次 Update Depth Preview 生成的贴图，还没生成过时为空。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.GetPixelDataSizeBytes:
+  summary: "CPU 上像素数据的字节数，还没读回时为 0。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.HasCPUPixelData:
+  summary: "像素或深度是否已经读到 CPU。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.Header:
+  summary: "帧头，含 Valid 和 Status。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.Height:
+  summary: "图像高度，单位像素。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.HorizontalFovRadians:
+  summary: "水平视场，单位 rad。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.RawCaptureRenderTarget:
+  summary: "这一帧的图像所在的 Render Target。相机再次采集后它的内容会被新的图像覆盖。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.RequestPixelReadback:
+  summary: "把这一帧的像素读回 CPU。同步执行，开销高；只有最新一次采集的帧能读回，失败原因在 Error Message 里。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.RowStrideBytes:
+  summary: "每行的字节数，等于 Width 乘以 4。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.SensorTransformWorld:
+  summary: "采集时传感器在 UE 世界里的变换，位置单位 cm。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.UpdateDepthPreview:
+  summary: "把已读回的深度生成一张预览贴图，无效像素为黑色。预览范围的上限必须大于下限，否则失败；深度还没读回时会先读回。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.VerticalFovRadians:
+  summary: "垂直视场，单位 rad，由宽高比算出。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.Width:
+  summary: "图像宽度，单位像素。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotImageFrame.bSynchronized:
+  summary: "在采集组里采集的帧为 true。"
+  sourceHash: "e3b0c44298fc"

@@ -6,11 +6,136 @@ sidebar:
   order: 110
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 介质是什么
-- [ ] 对各传感器的影响
-- [ ] 在蓝图里实现一个介质
-- [ ] 与规划中的 uBotEnvironment 的关系
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明烟雾等感知介质（Perception Medium）怎样影响激光雷达和相机，以及怎样在蓝图里把自己的 Actor 做成一个介质。
+
+## 快速用法
+
+```blueprint
+caption: 在 Actor 蓝图的 Get Medium Snapshot 函数里返回一个半径 300 cm 的烟雾球
+nodes:
+  A: { inline: { title: Get Medium Snapshot, kind: node, outputs: [{ name: "", type: exec }] } }
+  L: { inline: { title: Get Actor Location, kind: pure, inputs: [{ name: Target, type: "object:AActor", default: self }], outputs: [{ name: Return Value, type: vector }] } }
+  M: { ref: Make:FUBotMediumCell, set: { RadiusCentimeters: 300, Density: 0.8 } }
+  N: { inline: { title: Make Array, kind: node, inputs: [{ name: "[0]", id: item0, type: "struct:FUBotMediumCell" }], outputs: [{ name: Array, type: "struct:FUBotMediumCell[]" }] } }
+  S: Make:FUBotMediumSnapshot
+  R: { inline: { title: Return Node, kind: node, inputs: [{ name: "", type: exec }, { name: Out Snapshot, type: "struct:FUBotMediumSnapshot" }, { name: Return Value, type: bool, default: "true" }] } }
+wires:
+  - A.then -> R.execute
+  - L.ReturnValue -> M.WorldPositionCentimeters
+  - M.UBotMediumCell -> N.item0
+  - N.Array -> S.Cells
+  - S.UBotMediumSnapshot -> R.OutSnapshot
+notes:
+  M: 一个单元是一个球：球心在 Actor 的位置，半径 300 cm，密度 0.8。
+  R: "`Return Value` 为 true 表示这个介质有快照可以给传感器。"
+```
+
+## 步骤
+
+<Steps>
+
+1. **新建 Actor 蓝图**
+
+   新建一个 Actor 蓝图，例如 `BP_SmokeCloud`。介质的位置就是这个 Actor 的位置。
+
+2. **实现接口**
+
+   打开 Class Settings，在 Interfaces 里点 **Add**，选 `UBot Perception Medium`。
+
+3. **实现 `Get Medium Snapshot`**
+
+   在 My Blueprint 面板的 Interfaces 下双击 `Get Medium Snapshot`，照上图连线。
+
+4. **放进关卡**
+
+   把 Actor 放进关卡即可，不需要注册。传感器每次采样都会重新取一次快照，位置和密度的变化在下一次采样生效。
+
+5. **验证**
+
+   把 Actor 放在 `Lidar2D` 正前方 800 cm 处，再接下面这张图。
+
+</Steps>
+
+```blueprint
+caption: 烟雾球心在正前方 8 m、半径 300 cm 时，这里打印约 5 m
+nodes:
+  A: { ref: UUBot2DLidarSensorComponent.On2DLidarFrameReady, component: Lidar2D }
+  B: { ref: UUBot2DLidarFrame.GetRangeByIndex, set: { Index: 270 } }
+  C: UKismetStringLibrary.Conv_DoubleToString
+  D: UKismetSystemLibrary.PrintString
+wires:
+  - A.then -> D.execute
+  - A.Frame -> B.Target
+  - B.RangeMeters -> C.InDouble
+  - C.ReturnValue -> D.InString
+notes:
+  B: 射线在烟雾球的入口处被截断，距离是 8 - 3 = 5 m，而不是后面墙的距离。
+```
+
+## 关键属性
+
+### 介质数据
+
+快照 `UBot Medium Snapshot` 由若干个球形单元 `UBot Medium Cell` 组成。
+
+| 字段 | 默认值 | 作用 |
+| --- | --- | --- |
+| `World Position Centimeters` | (0, 0, 0) | 单元的球心，世界坐标，单位 cm |
+| `Radius Centimeters` | 150 | 单元的半径，单位 cm，小于 1 cm 按 1 cm 算 |
+| `Density` | 0 | 密度，范围 0 到 1 |
+| `Edge Factor` | 1 | 范围 0 到 1，用来把密度向介质边缘衰减。有效密度等于 `Density` 乘以 `Edge Factor` |
+| `Medium Type` | Smoke | 介质类型名。传感器不读取它，所有介质的效果相同 |
+| `Active` | true | 为 false 时整个快照被忽略 |
+| `Tint` | 灰色 (0.55, 0.55, 0.55) | 介质的颜色，RGB 相机用它给像素着色 |
+| `Cells` | 空 | 单元数组。没有单元的快照被忽略 |
+
+### 传感器上的属性
+
+2D / 3D 激光雷达、RGB 相机和深度相机都有下面这几个属性，名称和默认值相同。
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Enable Smoke Interference` | true | 总开关。为 false 时传感器不受任何介质影响 |
+| `Smoke Density Threshold` | 0.05 | 有效密度低于它的单元被忽略 |
+| `Smoke Cell Radius Scale` | 1 | 所有单元半径的缩放倍数，至少 0.01 |
+| `Smoke Volume Actor Tag` | `AgentSensor.SmokeVolume` | 旧版标签路径用的 Actor 标签，见下方注意事项 |
+
+RGB 相机另有三个属性，深度相机不使用：
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Smoke Interference Tint` | (0.48, 0.50, 0.52) | 旧版标签路径的介质颜色 |
+| `Smoke Interference Opacity Scale` | 0.75 | 有效密度乘以它得到不透明度 |
+| `Maximum Smoke Interference Opacity` | 0.85 | 不透明度的上限 |
+
+## 输出与事件
+
+介质没有自己的事件，它改变的是各传感器的输出。
+
+| 传感器 | 影响 |
+| --- | --- |
+| 2D 激光雷达 | 射线进入有效密度不低于阈值的单元时，在入口处被截断：按命中处理（`Hit` 为 true），距离是入口距离，强度为 0 |
+| 3D 激光雷达 | 同样在入口处截断。入口距离在量程内时，这束射线在入口距离处产生一个点，强度为 0 |
+| RGB 相机 | 读回像素时，像素射线（最远 `Preview Distance Meters`）遇到介质，像素向介质颜色混合，原来的 alpha 保留。不透明度是有效密度乘以 `Smoke Interference Opacity Scale`，上限为 `Maximum Smoke Interference Opacity` |
+| 深度相机 | 读回深度时，射线在到达表面之前进入介质，这个像素的深度改为入口距离。入口距离超出 [`Minimum Depth Meters`, `Maximum Depth Meters`] 时记为 0 |
+
+RGB 相机的颜色：来自 `UBot Perception Medium` 接口的快照用它自己的 `Tint`，其他来源用相机上的 `Smoke Interference Tint`。
+
+## 注意事项
+
+- 传感器从两条路径发现介质，最后都变成快照。推荐的是接口路径：实现 `UBot Perception Medium` 的 Actor。
+- 旧版标签路径靠 Actor 标签 `AgentSensor.SmokeVolume` 和名字反射工作，只为旧版 AgentCombatCore 的烟雾 Actor 保留，不要改这个标签。把 `Smoke Volume Actor Tag` 设为 `None` 只会关掉旧版路径，接口路径不受影响。
+- 同时实现了接口的 Actor 不会被收集两次。`Return Value` 为 false、`Active` 为 false，或者 `Cells` 为空时，这个 Actor 在本次采样里被忽略。
+- 相机在读回像素时才取介质快照，不是在采集时。Render Target 本身不受影响，所以预览画面里看不到烟雾。
+- 单元只能是球。形状复杂的烟雾用多个单元拼出来。
+- 每次采样都会遍历世界里的 Actor 来收集介质。场景里没有介质时，可以关掉 `Enable Smoke Interference`。
+- 烟雾、雾等环境效果计划由 [uBotEnvironment](/environment/) 提供，它还在规划中，尚未发布。介质接口在 uBotCore 里，不依赖 uBotEnvironment，现在就可以用本页的方法自己做介质。
+
+## 相关参考
+
+- [UBot Perception Medium](/reference/ubotcore/uubotperceptionmedium/)：接口和 `Get Medium Snapshot`。
+- [UBot Medium Snapshot](/reference/ubotcore/structs/fubotmediumsnapshot/)和 [UBot Medium Cell](/reference/ubotcore/structs/fubotmediumcell/)：快照和单元的字段。
+- [2D 激光雷达](/sensor/lidar-2d/)、[3D 激光雷达](/sensor/lidar-3d/)、[RGB 相机](/sensor/rgb-camera/)和[深度相机](/sensor/depth-camera/)：各传感器的输出。
+- [插件之间怎么对接](/concepts/interfaces/)：uBot 的四个接口。

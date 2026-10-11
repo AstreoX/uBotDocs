@@ -1,0 +1,31 @@
+UUBotDepthCameraSensorComponent:
+  summary: "深度相机：输出 Depth32FC1 图像，每个像素是深度，单位 m，0 表示无效。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotDepthCameraSensorComponent.FrameId:
+  summary: "帧头里的 Frame Id，为空时使用 Sensor Id。默认 depth_camera。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotDepthCameraSensorComponent.MaximumDepthMeters:
+  summary: "最大有效深度，单位 m，必须大于最小值。比它远的像素记为 0。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotDepthCameraSensorComponent.MinimumDepthMeters:
+  summary: "最小有效深度，单位 m。比它近的像素记为 0。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotDepthCameraSensorComponent.PreviewMaximumDepthMeters:
+  summary: "预览的深度上限，单位 m。不会被自动使用，需要传给 Update Depth Preview。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotDepthCameraSensorComponent.PreviewMinimumDepthMeters:
+  summary: "预览的深度下限，单位 m。不会被自动使用，需要传给 Update Depth Preview。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotDepthCameraSensorComponent.SampleDepthCamera:
+  summary: "手动采集一次，得到有效帧时返回 true。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotDepthCameraSensorComponent.SensorId:
+  summary: "帧头里的 Sensor Id，为空时使用组件名。默认 depth_camera。"
+  sourceHash: "e3b0c44298fc"

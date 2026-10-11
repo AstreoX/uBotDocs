@@ -1,0 +1,99 @@
+UUBot2DLidarSensorComponent:
+  summary: "2D 激光雷达：在传感器本地 XY 平面内按角度范围发射射线，每次采样产生一帧 UBot 2DLidar Frame。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.AngularGridIntervalDegrees:
+  summary: "编辑器视口预览里角度辅助线的间隔，单位 °。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.DistanceGridIntervalMeters:
+  summary: "编辑器视口预览里距离辅助线的间隔，单位 m。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.EndAngleDegrees:
+  summary: "扫描结束角，单位 °，向右（+Y）为正，必须大于 Start Angle Degrees。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.FrameId:
+  summary: "帧头里的 Frame Id，为空时使用 Sensor Id。默认 lidar_2d。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.GetLatest2DLidarFrame:
+  summary: "返回最近一帧，不会触发新的扫描。还没有采过样时为空。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.HorizontalSamples:
+  summary: "一圈的射线数，范围 2 到 4096。起止两束射线都在扫描范围的边界上。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.IgnoredActors:
+  summary: "射线检测时额外忽略的 Actor。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.MaximumRangeMeters:
+  summary: "最大量程，单位 m，必须大于最小量程。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.MinimumRangeMeters:
+  summary: "最小量程，单位 m。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.On2DLidarFrameReady:
+  summary: "每次产生有效帧后触发，Frame 是这一帧。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.RangeNoiseStdDevMeters:
+  summary: "距离噪声的标准差，单位 m。需要同时开启 Noise Enabled，只作用于命中的射线。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.RangePreviewColor:
+  summary: "编辑器视口预览的颜色。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.RangePreviewOpacity:
+  summary: "编辑器视口预览填充的不透明度。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.Sample2DLidar:
+  summary: "手动扫描一次，得到有效帧时返回 true。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.SensorId:
+  summary: "帧头里的 Sensor Id，为空时使用组件名。默认 lidar_2d。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.SmokeCellRadiusScale:
+  summary: "烟雾单元半径的缩放倍数，至少 0.01。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.SmokeDensityThreshold:
+  summary: "有效密度（Density 乘以 Edge Factor）低于它的烟雾单元被忽略。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.SmokeVolumeActorTag:
+  summary: "旧版标签路径用的 Actor 标签，默认 AgentSensor.SmokeVolume。设为 None 只关闭旧版路径，接口路径不受影响。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.StartAngleDegrees:
+  summary: "扫描起始角，单位 °，向右（+Y）为正，必须小于 End Angle Degrees。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.TraceChannel:
+  summary: "射线检测使用的碰撞通道，默认 Visibility。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.bEnableSmokeInterference:
+  summary: "为 true 时，感知介质（烟雾）会截断射线。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.bIgnoreOwner:
+  summary: "为 true 时射线忽略传感器所属的 Actor。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.bShowRangeLabels:
+  summary: "在编辑器视口预览里显示距离标签。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarSensorComponent.bTraceComplex:
+  summary: "为 true 时对复杂碰撞（逐三角面）做射线检测，开销更高。"
+  sourceHash: "e3b0c44298fc"

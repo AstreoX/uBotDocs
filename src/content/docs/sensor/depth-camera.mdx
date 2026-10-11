@@ -6,11 +6,122 @@ sidebar:
   order: 90
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 深度编码（米，0 表示无效）
-- [ ] 量程
-- [ ] 读取深度（节点图）
-- [ ] 预览模式
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明怎样用 `uBot Depth Camera Sensor` 得到以米为单位的深度图，并在蓝图里读取某个像素的深度。
+
+## 快速用法
+
+```blueprint
+caption: 每帧读回深度，并打印画面中心像素的深度
+nodes:
+  A: { ref: UUBotCameraSensorComponent.OnImageFrameReady, component: Depth }
+  B: UUBotImageFrame.RequestPixelReadback
+  C: K2Node_IfThenElse
+  D: { ref: UUBotImageFrame.GetDepthMetersByCoordinates, set: { X: 320, Y: 240 } }
+  E: UKismetStringLibrary.Conv_DoubleToString
+  F: UKismetSystemLibrary.PrintString
+wires:
+  - A.then -> B.execute
+  - A.Frame -> B.Target
+  - A.Frame -> D.Target
+  - B.then -> C.execute
+  - B.ReturnValue -> C.Condition
+  - D.DepthMeters -> E.InDouble
+  - C.then -> F.execute
+  - E.ReturnValue -> F.InString
+notes:
+  B: 深度图要读回 CPU 之后才能按坐标读取。
+  D: "默认 640 × 480 时，(320, 240) 在画面中心附近。`Depth Meters` 为 0 表示这个像素没有有效深度。"
+```
+
+## 步骤
+
+<Steps>
+
+1. **添加组件**
+
+   在 Components 面板点 **Add**，搜索 `uBot Depth Camera Sensor`，重命名为 `Depth`，并附着到机器人上。相机朝向组件的 X 轴。
+
+2. **设置量程**
+
+   选中组件，在 Details 面板的 `Depth Camera > Range` 里设置有效深度的下限和上限。默认是 0.1 m 到 100 m。
+
+3. **连蓝图**
+
+   在 Events 区点 `On Image Frame Ready` 旁的 **+**，照上图连线。
+
+4. **运行**
+
+   `Auto Start` 默认开启，开始运行后相机立即采集一帧，之后按 `Update Rate Hz`（30 Hz）持续采集。
+
+</Steps>
+
+## 关键属性
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Minimum Depth Meters` | 0.1 | 最小有效深度，单位 m。比它近的像素记为 0 |
+| `Maximum Depth Meters` | 100 | 最大有效深度，单位 m，必须大于最小值。比它远的像素记为 0 |
+| `Preview Minimum Depth Meters` | 0.1 | 预览的深度下限，单位 m。需要手动传给 `Update Depth Preview` |
+| `Preview Maximum Depth Meters` | 100 | 预览的深度上限，单位 m。需要手动传给 `Update Depth Preview` |
+| `Resolution Width` | 640 | 图像宽度，单位像素，范围 16 到 4096 |
+| `Resolution Height` | 480 | 图像高度，单位像素，范围 16 到 4096 |
+| `Horizontal Fov Degrees` | 90 | 水平视场（Field of View，FOV），单位 °，范围 1 到 170 |
+| `External Render Target` | 空 | 使用自己的 Render Target 代替自动创建的。格式必须是 R32f，图像尺寸取自它 |
+| `Capture Group Id` | 空 | 非空时由[相机采集协调器](/sensor/capture-coordinator/)统一触发，相机自己不再采样 |
+| `Update Rate Hz` | 30 | 采集频率，单位 Hz |
+| `Sensor Id`、`Frame Id` | `depth_camera` | 帧头里的传感器 ID 和 TF frame id，见[帧头与采样状态](/concepts/frame-header/) |
+
+## 输出与事件
+
+- `On Image Frame Ready`：每次产生有效帧后触发，`Frame` 是这一帧。RGB 相机共用这个事件。
+- `Get Latest Image Frame`：返回最近一帧，不会触发新的采集；还没有采过样时为空。
+- `Sample Depth Camera`：手动采集一次，得到有效帧时返回 true。
+- `Get Preview Render Target`：返回相机渲染到的 Render Target。
+
+### 深度编码
+
+`Frame` 是一个 `UBot Image Frame` 对象，深度相机的帧有这些特点：
+
+- 编码（`Encoding`）是 `Depth32FC1`：每个像素一个 32 位浮点数，单位 m，`Row Stride Bytes` 等于 `Width` × 4。
+- 深度是沿相机前方（X 轴）的距离，不是到相机原点的直线距离。
+- 0 表示无效。超出 [`Minimum Depth Meters`, `Maximum Depth Meters`] 的深度，以及非有限的数值，都记为 0。
+- 像素坐标的原点在左上角，X 向右，Y 向下。`Fx`、`Fy`、`Cx`、`Cy` 的算法见 [RGB 相机](/sensor/rgb-camera/)。
+
+| 节点 | 作用 |
+| --- | --- |
+| `Request Pixel Readback` | 把这一帧的深度读回 CPU，返回是否成功，失败原因在 `Error Message` 里 |
+| `Get Depth Meters by Coordinates` | 取坐标 (`X`, `Y`) 处的 `Depth Meters`。坐标越界或没有深度数据时 `Return Value` 为 false |
+| `Copy Depth Values (High Cost)` | 全部深度的副本，按行排列，第 (`X`, `Y`) 个像素的下标是 `Y` × `Width` + `X` |
+| `Has CPU Pixel Data`、`Get Pixel Data Size Bytes`、`Clear CPU Pixel Data` | 检查、统计和释放 CPU 上的数据 |
+| `Generate Point Cloud` | 从已读回的深度生成点云帧 |
+
+`Generate Point Cloud` 得到的 `UBot Point Cloud Frame` 在相机坐标系下（X 前、Y 右、Z 上，单位 m），只包含深度有效的像素，`Ring Index` 是像素所在的行，没有强度（`Has Intensity Data` 为 false）。读取点的节点见[3D 激光雷达](/sensor/lidar-3d/)。
+
+### 预览模式
+
+`Update Depth Preview` 把已读回的深度画成一张 `Texture 2D`（返回值），`Get Depth Preview Texture` 返回最近一次生成的这张贴图。深度在预览的下限和上限之间映射，无效像素一律是黑色。
+
+| `Preview Mode` | 效果 |
+| --- | --- |
+| `Grayscale` | 灰度：近处亮，远处暗 |
+| `Pseudo Color` | 伪彩色：近处红色，远处蓝色 |
+
+## 注意事项
+
+- 0 是“无效”，不是“0 米”。用深度做判断前先排除 0。
+- `Update Depth Preview` 的 `Preview Minimum Depth Meters` 和 `Preview Maximum Depth Meters` 引脚默认都是 0，上限不大于下限时会失败，`Error Message` 报告预览范围无效。把组件上同名的两个属性接到这两个引脚上。
+- 读回的规则和 RGB 相机相同：`Request Pixel Readback` 同步且开销高，只有最新一次采集的帧能读回，已读回的数据在帧过期后仍然可用。详见 [RGB 相机](/sensor/rgb-camera/)。
+- 深度图里的烟雾：射线在到达表面之前进入烟雾时，该像素的深度改为烟雾入口的距离。这一步发生在读回时，见[感知介质（烟雾干扰）](/sensor/medium/)。
+- `Generate Point Cloud` 是纯节点，每次被用到都会重新生成一遍点云。需要多次使用时，先把结果存进变量。
+- `External Render Target` 的格式不是 R32f 时，这次采样的状态是 `Error`，触发 `On Sensor Error`，不产生帧。
+
+## 相关参考
+
+- [uBot Depth Camera Sensor](/reference/ubotsensor/uubotdepthcamerasensorcomponent/)：这个组件自己的属性。
+- [UBot Camera Sensor Component](/reference/ubotsensor/uubotcamerasensorcomponent/)：RGB 和深度相机共有的属性和节点。
+- [UBot Image Frame](/reference/ubotsensor/uubotimageframe/)：帧上的节点和属性。
+- [EUBot Depth Preview Mode](/reference/ubotsensor/enums/eubotdepthpreviewmode/)：预览模式枚举。
+- [相机采集协调器](/sensor/capture-coordinator/)：让多个相机同一时刻采集。
+- [性能与采样频率](/sensor/performance/)：读回的开销和建议频率。

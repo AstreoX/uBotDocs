@@ -6,12 +6,134 @@ sidebar:
   order: 100
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 为什么要同步
-- [ ] 建组
-- [ ] 启动与手动触发（节点图）
-- [ ] 事件
-- [ ] 时序规则
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明怎样用相机采集协调器（Camera Capture Coordinator）让 RGB 和深度等多个相机在同一仿真时刻采集，并用组序号把它们的帧配成一对。
+
+## 快速用法
+
+```blueprint
+caption: 启动采集组，并立即手动采集一组
+nodes:
+  A: AActor.ReceiveBeginPlay
+  V: { var: Coordinator, class: UUBotCameraCaptureCoordinatorComponent }
+  B: UUBotCameraCaptureCoordinatorComponent.StartCaptureGroup
+  C: UUBotCameraCaptureCoordinatorComponent.CaptureGroupOnce
+  D: K2Node_IfThenElse
+  E: { ref: UKismetSystemLibrary.PrintString, set: { InString: capture group failed } }
+wires:
+  - A.then -> B.execute
+  - V.Coordinator -> B.Target
+  - B.then -> C.execute
+  - V.Coordinator -> C.Target
+  - C.then -> D.execute
+  - C.ReturnValue -> D.Condition
+  - D.else -> E.execute
+notes:
+  B: "`Auto Start` 默认开启时协调器已经在运行，这里的 `Start Capture Group` 直接返回 true。"
+  C: 自动采集的第一组要等一个间隔之后，需要立刻拿到一组帧时手动采集。
+```
+
+```blueprint
+caption: 同一次组采集里，每台相机的帧带有相同的 Capture Sequence
+nodes:
+  A: { ref: UUBotCameraSensorComponent.OnImageFrameReady, component: Rgb }
+  B: { inline: { title: Get Capture Sequence, kind: pure, inputs: [{ name: Target, type: "object:UUBotImageFrame" }], outputs: [{ name: Capture Sequence, type: int64 }] } }
+  C: UKismetStringLibrary.Conv_Int64ToString
+  D: UKismetSystemLibrary.PrintString
+wires:
+  - A.then -> D.execute
+  - A.Frame -> B.Target
+  - B.CaptureSequence -> C.InInt
+  - C.ReturnValue -> D.InString
+notes:
+  A: 深度相机的 `On Image Frame Ready` 也这样接，两条日志上的数字相同。
+```
+
+## 步骤
+
+<Steps>
+
+1. **给相机设置采集组**
+
+   选中每个要同步的相机组件，在 Details 面板的 `Camera > Synchronization` 里把 `Capture Group Id` 填成同一个名字，这些相机就属于同一个采集组（capture group）。填了组 ID 的相机不再自己采样。
+
+2. **添加协调器**
+
+   在 Components 面板点 **Add**，搜索 `uBot Camera Capture Coordinator`，在 `Camera Capture Group` 里填同一个 `Capture Group Id`。一个组 ID 只能有一个协调器。
+
+3. **设置频率**
+
+   协调器的 `Update Rate Hz`（默认 30 Hz）决定整组的采集频率。相机自己的 `Update Rate Hz` 在组里不起作用。
+
+4. **连蓝图**
+
+   绑定各相机的 `On Image Frame Ready`，照第二张图读出 `Capture Sequence`。需要像素时在回调里读回，见 [RGB 相机](/sensor/rgb-camera/)。
+
+5. **运行**
+
+   `Auto Start` 默认开启，协调器在 BeginPlay 时自动启动。
+
+</Steps>
+
+## 关键属性
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Capture Group Id` | 空 | 组 ID，协调器上必须非空，并与相机上的一致 |
+| `Update Rate Hz` | 30 | 整组的采集频率，单位 Hz，范围 0.1 到 240 |
+| `Auto Start` | true | BeginPlay 时自动启动采集组 |
+| `Enabled` | true | 总开关。为 false 时 `Start Capture Group` 和 `Capture Group Once` 都返回 false |
+
+相机组件上与协调器配合的只有 `Capture Group Id`。
+
+## 输出与事件
+
+| 节点 | 作用 |
+| --- | --- |
+| `Start Capture Group` | 启动自动采集，已在运行时直接返回 true。`Enabled` 为 false 或协调器没有注册成功时返回 false |
+| `Stop Capture Group` | 停止自动采集，手动采集仍然可用 |
+| `Capture Group Once` | 立即采集一组，不要求采集组在运行。组里所有相机都成功时返回 true |
+| `Is Capture Group Running` | 自动采集是否在运行 |
+| `Get Registered Camera Count` | 登记在这个组 ID 下的相机数 |
+| `Get Dropped Capture Count` | 因为一帧跨过多个采集间隔而跳过的采集次数 |
+| `On Capture Group Error` | 事件，`Error Message` 是出错原因 |
+
+采集后，每台相机的 `On Image Frame Ready` 照常触发。帧（`UBot Image Frame`）上多出这些字段：
+
+| 字段 | 内容 |
+| --- | --- |
+| `Capture Group Id` | 所属的组 ID |
+| `Capture Sequence` | 组序号，从 1 开始，每采集一组加 1。同一次组采集里所有相机相同 |
+| `Capture Timestamp Seconds` | 组时间戳，单位 s，是采集时的仿真时间 |
+| `Synchronized` | 在采集组里采集的帧为 true |
+
+帧头里的 `Timestamp Seconds` 同样使用组时间戳，而帧头的 `Sequence` 仍是每台相机自己的计数。
+
+`On Capture Group Error` 的 `Error Message` 有这几种：
+
+| 情况 | 消息 |
+| --- | --- |
+| 协调器的组 ID 为空 | `Camera capture coordinator requires a non-empty Capture Group Id.` |
+| 同一个组 ID 已有协调器 | `Camera capture group '<Id>' already has a coordinator.` |
+| 组里没有登记的相机 | `Camera capture group '<Id>' has no registered cameras.` |
+| 有相机采集失败 | `One or more cameras failed in capture group '<Id>'.` |
+
+相机一侧也有一种错误：组里没有协调器时，相机在下一个 tick 通过 `On Sensor Error` 报告 `Camera capture group '<Id>' has no coordinator; automatic capture is disabled.`。
+
+## 注意事项
+
+- 自动采集的第一组在启动之后一个间隔（1 / `Update Rate Hz`）才发生，不会立即采集。
+- 每个 world tick 最多采集一组。一帧跨过多个间隔时，多出来的间隔不补采，而是计入 `Get Dropped Capture Count`，`Start Capture Group` 时清零。
+- 同组相机按组件路径名排序，依次采集，共用同一个组序号和时间戳。它们的 `On Image Frame Ready` 因此一个接一个触发，配对时比较 `Capture Sequence`。
+- 每台相机的帧在下一次组采集后过期，要读回像素就在那之前完成。
+- 填了组 ID 的相机不会自己启动：`Start Sensor` 返回 false，`Auto Start` 不起作用。
+- 游戏暂停时协调器不会 tick，自动采集随之暂停。时间和调度的规则见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+
+## 相关参考
+
+- [uBot Camera Capture Coordinator](/reference/ubotsensor/uubotcameracapturecoordinatorcomponent/)：全部节点和属性。
+- [UBot Camera Sensor Component](/reference/ubotsensor/uubotcamerasensorcomponent/)：相机上的 `Capture Group Id`。
+- [UBot Image Frame](/reference/ubotsensor/uubotimageframe/)：帧上的同步字段。
+- [RGB 相机](/sensor/rgb-camera/)和[深度相机](/sensor/depth-camera/)：读回像素和深度。
+- [传感器通用用法](/sensor/basics/)：启动、停止和通用事件。

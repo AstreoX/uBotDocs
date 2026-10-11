@@ -1,0 +1,111 @@
+UUBot3DLidarSensorComponent:
+  summary: "3D 激光雷达：在水平和垂直视场内按通道发射射线，每次采样产生一帧 UBot Point Cloud Frame。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.AngularGridIntervalDegrees:
+  summary: "编辑器视口预览里角度辅助线的间隔，单位 °。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.DistanceGridIntervalMeters:
+  summary: "编辑器视口预览里距离辅助线的间隔，单位 m。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.FrameId:
+  summary: "帧头里的 Frame Id，为空时使用 Sensor Id。默认 lidar_3d。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.GetLatest3DLidarFrame:
+  summary: "返回最近一帧点云，不会触发新的扫描。还没有采过样时为空。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.HorizontalFovDegrees:
+  summary: "水平视场，单位 °，范围 0.01 到 360，以传感器的 X 轴为中心。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.HorizontalSamples:
+  summary: "每个通道的射线数，范围 1 到 8192。水平视场为 360° 时首尾不重复。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.IgnoredActors:
+  summary: "射线检测时额外忽略的 Actor。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.MaximumRangeMeters:
+  summary: "最大量程，单位 m，必须大于最小量程。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.MaximumRaysPerScan:
+  summary: "单次扫描的射线数上限。通道数乘以每通道射线数超过它时，这次采样报错，不会截断。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.MinimumRangeMeters:
+  summary: "最小量程，单位 m。距离更近的命中不产生点。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.NumberOfChannels:
+  summary: "垂直方向的通道数，范围 1 到 256，在向下到向上的视场内均匀分布。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.On3DLidarFrameReady:
+  summary: "每次产生有效帧后触发，Frame 是这一帧点云。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.RangeNoiseStdDevMeters:
+  summary: "距离噪声的标准差，单位 m。需要同时开启 Noise Enabled，只作用于命中的射线。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.RangePreviewColor:
+  summary: "编辑器视口预览的颜色。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.RangePreviewOpacity:
+  summary: "编辑器视口预览填充的不透明度。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.Sample3DLidar:
+  summary: "手动扫描一次，得到有效帧时返回 true。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.SensorId:
+  summary: "帧头里的 Sensor Id，为空时使用组件名。默认 lidar_3d。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.SmokeCellRadiusScale:
+  summary: "烟雾单元半径的缩放倍数，至少 0.01。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.SmokeDensityThreshold:
+  summary: "有效密度（Density 乘以 Edge Factor）低于它的烟雾单元被忽略。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.SmokeVolumeActorTag:
+  summary: "旧版标签路径用的 Actor 标签，默认 AgentSensor.SmokeVolume。设为 None 只关闭旧版路径，接口路径不受影响。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.TraceChannel:
+  summary: "射线检测使用的碰撞通道，默认 Visibility。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.VerticalFovDownDegrees:
+  summary: "向下的垂直视场，单位 °，范围 0 到 90。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.VerticalFovUpDegrees:
+  summary: "向上的垂直视场，单位 °，范围 0 到 90。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.bEnableSmokeInterference:
+  summary: "为 true 时，感知介质（烟雾）会截断射线。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.bIgnoreOwner:
+  summary: "为 true 时射线忽略传感器所属的 Actor。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.bShowRangeLabels:
+  summary: "在编辑器视口预览里显示距离标签。仅编辑器使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot3DLidarSensorComponent.bTraceComplex:
+  summary: "为 true 时对复杂碰撞（逐三角面）做射线检测，开销更高。"
+  sourceHash: "e3b0c44298fc"

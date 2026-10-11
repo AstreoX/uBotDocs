@@ -1,0 +1,11 @@
+EUBotImageEncoding:
+  summary: "图像帧的像素编码：RGB 相机用 BGRA8，深度相机用 Depth32FC1。"
+  sourceHash: "e3b0c44298fc"
+
+EUBotImageEncoding.BGRA8:
+  summary: "每个像素 4 个字节，顺序为 B、G、R、A。"
+  sourceHash: "e3b0c44298fc"
+
+EUBotImageEncoding.Depth32FC1:
+  summary: "每个像素一个 32 位浮点数，单位 m，0 表示无效。"
+  sourceHash: "e3b0c44298fc"

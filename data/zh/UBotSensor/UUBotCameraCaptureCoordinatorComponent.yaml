@@ -1,0 +1,47 @@
+UUBotCameraCaptureCoordinatorComponent:
+  summary: "让同一个采集组里的相机在同一仿真时刻采集，共用组序号和时间戳。自动采集按 Update Rate Hz 进行，第一次在启动后一个间隔。"
+  sourceHash: "88dad7fc5e04"
+
+UUBotCameraCaptureCoordinatorComponent.CaptureGroupId:
+  summary: "采集组 ID，必须非空，并与组内相机上的 Capture Group Id 一致。一个 ID 只能有一个协调器。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.CaptureGroupOnce:
+  summary: "立即采集一组，不要求采集组在运行。组里所有相机都成功时返回 true。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.GetDroppedCaptureCount:
+  summary: "因为一帧跨过多个采集间隔而跳过的采集次数。Start Capture Group 时清零。"
+  sourceHash: "0bbf594edc58"
+
+UUBotCameraCaptureCoordinatorComponent.GetRegisteredCameraCount:
+  summary: "登记在这个组 ID 下的相机数。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.IsCaptureGroupRunning:
+  summary: "自动采集是否在运行。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.OnCaptureGroupError:
+  summary: "采集组出错时触发，Error Message 是原因。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.StartCaptureGroup:
+  summary: "启动自动采集，第一次采集在一个间隔之后。Enabled 为 false 或协调器没有注册成功时返回 false。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.StopCaptureGroup:
+  summary: "停止自动采集。手动调用 Capture Group Once 仍然可用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.UpdateRateHz:
+  summary: "整组的采集频率，单位 Hz，范围 0.1 到 240。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.bAutoStart:
+  summary: "为 true 时在 BeginPlay 自动启动采集组。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraCaptureCoordinatorComponent.bEnabled:
+  summary: "总开关。为 false 时 Start Capture Group 和 Capture Group Once 都返回 false。"
+  sourceHash: "e3b0c44298fc"

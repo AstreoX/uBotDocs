@@ -1,0 +1,15 @@
+UUBotRgbCameraSensorComponent:
+  summary: "RGB 相机：输出 BGRA8 彩色图像。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotRgbCameraSensorComponent.FrameId:
+  summary: "帧头里的 Frame Id，为空时使用 Sensor Id。默认 rgb_camera。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotRgbCameraSensorComponent.SampleRGBCamera:
+  summary: "手动采集一次，得到有效帧时返回 true。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotRgbCameraSensorComponent.SensorId:
+  summary: "帧头里的 Sensor Id，为空时使用组件名。默认 rgb_camera。"
+  sourceHash: "e3b0c44298fc"
