@@ -1,18 +1,190 @@
 ---
 title: 传感器通用用法
-description: 所有 uBot 传感器通用的用法：添加、启动、停止、手动采样，以及取数的两种方式。
+description: 所有 uBot 传感器通用的用法：添加、启动、停止、手动采样，以及用事件或主动读取取数。
 pageKind: feature
 sidebar:
   order: 20
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 添加传感器
-- [ ] 启动、停止与手动采样（节点图）
-- [ ] 两种取数方式：事件推送和主动读取（各一张节点图）
-- [ ] 通用事件
-- [ ] 通用属性（表）
-- [ ] 传感器模型的显示
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明所有 uBot 传感器共有的操作：添加传感器，启动、停止和手动采样，以及用事件或主动读取取得数据。
+
+下面的例子都用位姿传感器（`uBot Pose Sensor`），其他传感器的用法相同。
+
+## 快速用法
+
+### 启动、停止与手动采样
+
+关闭 `Auto Start` 后，由蓝图决定什么时候开始和停止：
+
+```blueprint
+caption: 开始运行时启动传感器，5 秒后停止
+nodes:
+  B: AActor.ReceiveBeginPlay
+  S: UUBotSensorComponent.StartSensor
+  D: { ref: UKismetSystemLibrary.Delay, set: { Duration: 5 } }
+  T: UUBotSensorComponent.StopSensor
+  V: { var: Pose, class: UUBotPoseSensorComponent }
+wires:
+  - B.then -> S.execute
+  - V.Pose -> S.Target
+  - S.then -> D.execute
+  - D.Completed -> T.execute
+  - V.Pose -> T.Target
+```
+
+想自己决定每次采样的时机，就不启动传感器，只调用 `Sample Sensor`：
+
+```blueprint
+caption: 每个 Tick 手动采一个样本，样本有效时打印一行
+nodes:
+  E: AActor.ReceiveTick
+  V: { var: Pose, class: UUBotPoseSensorComponent }
+  S: UUBotSensorComponent.SampleSensor
+  C: K2Node_IfThenElse
+  P: { ref: UKismetSystemLibrary.PrintString, set: { InString: 采到了一个有效样本 } }
+wires:
+  - E.then -> S.execute
+  - V.Pose -> S.Target
+  - S.then -> C.execute
+  - S.ReturnValue -> C.Condition
+  - C.True -> P.execute
+```
+
+- `Start Sensor`：先触发 `On Sensor Started`，取一个立即样本，之后每 1 / `Update Rate Hz` 秒取一个。已经在运行时直接返回 true。
+- `Sensor Enabled` 为 false 时 `Start Sensor` 返回 false。带 `Capture Group Id` 的相机也返回 false，见[相机采集协调器](/sensor/capture-coordinator/)。
+- `Stop Sensor`：停止定时采样并触发 `On Sensor Stopped`，最近一次的数据保留。
+- `Sample Sensor`：不要求传感器在运行，随时取一个样本。样本为 `Valid` 时返回 true。
+
+### 事件推送
+
+每次采样后，传感器触发 `On Sensor Sampled`，`Header` 是这一次的帧头：
+
+```blueprint
+caption: 每次采样都检查帧头，样本有效时打印序号
+nodes:
+  E: { ref: UUBotSensorComponent.OnSensorSampled, component: Pose }
+  H: { ref: Break:FUBotFrameHeader, hideUnconnected: true }
+  C: K2Node_IfThenElse
+  S: UKismetStringLibrary.Conv_Int64ToString
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - E.Header -> H.UBotFrameHeader
+  - E.then -> C.execute
+  - H.Valid -> C.Condition
+  - H.Sequence -> S.InInt
+  - S.ReturnValue -> P.InString
+  - C.True -> P.execute
+```
+
+每种传感器还有自己的数据事件，比如 `On Pose Data Updated`，直接带本次的完整数据。
+
+### 主动读取
+
+不想用事件时，在 `Event Tick` 或计时器里读最近一次的结果。`Get Latest Frame Header` 只读缓存，不会触发采样：
+
+```blueprint
+caption: 每个 Tick 读最近一次的帧头，打印序号
+nodes:
+  E: AActor.ReceiveTick
+  V: { var: Pose, class: UUBotPoseSensorComponent }
+  G: UUBotSensorComponent.GetLatestFrameHeader
+  H: { ref: Break:FUBotFrameHeader, hideUnconnected: true }
+  S: UKismetStringLibrary.Conv_Int64ToString
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - V.Pose -> G.Target
+  - G.ReturnValue -> H.UBotFrameHeader
+  - H.Sequence -> S.InInt
+  - S.ReturnValue -> P.InString
+  - E.then -> P.execute
+```
+
+- 每帧都读时可能连续读到同一个样本。比较 `Sequence` 可以判断是不是新数据。
+- 每种传感器有自己的读取节点，比如 `Get Latest Pose Data`，见[传感器概述](/sensor/)。
+
+## 步骤
+
+<Steps>
+
+1. **添加传感器**
+
+   在 Components 面板点 **Add**，在 `uBot` 分类下选一个传感器，比如 `uBot Pose Sensor`。
+
+2. **摆放**
+
+   组件本身就是传感器坐标系，它的位置和朝向就是传感器的位置和朝向。把它挂到要测量的部件下，再调整相对位置和朝向。
+
+3. **设置标识和频率**
+
+   在 Details 面板的 `uBot Sensor` 类别里设置 `Sensor Id`、`Frame Id` 和 `Update Rate Hz`。
+
+4. **决定怎么启动**
+
+   `Auto Start` 默认打开，运行开始时自动启动。想自己控制就关掉，再调用 `Start Sensor`。
+
+5. **取数**
+
+   选中组件，在 Details 面板底部 Events 区点事件旁的 **+**，生成事件节点；或者用上面的主动读取。
+
+</Steps>
+
+## 关键属性
+
+所有传感器共有的属性在 Details 面板的 `uBot Sensor` 类别（及其 `Debug`、`Model`、`Noise` 子类别）下：
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Sensor Id` | 各传感器自己的值，如 `pose_sensor` | 写入帧头的传感器标识；为空时用组件名 |
+| `Frame Id` | 各传感器自己的值 | 写入帧头的坐标系名；为空时用 `Sensor Id` |
+| `Update Rate Hz` | 基类 10，各传感器见[概述](/sensor/) | 采样频率，范围 0.1 到 240 Hz |
+| `Auto Start` | true | 运行开始时自动启动，运行结束时自动停止 |
+| `Sensor Enabled` | true | 总开关；false 时不能启动，手动采样只得到 `Disabled` 帧头 |
+| `Noise Enabled` | false | 噪声开关，只对 IMU、里程计和两种激光雷达有效 |
+| `Random Seed` | 1337 | 每次 `Start Sensor` 用它重置随机序列 |
+| `Debug Visualization` | false | 运行时画调试射线，只有激光雷达使用 |
+| `Hide Sensor Model in Game` | true | 游戏中隐藏传感器模型 |
+
+这些属性在蓝图里只读。运行中能改的只有采样频率（`Set Update Rate Hz`，限制在 0.1 到 240 Hz，不会重启传感器）和模型显示。各传感器自己的属性见各自的页面。
+
+### 传感器模型的显示
+
+每个传感器组件带一个小模型，方便在视口里看到它装在哪里。模型没有碰撞，不投射阴影。
+
+| 做法 | 说明 |
+| --- | --- |
+| `Hide Sensor Model in Game` | 默认打开，游戏中隐藏模型；在 Details 面板里取消勾选即可显示 |
+| `Set Sensor Model Visible in Game` | 运行中切换，参数 `Model Visible` 为 true 时显示 |
+| `Is Sensor Model Visible in Game` | 读取当前是否显示 |
+
+## 输出与事件
+
+| 事件 | 引脚 | 什么时候触发 |
+| --- | --- | --- |
+| `On Sensor Started` | 无 | `Start Sensor` 启动成功，在第一个样本之前 |
+| `On Sensor Stopped` | 无 | 传感器从运行变为停止，包括运行结束时的自动停止 |
+| `On Sensor Sampled` | `Header` | 每次采样之后，包括无效样本和 `Disabled` 样本 |
+| `On Sensor Error` | `Error Message` | 采样出错时，比如位姿传感器的参考组件无效 |
+
+每个样本的帧头（`Header`）带 `Sensor Id`、`Frame Id`、`Sequence`、`Timestamp Seconds`、`Valid` 和 `Status`。用数据之前先看 `Valid`，字段和状态码见[帧头与采样状态](/concepts/frame-header/)。
+
+- `Get Latest Frame Header`：最近一次采样的帧头。传感器还没采过样时，它是默认值：`Sequence` 为 0，`Status` 为 `Error`。
+- `Get Dropped Sample Count`：因为一帧跨过多个采样时刻而跳过的采样次数，`Start Sensor` 时清零。
+- 不关心具体类型时，可以通过 `UBot Sensor` 接口读取：`Get Sensor Id`、`Get Sensor Type`、`Is Sensor Running`、`Get Latest Sensor Header`。见[插件之间怎么对接](/concepts/interfaces/)。
+
+## 注意事项
+
+- 组件的 `BeginPlay` 先于 Actor 的 `Event BeginPlay`。`Auto Start` 在那时已经触发了 `On Sensor Started` 和第一个样本，所以在 `Event BeginPlay` 里再绑定事件会漏掉它们。用 Details 面板 Events 区的 **+** 生成事件节点就不会漏。
+- 传感器自己的数据事件（比如 `On Pose Data Updated`）在 `On Sensor Sampled` 之前触发。在数据事件里调用 `Get Latest Frame Header` 得到的是上一次的帧头，请改用数据自带的 `Header`。
+- 每个 world tick 最多采一个样本。帧率低于 `Update Rate Hz` 时，实际采样频率等于帧率，跳过的采样时刻计入 `Get Dropped Sample Count`。见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- 暂停时不自动采样；手动调用 `Sample Sensor` 仍然可以，但仿真时间不前进，时间戳不变。
+- `Random Seed` 只在 `Start Sensor` 时生效。只用 `Sample Sensor`、从不启动的传感器，噪声序列不受它控制。
+- 数据里的坐标轴保持 UE 约定（X 前、Y 右、Z 上），单位是米、秒、弧度，没有做 ROS 转换。见[坐标系与单位](/concepts/coordinates-and-units/)。
+
+## 相关参考
+
+- [uBot Sensor Component](/reference/ubotsensor/uubotsensorcomponent/)：所有传感器共有的节点和属性。
+- [UBot Frame Header](/reference/ubotcore/structs/fubotframeheader/)：帧头的字段。
+- [EUBot Sample Status](/reference/ubotcore/enums/eubotsamplestatus/)：状态码。
+- [标识与命名](/concepts/identity/)：`Sensor Id` 和 `Frame Id` 的取值规则。

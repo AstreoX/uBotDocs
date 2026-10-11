@@ -1,0 +1,15 @@
+EUBotPoseReferenceFrame:
+  summary: 位姿传感器的参考系选项。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPoseReferenceFrame.World:
+  summary: 世界坐标系。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPoseReferenceFrame.Parent:
+  summary: 组件所附着的父组件。没有父组件时样本状态为 Error。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPoseReferenceFrame.CustomComponent:
+  summary: Custom Reference Component 指定的组件。
+  sourceHash: "e3b0c44298fc"

@@ -1,0 +1,43 @@
+UUBotPoseSensorComponent:
+  summary: 模拟位姿传感器。输出组件自身在所选参考系里的位置（m）和姿态，可选用相邻样本差分得到线速度和角速度；不加噪声。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.CustomReferenceComponent:
+  summary: Reference Frame 为 Custom Component 时使用的参考组件。无效时样本状态为 Error。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.FrameId:
+  summary: 写入帧头的坐标系名，默认 pose_sensor。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.GetLatestPoseData:
+  summary: 返回最近一次采样的位姿数据副本，不会触发新的采样。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.OnPoseDataUpdated:
+  summary: 每次位姿采样后触发，包括参考系无效的 Error 样本。Data 是本次的完整数据。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.ReferenceFrame:
+  summary: 位姿相对哪个参考系表示：世界、父组件，或自选组件。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.ReferenceFrameId:
+  summary: 写入输出的参考系名，默认 world。为空时按参考系取 world、父组件名或参考组件名。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.SamplePose:
+  summary: 立即采样一次位姿，本次样本为 Valid 时返回 true。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.SensorId:
+  summary: 写入帧头的传感器标识，默认 pose_sensor。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.UpdateRateHz:
+  summary: 自动采样频率，默认 30 Hz。运行中修改请用 Set Update Rate Hz。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.bIncludeVelocity:
+  summary: 为 true 时，用相邻样本差分计算线速度和角速度；启动后的第一个样本没有速度。
+  sourceHash: "e3b0c44298fc"

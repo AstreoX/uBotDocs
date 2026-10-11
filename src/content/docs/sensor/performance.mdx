@@ -1,16 +1,103 @@
 ---
 title: 性能与采样频率
-description: 各传感器的开销、High Cost 节点、相机读回，以及建议的采样频率。
+description: 各传感器每次采样做什么、哪些节点开销高、相机读回为什么要小心，以及采样频率怎么选。
 pageKind: concept
 sidebar:
   order: 120
 ---
 
-{/* STUB */}
-{/*
-待写章节（概念页，章节顺序见 docs-templates/concept.mdx）：
-- [ ] 各传感器的开销
-- [ ] High Cost 节点
-- [ ] 相机读回
-- [ ] 建议频率（表）
-*/}
+这一页说明各 uBot 传感器每次采样的工作量、开销高的节点，以及选采样频率时要注意什么。
+
+| 传感器 | 每次采样做什么 | 工作量随什么增长 |
+| --- | --- | --- |
+| 位姿、里程计、IMU | 读一次组件变换，做一次差分；IMU 另有噪声、滤波和限幅 | 固定，只有少量向量运算 |
+| 2D 激光雷达 | `Horizontal Samples` 次射线检测，默认 541 次 | 射线数，范围 2 到 4096 |
+| 3D 激光雷达 | `Number Of Channels` × `Horizontal Samples` 次射线检测，默认 16 × 360 = 5760 次 | 射线数，上限由 `Maximum Rays Per Scan` 给出，默认 65536 |
+| RGB 相机 | 把场景渲染一次到 render target | 分辨率（默认 640 × 480，每边 16 到 4096）和场景复杂度 |
+| 深度相机 | 同 RGB 相机，渲染到深度格式的 render target | 同 RGB 相机 |
+
+采样在组件的 tick 里触发。激光雷达的射线检测在游戏线程上一条接一条同步执行，耗时直接计入帧时间。相机每次采样会让引擎多渲染一次场景。
+
+## 激光雷达
+
+- 3D 激光雷达的射线数超过 `Maximum Rays Per Scan` 时，这次扫描报错，不会截断。
+- `Trace Complex` 默认关闭，射线只与简单碰撞求交。打开后每条射线更贵。
+- `Enable Smoke Interference` 默认打开：每次采样都要收集场景里的介质，其中旧标签路径会遍历世界里的所有 Actor，找带 `Smoke Volume Actor Tag` 的烟雾 Actor。不用烟雾时把它关掉。
+- `Debug Visualization` 每次采样画调试线，2D 激光雷达约 32 条，3D 激光雷达最多 128 条。正式运行时关掉。
+- 每秒射线数是采样频率乘以每次的射线数：默认的 2D 激光雷达是 541 × 10 = 5410 条，3D 激光雷达是 5760 × 10 = 57600 条。
+
+## High Cost 节点
+
+名字里带 `(High Cost)` 的节点每次调用都返回整个数组的副本，数组越大越慢。只要几个值时，用按索引或按坐标读取的节点：
+
+| 数据 | High Cost 节点 | 读单个值用 |
+| --- | --- | --- |
+| 2D 激光雷达帧 | `Copy All Ranges`、`Copy All Hit Flags` | `Get Range by Index`、`Get Sample Count` |
+| 点云帧 | `Copy All Points`、`Copy All Ring Indices`、`Copy All Time Offsets`、`Copy All Intensities` | `Get Point by Index`、`Get Point Count` |
+| 图像帧（RGB） | `Copy Pixel Bytes` | `Get BGRAPixel by Coordinates` |
+| 图像帧（深度） | `Copy Depth Values` | `Get Depth Meters by Coordinates` |
+
+数组有多大：一帧 2D 扫描默认 541 个值，点云的点数不会超过 `Maximum Rays Per Scan`（默认 65536），一帧 640 × 480 的图像有 307200 个像素。
+
+## 相机读回
+
+相机每次采样都会渲染一次场景，但不会把像素读回 CPU。图像留在 GPU 的 render target 里，帧对象 `UBot Image Frame` 只引用它。
+
+需要像素时调用 `Request Pixel Readback`，它是同步的，开销高：
+
+- 读回会等渲染完成，在游戏线程上阻塞。
+- 只能读最新一次采集的帧。render target 已经被再次采集时，旧帧读回会返回错误。
+- 帧上已有像素数据时，再次调用直接返回成功，不会重复读回。
+- 读回的像素占 CPU 内存：BGRA8 和深度每个像素都是 4 字节，640 × 480 的一帧是 1228800 字节，1920 × 1080 的一帧是 8294400 字节。用完后调用 `Clear CPUPixel Data` 释放。
+- 烟雾叠加发生在读回时，介质存在时要对每个像素求交，不影响 render target 本身。
+- `Update Depth Preview` 和 `Generate Point Cloud` 都要遍历整帧像素；前者在没有像素数据时会先读回。
+
+所以只在真正需要像素的帧上读回，其余时候只用帧头和相机内参。
+
+## 采样频率
+
+| 传感器 | 默认频率 | 要注意 |
+| --- | --- | --- |
+| 位姿 | 30 Hz | 没有特别的限制 |
+| 里程计 | 30 Hz | 不要低于 2 Hz，否则间隔超过 `Maximum Valid Delta Seconds`（0.5 s），每个样本都无效 |
+| IMU | 100 Hz | 不要低于 2 Hz，原因同上；帧率低于 100 FPS 时，实际频率等于帧率 |
+| 2D 激光雷达 | 10 Hz | 开销随射线数和频率成正比 |
+| 3D 激光雷达 | 10 Hz | 开销随射线数和频率成正比 |
+| RGB 相机 | 30 Hz | 每个采样时刻渲染一次场景 |
+| 深度相机 | 30 Hz | 每个采样时刻渲染一次场景 |
+
+- `Update Rate Hz` 的范围是 0.1 到 240 Hz，Details 面板的滑块到 120 Hz。
+- 每个 world tick 最多采一个样本，所以采样频率不会超过帧率。多出来的采样时刻会被跳过，不会补采。
+- 暂停时不自动采样。
+- 默认值是各传感器的起点；先用默认值，再按需要的数据量调整。
+
+## 怎么发现跟不上
+
+`Get Dropped Sample Count` 返回被跳过的采样次数。它不为 0，说明有的帧比采样间隔还长，传感器没能按设定的频率采样：
+
+```blueprint
+caption: 每个 Tick 打印一次被跳过的采样次数
+nodes:
+  E: AActor.ReceiveTick
+  V: { var: Lidar, class: UUBot3DLidarSensorComponent }
+  G: UUBotSensorComponent.GetDroppedSampleCount
+  S: UKismetStringLibrary.Conv_Int64ToString
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - V.Lidar -> G.Target
+  - G.ReturnValue -> S.InInt
+  - S.ReturnValue -> P.InString
+  - E.then -> P.execute
+```
+
+- 计数在每次 `Start Sensor` 时清零。
+- 3D 激光雷达的帧里还有 `Capture Duration Milliseconds`，是这次扫描花的毫秒数。
+- 相机协调器有自己的 `Get Dropped Capture Count`，见[相机采集协调器](/sensor/capture-coordinator/)。
+
+## 相关页面
+
+- [仿真时钟与采样调度](/concepts/clock-and-scheduling/)：每帧最多采一次，跳过的会计数。
+- [传感器通用用法](/sensor/basics/)：`Update Rate Hz`、`Auto Start` 和通用事件。
+- [2D 激光雷达](/sensor/lidar-2d/)、[3D 激光雷达](/sensor/lidar-3d/)：扫描参数和读取点的节点。
+- [RGB 相机](/sensor/rgb-camera/)、[深度相机](/sensor/depth-camera/)：分辨率和读回像素。
+- [感知介质（烟雾干扰）](/sensor/medium/)：介质怎样影响雷达和相机。

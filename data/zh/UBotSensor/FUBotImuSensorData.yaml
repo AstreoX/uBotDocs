@@ -21,3 +21,19 @@ FUBotImuSensorData.LinearAccelerationMetersPerSecondSquared:
 Break:FUBotImuSensorData:
   summary: 把 UBot Imu Sensor Data 拆成帧头、姿态、角速度、比力和三组方差。
   sourceHash: "30460fda8aae"
+
+FUBotImuSensorData.AngularVelocityVariance:
+  summary: 角速度方差，单位 rad²/s²，等于 Gyroscope Noise Std Dev 的平方，三个轴相同。Noise Enabled 关闭时也照样填写。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.LinearAccelerationVariance:
+  summary: 比力方差，单位 m²/s⁴，等于 Accelerometer Noise Std Dev 的平方，三个轴相同。Noise Enabled 关闭时也照样填写。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.OrientationVariance:
+  summary: 姿态方差。目前不填充，始终为 0。
+  sourceHash: "e3b0c44298fc"
+
+Make:FUBotImuSensorData:
+  summary: 用各字段组装一个 UBot Imu Sensor Data。
+  sourceHash: "c1170372de5f"

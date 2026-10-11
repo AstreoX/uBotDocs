@@ -1,0 +1,39 @@
+FUBotPoseSensorData:
+  summary: 一次位姿采样：帧头、参考系名、位置、姿态，以及可选的线速度和角速度。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPoseSensorData.Header:
+  summary: 帧头，含 Valid 和 Status。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPoseSensorData.ReferenceFrameId:
+  summary: 这一次实际使用的参考系名。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPoseSensorData.PositionMeters:
+  summary: 组件在参考系里的位置，单位 m，轴向是 UE 的 X 前、Y 右、Z 上。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPoseSensorData.OrientationQuaternion:
+  summary: 组件在参考系里的姿态，已归一化。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPoseSensorData.LinearVelocityMetersPerSecond:
+  summary: 由相邻样本的位置差分得到的线速度，单位 m/s，轴向与位置相同。Has Velocity 为 false 时为 0。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPoseSensorData.AngularVelocityRadPerSecond:
+  summary: 由相邻样本的姿态差分得到的角速度，单位 rad/s，轴向与位置相同。Has Velocity 为 false 时为 0。
+  sourceHash: "e3b0c44298fc"
+
+FUBotPoseSensorData.bHasVelocity:
+  summary: 速度字段是否有值。启动后的第一个样本、关闭 Include Velocity，或两个样本时间相同时为 false。
+  sourceHash: "e3b0c44298fc"
+
+Break:FUBotPoseSensorData:
+  summary: 把 UBot Pose Sensor Data 拆成帧头、参考系名、位置、姿态、速度和 Has Velocity。
+  sourceHash: "3bca9ab09c58"
+
+Make:FUBotPoseSensorData:
+  summary: 用各字段组装一个 UBot Pose Sensor Data。
+  sourceHash: "385d05005371"
