@@ -1,0 +1,87 @@
+UUBotOdometrySensorComponent:
+  summary: 模拟里程计。跟踪一个组件，输出它相对起点的位置（m）和姿态，以及本地坐标系下的线速度和角速度；可选噪声和漂移，并给出对角协方差。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.AngularVelocityNoiseStdDevRadPerSecond:
+  summary: 角速度白噪声强度，单位 rad/s。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.ChildFrameId:
+  summary: 写入输出数据的被跟踪坐标系名，默认 base_link。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.CustomTrackedComponent:
+  summary: 要跟踪的组件。为空时跟踪 Actor 的根组件。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.FrameId:
+  summary: 写入帧头的坐标系名，默认 odom。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.GetLatestOdometryData:
+  summary: 返回最近一次采样的里程计数据副本，不会触发新的采样。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.GetTrackedComponent:
+  summary: 返回正在跟踪的组件：Custom Tracked Component，没有设置时是 Actor 的根组件。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.LinearVelocityNoiseStdDevMetersPerSecond:
+  summary: 线速度白噪声强度，单位 m/s。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.MaximumValidDeltaSeconds:
+  summary: 相邻样本的间隔超过它，样本为 Invalid Delta Time，起点重设。单位 s。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.MinimumValidDeltaSeconds:
+  summary: 相邻样本的间隔小于它，样本为 Invalid Delta Time，起点重设。单位 s。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.OdometryFrameId:
+  summary: 写入输出数据的里程计坐标系名，默认 odom。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.OnOdometryDataUpdated:
+  summary: 每次里程计采样后触发，包括无效样本。Data 是本次的完整数据。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.OrientationNoiseStdDevDegrees:
+  summary: 朝向白噪声强度，单位度。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.OrientationRandomWalkStdDevDegreesPerSqrtSecond:
+  summary: 朝向漂移的随机游走强度，单位度/√s。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.PositionNoiseStdDevMeters:
+  summary: 位置白噪声强度，单位 m。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.PositionRandomWalkStdDevMetersPerSqrtSecond:
+  summary: 位置漂移的随机游走强度，单位 m/√s。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.ResetOdometry:
+  summary: 把起点设为被跟踪组件现在的位姿，清零漂移并重置随机序列。下一个样本是 Warming Up。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.SampleOdometry:
+  summary: 立即采样一次里程计，本次样本为 Valid 时返回 true。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.SensorId:
+  summary: 写入帧头的传感器标识，默认 odometry_sensor。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.TeleportAngleDegrees:
+  summary: 相邻样本间转角超过它，样本为 Teleport Detected，起点重设。单位度。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.TeleportDistanceMeters:
+  summary: 相邻样本间位移超过它，样本为 Teleport Detected，起点重设。单位 m。
+  sourceHash: "e3b0c44298fc"
+
+UUBotOdometrySensorComponent.UpdateRateHz:
+  summary: 自动采样频率，默认 30 Hz。运行中修改请用 Set Update Rate Hz。
+  sourceHash: "e3b0c44298fc"

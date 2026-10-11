@@ -1,17 +1,170 @@
 ---
 title: 里程计
-description: 里程计传感器：跟踪一个对象，输出位姿和速度，可以加噪声和漂移。
+description: 里程计传感器：跟踪一个组件，输出相对起点的位姿和本地坐标系下的速度，可以加噪声和漂移，并给出协方差。
 pageKind: feature
 sidebar:
   order: 50
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 跟踪对象
-- [ ] 输出
-- [ ] 噪声与漂移
-- [ ] 协方差
-- [ ] 状态码
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明怎样用里程计传感器（`uBot Odometry Sensor`）读取一个组件相对起点的位姿和速度，以及噪声、漂移、协方差和状态码怎样起作用。
+
+## 快速用法
+
+里程计每采样一次就触发 `On Odometry Data Updated`。下面的图在样本有效时打印离起点的距离，单位是米：
+
+```blueprint
+caption: 有速度的样本里打印离起点的距离
+nodes:
+  E: { ref: UUBotOdometrySensorComponent.OnOdometryDataUpdated, component: Odometry }
+  B: { ref: Break:FUBotOdometrySensorData, hideUnconnected: true }
+  C: K2Node_IfThenElse
+  L: UKismetMathLibrary.VSize
+  S: UKismetStringLibrary.Conv_DoubleToString
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - E.Data -> B.UBotOdometrySensorData
+  - E.then -> C.execute
+  - B.bHasVelocity -> C.Condition
+  - B.PositionMeters -> L.A
+  - L.ReturnValue -> S.InDouble
+  - S.ReturnValue -> P.InString
+  - C.True -> P.execute
+notes:
+  B: 选中节点，在 Details 面板里取消勾选不用的字段，引脚就会隐藏。
+  C: 只有 `Valid` 样本的 `Has Velocity` 为 true。
+```
+
+默认跟踪 Actor 的根组件。不想用事件时，在 `Event Tick` 里调用 `Get Latest Odometry Data` 读最近一次的数据，后面的连法相同。
+
+## 步骤
+
+<Steps>
+
+1. **添加组件**
+
+   在 Components 面板点 **Add**，搜索 `uBot Odometry Sensor`。默认跟踪 Actor 的根组件，所以组件摆在哪里不影响输出。
+
+2. **选择跟踪对象（可选）**
+
+   要跟踪别的组件时，在 Details 面板 `Odometry` 类别的 `Tracking` 子类别里设置 `Custom Tracked Component`。留空就跟踪 Actor 的根组件。
+
+3. **设置坐标系名（可选）**
+
+   `Odometry Frame Id` 默认是 `odom`，`Child Frame Id` 默认是 `base_link`，两者都写入输出数据。它们在 `Odometry` 类别的 `Frames` 子类别里。
+
+4. **设置噪声和漂移（可选）**
+
+   默认没有噪声。需要时先勾选 `Noise Enabled`，再填写 `Odometry` 类别的 `Noise` 和 `Drift` 子类别里的参数。
+
+5. **连蓝图**
+
+   选中组件，在 Details 面板底部 Events 区点 `On Odometry Data Updated` 旁的 **+**，照上图连线。
+
+</Steps>
+
+## 关键属性
+
+### 跟踪与坐标系
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Custom Tracked Component` | 空 | 要跟踪的组件；为空时跟踪 Actor 的根组件 |
+| `Odometry Frame Id` | `odom` | 写入输出数据的里程计坐标系名；为空时用 `odom` |
+| `Child Frame Id` | `base_link` | 写入输出数据的被跟踪坐标系名；为空时用 `base_link` |
+| `Update Rate Hz` | 30 | 采样频率，单位 Hz |
+| `Sensor Id`、`Frame Id` | `odometry_sensor`、`odom` | 写入帧头的标识 |
+
+通用属性（`Auto Start`、`Noise Enabled` 等）见[传感器通用用法](/sensor/basics/)。
+
+### 噪声与漂移
+
+下面的参数都在 `Noise Enabled` 打开时才起作用，而且只作用在 `Valid` 样本上：
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Position Noise Std Dev Meters` | 0 | 位置白噪声，单位 m |
+| `Orientation Noise Std Dev Degrees` | 0 | 朝向白噪声，单位度 |
+| `Linear Velocity Noise Std Dev Meters Per Second` | 0 | 线速度白噪声，单位 m/s |
+| `Angular Velocity Noise Std Dev Rad Per Second` | 0 | 角速度白噪声，单位 rad/s |
+| `Position Random Walk Std Dev Meters Per Sqrt Second` | 0 | 位置漂移的随机游走，单位 m/√s |
+| `Orientation Random Walk Std Dev Degrees Per Sqrt Second` | 0 | 朝向漂移的随机游走，单位度/√s |
+
+白噪声每个样本重新抽取。漂移是累积的：每个样本给位置和朝向的漂移量加一个量级为 σ√Δt 的随机量（Δt 是样本间隔），所以误差随时间越来越大。起点重设时漂移清零。
+
+### 状态判定的阈值
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Teleport Distance Meters` | 5 | 相邻两个样本间位移超过它，判为瞬移，单位 m |
+| `Teleport Angle Degrees` | 120 | 相邻两个样本间转角超过它，判为瞬移，单位度 |
+| `Minimum Valid Delta Seconds` | 0.0001 | 样本间隔小于它，样本无效，单位 s |
+| `Maximum Valid Delta Seconds` | 0.5 | 样本间隔大于它，样本无效，单位 s |
+
+## 输出与事件
+
+`Get Latest Odometry Data` 返回 `UBot Odometry Sensor Data`，用 `Break UBot Odometry Sensor Data` 拆开：
+
+| 字段 | 单位 | 说明 |
+| --- | --- | --- |
+| `Header` | | 帧头，`Frame Id` 默认是 `odom` |
+| `Odometry Frame Id`、`Child Frame Id` | | 里程计坐标系名和被跟踪坐标系名 |
+| `Position Meters` | m | 被跟踪组件相对起点的位置，轴向取起点时的朝向 |
+| `Orientation Quaternion` | | 被跟踪组件相对起点的朝向 |
+| `Linear Velocity Local Meters Per Second` | m/s | 线速度，轴向是被跟踪组件当前朝向的本地轴向 |
+| `Angular Velocity Local Rad Per Second` | rad/s | 角速度，轴向同上 |
+| `Pose Covariance`、`Twist Covariance` | | 位姿和速度的协方差，各 36 个数，见下 |
+| `Has Velocity` | | 只有 `Valid` 样本为 true |
+
+起点是启动传感器（或 `Reset Odometry`、瞬移、间隔无效）时被跟踪组件的位姿，所以输出与世界坐标无关。需要世界坐标下的位置时，用[位姿传感器](/sensor/pose/)。
+
+- `On Odometry Data Updated`：每次采样都触发，引脚 `Data`，包括无效样本。
+- `Get Latest Odometry Data`：返回最近一次的数据，不会触发采样。
+- `Sample Odometry`：立即采样一次，样本为 `Valid` 时返回 true。
+- `Reset Odometry`：把起点设为被跟踪组件现在的位姿，清零漂移，并按 `Random Seed` 重置随机序列；下一个样本是 `Warming Up`。
+- `Get Tracked Component`：返回正在跟踪的组件。
+
+### 协方差
+
+`Pose Covariance` 和 `Twist Covariance` 各是 36 个 `Float (double)` 的数组，表示 6×6 的对角矩阵，其余元素为 0：
+
+| 数组 | 下标 | 内容 | 单位 |
+| --- | --- | --- | --- |
+| `Pose Covariance` | 0、7、14 | 位置方差，`Position Noise Std Dev Meters` 的平方 | m² |
+| `Pose Covariance` | 21、28、35 | 朝向方差，`Orientation Noise Std Dev Degrees` 换成弧度后的平方 | rad² |
+| `Twist Covariance` | 0、7、14 | 线速度方差 | (m/s)² |
+| `Twist Covariance` | 21、28、35 | 角速度方差 | (rad/s)² |
+
+协方差只由四个白噪声参数算出，随机游走漂移不计入。`Noise Enabled` 关闭时也照样填写，每个样本都有，包括无效样本。
+
+### 状态码
+
+| `Status` | `Valid` | 什么时候 |
+| --- | --- | --- |
+| `Warming Up` | false | 启动或 `Reset Odometry` 之后的第一个样本，没有速度 |
+| `Valid` | true | 位移、转角和间隔都正常 |
+| `Invalid Delta Time` | false | 与上一个样本的间隔小于 `Minimum Valid Delta Seconds` 或大于 `Maximum Valid Delta Seconds` |
+| `Teleport Detected` | false | 相邻样本间位移超过 `Teleport Distance Meters`，或转角超过 `Teleport Angle Degrees` |
+| `Error` | false | 没有可跟踪的组件；同时触发 `On Sensor Error` |
+| `Disabled` | false | `Sensor Enabled` 为 false；只触发 `On Sensor Sampled` |
+
+`Invalid Delta Time` 和 `Teleport Detected` 会把起点重设为当前位置，并清掉这一次的位置、朝向和速度。下一个样本直接就是 `Valid`，位置从 0 重新开始。
+
+## 注意事项
+
+- 位置和朝向是相对起点的，起点重设后会回到 0。要连续的世界位置，用位姿传感器，或自己累加。
+- 采样间隔不能超过 `Maximum Valid Delta Seconds`（0.5 s）。`Update Rate Hz` 低于 2 Hz 时每个样本都无效，起点每次都被重设；要低频采样就同时调大它。
+- 自动采样运行时不要再手动调用 `Sample Odometry`。它和自动样本在同一仿真时刻时，间隔小于 `Minimum Valid Delta Seconds`，起点会被重设。
+- 瞬移的判据是相邻两个样本的位移和转角，不是速度。30 Hz 时 5 m 对应 150 m/s，高速载具要调大阈值。
+- 速度由相邻样本的位置差分得到，是被跟踪组件的本地轴向，不是世界轴向。
+- 被跟踪组件的世界缩放不是 1 时，`Position Meters` 会被缩放，不再是真实的米数。
+- 数据保持 UE 的轴向，位置从厘米换算成米。需要 ROS 约定时，见[坐标系与单位](/concepts/coordinates-and-units/)。
+- 所有属性在蓝图里只读，要在 Details 面板里设置。
+
+## 相关参考
+
+- [uBot Odometry Sensor](/reference/ubotsensor/uubotodometrysensorcomponent/)：全部节点和属性。
+- [UBot Odometry Sensor Data](/reference/ubotsensor/structs/fubotodometrysensordata/)：每个字段的含义。
+- [帧头与采样状态](/concepts/frame-header/)：`Valid` 和状态码。
+- [传感器通用用法](/sensor/basics/)：启动、停止、手动采样和通用事件。

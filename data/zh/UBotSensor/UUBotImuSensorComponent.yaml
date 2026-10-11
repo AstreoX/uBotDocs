@@ -21,3 +21,71 @@ UUBotImuSensorComponent.ResetIMUBias:
 UUBotImuSensorComponent.ResetIMUHistory:
   summary: 清空差分用的历史状态。之后的两次采样是 Warming Up，第三次恢复 Valid。
   sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.AccelerometerBias:
+  summary: 加速度计固定偏置，单位 m/s²，本地坐标系。只在 Noise Enabled 打开时加到输出上。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.AccelerometerBiasRandomWalkStdDev:
+  summary: 加速度计偏置的随机游走强度，单位 m/s²/√s。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.AccelerometerNoiseStdDev:
+  summary: 加速度计白噪声强度，单位 m/s²。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.FrameId:
+  summary: 写入帧头的坐标系名，默认 imu_sensor。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.GyroscopeBias:
+  summary: 陀螺仪固定偏置，单位 rad/s，本地坐标系。只在 Noise Enabled 打开时加到输出上。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.GyroscopeBiasRandomWalkStdDev:
+  summary: 陀螺仪偏置的随机游走强度，单位 rad/s/√s。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.GyroscopeNoiseStdDev:
+  summary: 陀螺仪白噪声强度，单位 rad/s。需先勾选 Noise Enabled。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.LowPassCutoffHz:
+  summary: 低通滤波的截止频率，单位 Hz。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.MaxAngularVelocity:
+  summary: 限幅时角速度大小的上限，单位 rad/s。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.MaxLinearAcceleration:
+  summary: 限幅时比力大小的上限，单位 m/s²。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.MaxSampleDeltaSeconds:
+  summary: 相邻样本的间隔超过它，样本为 Invalid Delta Time，历史被清空。单位 s。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.SensorId:
+  summary: 写入帧头的传感器标识，默认 imu_sensor。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.TeleportAngleDegrees:
+  summary: 相邻样本间转角超过它，样本为 Teleport Detected，历史被清空。单位度。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.TeleportDistanceMeters:
+  summary: 相邻样本间位移超过它，样本为 Teleport Detected，历史被清空。单位 m。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.UpdateRateHz:
+  summary: 自动采样频率，默认 100 Hz。运行中修改请用 Set Update Rate Hz。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.bClampOutput:
+  summary: 为 true 时，把角速度和比力的大小限制在上限以内，方向不变。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.bLowPassFilterEnabled:
+  summary: 为 true 时，对角速度和比力做一阶低通滤波。
+  sourceHash: "e3b0c44298fc"

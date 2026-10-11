@@ -1,0 +1,51 @@
+FUBotOdometrySensorData:
+  summary: 一次里程计采样：帧头、坐标系名、相对起点的位姿、本地坐标系下的速度和协方差。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.AngularVelocityLocalRadPerSecond:
+  summary: 被跟踪组件本地坐标系下的角速度，单位 rad/s。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.ChildFrameId:
+  summary: 被跟踪坐标系名。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.Header:
+  summary: 帧头，含 Valid 和 Status。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.LinearVelocityLocalMetersPerSecond:
+  summary: 被跟踪组件本地坐标系下的线速度，单位 m/s。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.OdometryFrameId:
+  summary: 里程计坐标系名。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.OrientationQuaternion:
+  summary: 被跟踪组件相对起点的朝向。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.PoseCovariance:
+  summary: 位姿协方差，36 个数（6×6 对角矩阵）：下标 0、7、14 是位置方差（m²），21、28、35 是朝向方差（rad²）。只由白噪声参数算出。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.PositionMeters:
+  summary: 被跟踪组件相对起点的位置，单位 m，轴向取起点时的朝向。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.TwistCovariance:
+  summary: 速度协方差，36 个数（6×6 对角矩阵）：下标 0、7、14 是线速度方差（(m/s)²），21、28、35 是角速度方差（(rad/s)²）。
+  sourceHash: "e3b0c44298fc"
+
+FUBotOdometrySensorData.bHasVelocity:
+  summary: 速度字段是否有值，只有 Valid 样本为 true。
+  sourceHash: "e3b0c44298fc"
+
+Break:FUBotOdometrySensorData:
+  summary: 把 UBot Odometry Sensor Data 拆成帧头、坐标系名、位姿、本地速度、协方差和 Has Velocity。
+  sourceHash: "e6444de6974f"
+
+Make:FUBotOdometrySensorData:
+  summary: 用各字段组装一个 UBot Odometry Sensor Data。
+  sourceHash: "10c5bbbfd33b"

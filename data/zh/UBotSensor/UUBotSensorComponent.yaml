@@ -41,3 +41,47 @@ UUBotSensorComponent.bAutoStart:
 UUBotSensorComponent.bSensorEnabled:
   summary: 为 false 时无法启动；手动采样只得到 Disabled 帧头。
   sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.SensorId:
+  summary: 写入帧头的传感器标识。为空时用组件名；各传感器有自己的默认值。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.FrameId:
+  summary: 写入帧头的坐标系名（TF frame id）。为空时用传感器标识；各传感器有自己的默认值。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.RandomSeed:
+  summary: 噪声随机序列的种子。每次 Start Sensor 都用它重置随机序列。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.bNoiseEnabled:
+  summary: 噪声总开关。只对 IMU、里程计和 2D / 3D 激光雷达有效，位姿传感器和相机没有噪声。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.bDebugVisualization:
+  summary: 为 true 时，运行中画出调试射线。只有激光雷达使用。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.bHideSensorModelInGame:
+  summary: 为 true 时，游戏中隐藏传感器模型。运行中可用 Set Sensor Model Visible in Game 切换。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.IsSensorModelVisibleInGame:
+  summary: 返回游戏中是否显示传感器模型，等于 Hide Sensor Model in Game 取反。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.SetSensorModelVisibleInGame:
+  summary: 运行中显示或隐藏传感器模型。Model Visible 为 true 时显示。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.OnSensorStarted:
+  summary: 传感器成功启动时触发，在启动时的第一个样本之前。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.OnSensorStopped:
+  summary: 传感器从运行变为停止时触发，包括运行结束时的自动停止。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.OnSensorError:
+  summary: 采样出错时触发，Error Message 说明原因，例如位姿传感器的参考组件无效。
+  sourceHash: "e3b0c44298fc"

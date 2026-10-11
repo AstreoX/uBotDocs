@@ -1,13 +1,99 @@
 ---
 title: uBotSensor 常见问题
-description: uBotSensor 的常见问题，按问题分组，每题给出答案和链接。
+description: uBotSensor 的常见问题，按采样、蓝图、数据、相机与性能分组，每题给出答案和链接。
 pageKind: faq
 sidebar:
   order: 130
 ---
 
-{/* STUB */}
-{/*
-待写章节（常见问题，章节顺序见 docs-templates/faq.mdx）：
-- [ ] 按问题分组，每题 1–3 句加链接
-*/}
+这一页回答 uBotSensor 最常被问到的问题，按主题分组。
+
+## 采样
+
+### 为什么实际采样频率比 `Update Rate Hz` 低？
+
+每个 world tick 最多采一个样本，所以采样频率不会超过帧率。跳过的采样时刻计入 `Get Dropped Sample Count`。见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+
+### 为什么暂停后传感器没有新数据？
+
+暂停时传感器不自动采样，仿真时间也不前进。手动调用 `Sample Sensor` 仍然可以，但时间戳不变。见[传感器通用用法](/sensor/basics/)。
+
+### 为什么刚启动时的样本不是 `Valid`？
+
+靠差分计算的传感器要先填满历史：IMU 的前两个样本是 `Warming Up`，里程计的第一个样本是。位姿传感器没有预热，第一个样本就是 `Valid`。见[IMU 传感器](/sensor/imu/#状态码)。
+
+### 为什么降低采样频率后，IMU 或里程计永远不是 `Valid`？
+
+样本间隔超过 0.5 s（`Max Sample Delta Seconds` 或 `Maximum Valid Delta Seconds`）时，样本是 `Invalid Delta Time`。`Update Rate Hz` 低于 2 Hz 就是这种情况，要同时调大对应的值。见[里程计](/sensor/odometry/#状态码)。
+
+### 为什么手动调用 `Sample IMU` 后得到 `Invalid Delta Time`？
+
+手动样本和自动样本在同一仿真时刻时，时间差为 0，IMU 会清空历史。自动采样运行时不要再手动采样，里程计同理。见[IMU 传感器](/sensor/imu/#注意事项)。
+
+## 蓝图
+
+### 找不到传感器的节点怎么办？
+
+先确认 uBotSensor 已在工程里启用，传感器组件在 Components 面板 Add 菜单的 `uBot` 分类下。节点可以在[节点索引](/reference/nodes/)里按名称搜索。
+
+### 为什么在 `Event BeginPlay` 里绑定事件会漏掉第一个样本？
+
+组件的 `BeginPlay` 先于 Actor 的 `Event BeginPlay`，`Auto Start` 的第一个样本在那时已经产生。用 Details 面板 Events 区的 **+** 生成事件节点就不会漏。见[传感器通用用法](/sensor/basics/#注意事项)。
+
+### 为什么在数据事件里 `Get Latest Frame Header` 读到的是上一次的帧头？
+
+传感器自己的数据事件（比如 `On Imu Data Updated`）在最新帧头更新之前触发。请改用事件数据里自带的 `Header`。见[传感器通用用法](/sensor/basics/#注意事项)。
+
+### 为什么蓝图里改不了传感器的属性？
+
+属性在蓝图里只读，要在 Details 面板里设置。运行中能改的只有采样频率（`Set Update Rate Hz`）和模型显示（`Set Sensor Model Visible in Game`）。见[传感器通用用法](/sensor/basics/#关键属性)。
+
+### 为什么运行时看不到传感器模型？
+
+`Hide Sensor Model in Game` 默认打开。取消勾选它，或在运行中调用 `Set Sensor Model Visible in Game`。见[传感器通用用法](/sensor/basics/#传感器模型的显示)。
+
+## 数据
+
+### 为什么位姿传感器的速度是 0？
+
+`Has Velocity` 为 false 时速度是 0：启动后的第一个样本、`Include Velocity` 关闭，或两个样本的仿真时间相同。见[位姿传感器](/sensor/pose/#注意事项)。
+
+### 为什么 IMU 静止时读到约 9.8 m/s²，而不是 0？
+
+IMU 输出的是比力，即运动加速度减去重力。静止水平放置时约为 (0, 0, 9.8)，自由下落时才接近 0。见[IMU 传感器](/sensor/imu/)。
+
+### 为什么里程计的位置突然回到 0？
+
+瞬移、样本间隔无效、重启传感器或调用 `Reset Odometry`，都会把起点重设成当前位置。见[里程计](/sensor/odometry/#状态码)。
+
+### 为什么打开 `Noise Enabled` 后位姿传感器和相机没有噪声？
+
+`Noise Enabled` 只对 IMU、里程计和两种激光雷达有效。位姿传感器和相机始终输出无噪声的数据。见[传感器通用用法](/sensor/basics/#关键属性)。
+
+### 数据的单位和坐标轴是什么？
+
+位置、距离和速度用米和秒，角度用弧度，名字里带 `Degrees` 的属性除外。坐标轴保持 UE 的 X 前、Y 右、Z 上，没有做 ROS 转换。见[坐标系与单位](/concepts/coordinates-and-units/)。
+
+## 相机与性能
+
+### 为什么读不到相机的像素？
+
+像素不会自动读回 CPU。需要时调用 `Request Pixel Readback`，并且那一帧必须还是最新一次采集。见[RGB 相机](/sensor/rgb-camera/)。
+
+### 为什么带 `Capture Group Id` 的相机不自动启动？
+
+这样的相机由同组的采集协调器统一触发，对它调用 `Start Sensor` 返回 false。见[相机采集协调器](/sensor/capture-coordinator/)。
+
+### 激光雷达或相机让帧率下降，怎么办？
+
+降低射线数、分辨率或采样频率，关掉用不到的烟雾干扰和调试绘制，避免调用 High Cost 节点。见[性能与采样频率](/sensor/performance/)。
+
+## ROS 与旧项目
+
+### 传感器数据怎么发到 ROS？
+
+uBotSensor 本身不含 ROS 代码，由 uBotROS 把传感器发布为 ROS 2 话题。见[发布传感器数据](/ros/publish-sensors/)。
+
+### 旧的 Agent 传感器蓝图还能用吗？
+
+能。属性和函数名没有变，类、结构、枚举和事件签名都有重定向，但重定向只在编辑器启动时生效，所以启用插件后要重启编辑器。见[从旧插件迁移](/develop/migration/)。
