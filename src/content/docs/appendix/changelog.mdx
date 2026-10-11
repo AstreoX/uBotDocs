@@ -1,13 +1,104 @@
 ---
 title: 版本记录
-description: 每个插件已发布的版本和变化。
+description: 每个插件和 uBot Manager 已发布的版本，以及每个版本里用户看得到的变化。
 pageKind: concept
 sidebar:
   order: 20
 ---
 
-{/* STUB */}
-{/*
-待写章节（概念页，章节顺序见 docs-templates/concept.mdx）：
-- [ ] 每个插件已发布的版本和变化（表）
-*/}
+这一页按插件列出已发布的版本和用户看得到的变化，没有发布的改动不列在这里。
+
+## 版本一览
+
+日期取自版本标签。已发布的插件目前都是 Beta 版本，版本号以包索引为准。
+
+| 名称 | 版本 | 日期 | UE 5.5 Win64 预编译包 |
+| --- | --- | --- | --- |
+| uBotCore | 0.1.1 | 2026-10-10 | 有 |
+| uBotCore | 0.1.0 | 2026-10-10 | 无 |
+| uBotSensor | 0.1.1 | 2026-10-10 | 有 |
+| uBotSensor | 0.1.0 | 2026-10-10 | 无 |
+| uBotROS | 0.1.1 | 2026-10-10 | 有 |
+| uBotROS | 0.1.0 | 2026-10-10 | 无 |
+| uBot Manager | 0.1.0 | 2026-10-10 | 不适用 |
+
+更新已装的插件见[安装、更新、移除插件](/manager/packages/)。预编译包是什么，见[安装 uBot](/start/install/)。
+
+## uBotCore
+
+### 0.1.1
+
+- 插件图标，以及编辑器里 uBot 面板的标签页、`Window` 菜单项和状态栏入口，换成 uBot 标志。
+- 包索引的版本条目可以带 `binaries`，写明预编译包的下载地址、校验值和大小。uBot Manager 用它安装预编译包，UE 本身忽略这个字段。
+- 提供 UE 5.5 Win64 的预编译包。
+
+### 0.1.0
+
+首个版本。
+
+- 帧头 `UBot Frame Header` 和状态码 `EUBot Sample Status`，见[帧头与采样状态](/concepts/frame-header/)。
+- 仿真时钟：读取仿真时间，固定步长，暂停、恢复和单步，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- UE 与 ROS（REP-103）之间的坐标、单位和时间转换节点，见[坐标系与单位](/concepts/coordinates-and-units/)。
+- 采样调度器：每次轮询最多触发一次，不会在同一帧里重复采样。
+- 四个接口：`UBot Sensor`、`UBot Actuator`、`UBot Velocity Commandable` 和 `UBot Perception Medium`，见[插件之间怎么对接](/concepts/interfaces/)。
+- `uBot Identity` 组件，给机器人命名，见[标识与命名](/concepts/identity/)。
+- Package 管理的基础：包索引（格式 2）、依赖和版本校验、运行时状态（`Saved/uBot/status.json`）、编辑器里的 uBot 面板（`Window > uBot`）、扩展点，以及命令行 `-run=UBotPackage`。安装、更新、启用和卸载由 uBot Manager 完成。
+
+## uBotSensor
+
+### 0.1.1
+
+- 插件图标换成 uBot 标志。
+- 提供 UE 5.5 Win64 的预编译包。
+
+### 0.1.0
+
+首个版本，由旧插件 `AgentSensorCore` 0.5.0 重命名迁移而来，建立在 uBotCore 之上。
+
+- 七种传感器组件：位姿、里程计、IMU、2D 激光雷达、3D 激光雷达、RGB 相机和深度相机，另有相机采集协调器。组件的显示名从 `Agent …` 改为 `uBot …`，比如 `uBot IMU Sensor`。
+- 烟雾等感知介质通过 uBotCore 的 `UBot Perception Medium` 接口接入，原来用 Actor 标签的烟雾 Actor 仍然有效。
+- 采样改为由组件的 tick 和采样调度器驱动：每个 world tick 最多一个样本，时间戳取仿真时间。IMU 和里程计不再因为同一帧里的重复样本报告 `Invalid Delta Time`。
+- 新增 `Get Dropped Sample Count`，统计因帧率太低而跳过的采样时刻。
+- 2D 和 3D 激光雷达的帧新增强度（`Get Intensities`，0 到 255）。
+- 所有传感器实现 `UBot Sensor` 接口。
+- 旧插件的蓝图和关卡在切换到 uBotSensor 后可以加载（CoreRedirects），详见[从旧插件迁移](/develop/migration/)。
+
+## uBotROS
+
+### 0.1.1
+
+- 插件图标换成 uBot 标志。
+- 与 ROS 桥握手时报告的 UE 端版本跟随插件版本，现在是 `uBot UE 0.1.1`。
+- 提供 UE 5.5 Win64 的预编译包。
+
+### 0.1.0
+
+首个版本，取代旧插件 `AgentSensorROSBridge` 等，建立在 uBotCore 和 uBotSensor 之上。
+
+- `uBot ROS Sensor Bridge` 组件：发现 Actor 上的 uBot 传感器并发布到 ROS 2，同时发布静态 TF、动态 TF（`odom → base`）和相机的光学坐标系。
+- `/clock`：发布 uBot 的仿真时间。
+- `uBot ROS Velocity Command` 组件：把 `cmd_vel` 交给实现了 `UBot Velocity Commandable` 的对象，带超时和限速。
+- 随插件附带 ROS 2 桥 `ubot_ros_bridge`，UE 经一条 TCP 连接与它通信。UE 一侧不再依赖 TempoROS 和 rclcpp。
+- 桥的连接状态显示在编辑器的 uBot 面板和 uBot Manager 里。
+- 项目设置保存在 `Config/DefaultUBotROS.ini`。
+- 相对旧版有几处有意的修正，比如角速度符号、`LaserScan` 的镜像、`PointCloud2` 增加 `intensity` 字段、相机图像改用光学坐标系、里程计不再发布静态 TF。
+- 默认的命名空间来自 `uBot Identity`，不再是固定的 `robot`。
+
+## uBot Manager
+
+### 0.1.0
+
+首个版本。
+
+- 在 UE 5.5 工程里安装、更新、降级、启用、禁用和卸载 Package，自动处理依赖。
+- 依赖图、问题列表和快速修复。
+- 组合（Recipe）：一次装好一组 Package，也可以把当前项目的 Package 存成自己的组合。
+- 预编译包安装：下载、校验、解压，不需要 git 和编译。
+- 命令行 `ubot`，包括 `ubot package`，用来制作预编译包。
+- 界面支持简体中文和英文，深色和浅色主题。安装包按当前用户安装，没有代码签名。
+
+## 相关页面
+
+- [简介](/start/introduction/)：所有插件和它们的依赖关系。
+- [安装、更新、移除插件](/manager/packages/)：怎样更新到新版本。
+- [从旧插件迁移](/develop/migration/)：从 `AgentSensorCore` 等旧插件切换过来。

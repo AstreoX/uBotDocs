@@ -1,0 +1,11 @@
+UUBotVelocityCommandable:
+  summary: 接受机体系速度指令的接口，独立于执行器接口，不要求同时实现它。
+  sourceHash: "e3b0c44298fc"
+
+UUBotVelocityCommandable.ApplyVelocityCommand:
+  summary: 应用一条速度指令。指令被拒绝时（没有就绪、数值无效等）返回 false。
+  sourceHash: "c7a758b3e7da"
+
+UUBotVelocityCommandable.StopMotion:
+  summary: 停止运动。
+  sourceHash: "e3b0c44298fc"

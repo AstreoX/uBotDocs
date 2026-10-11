@@ -10,6 +10,7 @@ node /Script/BlueprintGraph.K2Node_ExecutionSequence
 macro /Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForLoop
 /Script/Engine.KismetMathLibrary:BreakRotator
 /Script/Engine.KismetMathLibrary:BreakVector
+/Script/Engine.KismetMathLibrary:NotEqual_Int64Int64
 /Script/Engine.KismetMathLibrary:Quat_Rotator
 /Script/Engine.KismetMathLibrary:Subtract_IntInt
 /Script/Engine.KismetMathLibrary:VSize

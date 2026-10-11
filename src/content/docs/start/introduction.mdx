@@ -9,20 +9,55 @@ sidebar:
 import DependencyGraph from "../../../components/DependencyGraph.astro";
 import PackageList from "../../../components/PackageList.astro";
 
-{/* STUB */}
-{/*
-待写章节（概念页，章节顺序见 docs-templates/concept.mdx）：
-- [ ] uBot 是什么：在 UE 里搭具身智能仿真
-- [ ] 插件依赖图（组件已放好）
-- [ ] 插件一览（组件已放好）
-- [ ] 怎么读这份文档
-写好以后，在组件前后补上说明，保留两个组件。
-*/}
+uBot 是一组在虚幻引擎（Unreal Engine，UE）5.5 里搭建具身智能（Embodied AI）仿真的插件：给机器人装上传感器，在蓝图里读数据，或者发布到 ROS 2。
+
+## uBot 是什么
+
+uBot 有这几个特点：
+
+- **蓝图优先**：传感器是可以直接在 Add Component 菜单里添加的组件，属性、函数和事件都暴露给蓝图，不需要写代码。
+- **按需组合**：只装用得上的插件。uBot Manager 会处理依赖，也能一次装好一个[组合](/start/recipes/)（Recipe）。
+- **统一的仿真时间**：所有数据用同一个仿真时钟打时间戳，暂停、单步和固定步长都以它为准，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- **ROS 2 是可选的**：传感器本身不依赖 ROS，要用 ROS 2 时再加 uBotROS。
+
+已发布的插件目前都是 Beta 版本。
 
 ## 插件依赖图
+
+插件按依赖从左到右排列，画法和 uBot Manager 的依赖图视图一样。
 
 <DependencyGraph />
 
 ## 插件一览
 
 <PackageList />
+
+规划中的插件只有一个占位页，说明它打算做什么。发布以后，同一个地址会换成它的手册。
+
+## 怎么读这份文档
+
+| 你想 | 去这里 |
+| --- | --- |
+| 把插件装进工程 | [安装 uBot](/start/install/) |
+| 先跑起来看看 | [五分钟上手](/start/quickstart/) |
+| 选一组要装的插件 | [选择组合](/start/recipes/) |
+| 弄懂各插件共用的机制 | 核心概念：[帧头与采样状态](/concepts/frame-header/)、[仿真时钟与采样调度](/concepts/clock-and-scheduling/)、[坐标系与单位](/concepts/coordinates-and-units/)、[标识与命名](/concepts/identity/)、[插件之间怎么对接](/concepts/interfaces/) |
+| 在蓝图里使用传感器 | [uBotSensor](/sensor/) |
+| 把数据发布到 ROS 2 | [uBotROS](/ros/) |
+| 安装、更新、移除插件 | [uBot Manager](/manager/) |
+| 在 C++ 里使用，或写自己的插件 | [开发者](/develop/cpp/) |
+| 查某个节点或属性 | [参考](/reference/)，按名称找用[节点索引](/reference/nodes/) |
+| 查一个词的意思 | [术语表](/appendix/glossary/) |
+
+文档里有几个约定：
+
+- 节点、引脚和属性的名字保持英文，和蓝图编辑器里显示的一样，用等宽字体，比如 `Update Rate Hz`。
+- 示例画成蓝图编辑器里的样子，点任意节点可以看说明和引脚。
+- 每个插件手册的页面标题下有一行“需要：…”，写明这一页要哪些插件和版本。
+- 每个类、节点和属性的完整说明在参考部分，由 UE 导出的数据自动生成，手册只讲怎么用。
+
+## 相关页面
+
+- [安装 uBot](/start/install/)：用 uBot Manager 给工程装上插件。
+- [五分钟上手](/start/quickstart/)：给 Actor 加一个 IMU，在屏幕上看到采样序号。
+- [术语表](/appendix/glossary/)：文档里用到的词，中英对照。

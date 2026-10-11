@@ -1,0 +1,27 @@
+FUBotVelocityCommand:
+  summary: 机体系下的速度请求。生产者先把自己的坐标约定换成 UE 的，再填写各字段。
+  sourceHash: "0c3958aad4c0"
+
+FUBotVelocityCommand.AngularVelocityRadiansPerSecond:
+  summary: 机体系角速度，用 UE 的坐标轴和旋转方向（+Z 是向右偏航），单位 rad/s。
+  sourceHash: "b3f896c4ef54"
+
+FUBotVelocityCommand.LinearVelocityMetersPerSecond:
+  summary: 机体系线速度，用 UE 的坐标轴（X 前、Y 右、Z 上），单位 m/s。
+  sourceHash: "1afcac46967e"
+
+FUBotVelocityCommand.Source:
+  summary: 来源标签，格式自由，比如 ROS、MCP、Blueprint。
+  sourceHash: "9030c0986c07"
+
+FUBotVelocityCommand.TimestampSeconds:
+  summary: 发出指令时的仿真时间，单位秒。
+  sourceHash: "c2d8ddc4c0fb"
+
+Make:FUBotVelocityCommand:
+  summary: 用线速度、角速度、时间戳和来源构造一个 UBot Velocity Command。
+  sourceHash: "7f19958aa5f0"
+
+Break:FUBotVelocityCommand:
+  summary: 把 UBot Velocity Command 拆成线速度、角速度、时间戳和来源。
+  sourceHash: "923afc7e4011"

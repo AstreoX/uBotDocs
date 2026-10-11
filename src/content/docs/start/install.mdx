@@ -1,6 +1,6 @@
 ---
 title: 安装 uBot
-description: 用 uBot Manager 把 uBot 插件装进 UE 5.5 工程，依赖一并装好。
+description: 用 uBot Manager 把 uBot 插件装进 UE 5.5 工程，依赖一并装好；也可以不用 Manager 手动安装。
 pageKind: feature
 graph: false
 sidebar:
@@ -10,59 +10,152 @@ sidebar:
 import { Steps } from "@astrojs/starlight/components";
 import RecipeTable from "../../../components/RecipeTable.astro";
 
-这一页把 uBot 插件装进你的 UE 5.5 工程：先装 uBot Manager，再用它安装插件。
+这一页把 uBot 插件装进你的 UE 5.5 工程：先装 uBot Manager，再用它安装插件，最后在编辑器里确认。
 
 uBot Manager 是 Windows 桌面程序，负责下载插件、处理依赖、修改 `.uproject`，需要时编译工程。
 
-## 安装步骤
+## 运行要求
+
+| 项目 | 要求 | 说明 |
+| --- | --- | --- |
+| 操作系统 | Windows 10 或 11 | uBot Manager 目前只支持 Windows，界面基于 WebView2，Windows 11 已自带 |
+| 虚幻引擎 | UE 5.5 | 启动器版本和源码构建的版本都可以，预编译包（prebuilt package）只用于启动器版本 |
+| git | 从源码安装时需要 | 在 `PATH` 里，或在 uBot Manager 的 `设置 > 安装` 里指定；预编译安装不需要 |
+| Visual Studio 2022 | 编译 C++ 时需要，含 C++ 工具链 | 从源码安装的插件要编译，打包游戏时 UE 也要编译插件；全部用预编译包时安装本身不需要 |
+| ROS 2 | 只有用 uBotROS 时需要 | 见[准备 ROS 2 端](/ros/ros2-setup/) |
+
+## 安装 uBot Manager
 
 <Steps>
 
-1. **下载 uBot Manager**
+1. **下载**
 
-   打开 [uBot Manager 的 Releases 页面](https://github.com/AstreoX/uBotManager/releases)，下载最新版本的 `uBot Manager_<版本>_x64-setup.exe` 并运行。它按当前用户安装，不需要管理员权限。
+   打开 [uBot Manager 的 Releases 页面](https://github.com/AstreoX/uBotManager/releases)，下载最新版本的 `uBot Manager_<版本>_x64-setup.exe`。
 
-   安装包没有代码签名，SmartScreen 会提示“未知发布者”，点 **更多信息 → 仍要运行**。
+2. **运行安装包**
 
-2. **打开工程**
+   安装包按当前用户安装，不需要管理员权限，可以在向导里选目录，界面随系统语言显示中文或英文。安装包没有代码签名，SmartScreen 会提示“未知发布者”，点 **更多信息 → 仍要运行**。
 
-   启动 uBot Manager，点空白页中间的 `打开…`，选择工程的 `.uproject` 文件。以后它会自动打开上次的工程。
+3. **启动**
 
-3. **选择要装的插件**
+   启动 uBot Manager。首次启动时语言跟随系统界面语言，主题默认深色。
 
-   点标题栏的 `Recipe`，在 `应用 Recipe` 里选一个组合。目前可以应用的组合：
+</Steps>
 
-   <RecipeTable available />
+## 打开工程
 
-   然后点 `查看更改…`。也可以在 Package 视图里逐个选中插件点安装，依赖会自动加入。
+<Steps>
 
-4. **应用**
+1. **选择 `.uproject`**
 
-   `应用更改` 对话框列出要执行的步骤，确认后点 `应用`。任务结束后，插件位于工程的 `Plugins/uBot/` 下，并已在 `.uproject` 里启用。
+   在空白页中间点 `打开…`，选择工程的 `.uproject` 文件。以后它会自动打开上次的工程。
 
-5. **在编辑器里确认**
+2. **确认引擎**
 
-   用 UE 5.5 打开工程，菜单 `Window > uBot` 打开 uBot 面板，`Loaded Packages`（中文界面为“已加载的 Package”）里应该列出刚装的插件。
+   uBot Manager 按 `.uproject` 里的 `EngineAssociation` 找到工程用的引擎。找不到时，需要编译的更改无法应用。
 
 </Steps>
 
 :::caution[先关闭 UE 编辑器]
-编辑器开着这个工程时，修改 `.uproject` 和编译的步骤会等编辑器关闭后才执行。对话框里的 `关闭编辑器` 可以请求它正常退出。
+编辑器开着这个工程时，下载以外的步骤要等编辑器关闭后才执行。对话框里的 `关闭编辑器` 可以请求它正常退出。
 :::
 
-## 预编译包还是源码
+## 安装插件：预编译与源码编译
 
-uBot Manager 优先下载预编译包，条件不满足时改为克隆源码并编译。
+<Steps>
+
+1. **选择要装的插件**
+
+   点标题栏的 `Recipe`，在 `应用 Recipe` 里选一个组合，再点 `查看更改…`。目前可以应用的组合：
+
+   <RecipeTable available />
+
+   也可以在 Package 视图里逐个选中插件，点 `安装`，依赖会自动加入。这样做的更改先进入待应用列表，点状态栏的 `应用…` 继续。
+
+2. **检查计划**
+
+   `应用更改` 对话框按组列出要执行的步骤：`下载`、`项目`、`编译`、`完成后`。底栏的 `需要编译` 表示这次计划里有 C++ 要编译。
+
+3. **应用**
+
+   点 `应用`，在任务视图里看进度。任务结束后，插件位于工程的 `Plugins/uBot/` 下，并已在 `.uproject` 里启用。
+
+</Steps>
+
+uBot Manager 优先下载预编译包，条件不满足时改为克隆源码并编译：
 
 | | 预编译包 | 源码 |
 | --- | --- | --- |
-| 什么时候用 | 引擎是 Epic 启动器安装的 UE 5.5，平台 Win64 | 源码构建的引擎，或其他情况 |
+| 什么时候用 | 引擎是 Epic 启动器安装的 UE 5.5，平台 Win64，索引里有这个版本的预编译包 | 源码构建的引擎，索引里没有对应的预编译包，或你关闭了优先使用 |
+| 做什么 | 下载 zip，校验 SHA-256，解压到 `Plugins/uBot/` | 克隆仓库，检出索引里这个版本的标签，再编译 |
 | 需要 git | 不需要 | 需要 |
-| 需要 Visual Studio 2022 | 不需要（打包游戏时需要） | 需要，用来编译 C++ |
-| 安装后 | 直接可用，计划里没有 `编译` 步骤 | 计划里有 `编译` 步骤 |
+| 需要 Visual Studio 2022 | 不需要（打包游戏时需要） | 需要 |
+| 计划里 | 有 `下载`，没有 `编译` | 有 `编译` |
 
-想强制从源码安装，在 `设置 > 安装` 里取消 `有预编译版本时优先使用`，再重新安装。
+想强制从源码安装，在 `设置 > 安装` 里取消 `有预编译版本时优先使用`。已经按预编译安装的插件，要卸载后重新安装才会换成源码。
+
+## 不用 Manager：手动安装
+
+手动安装是源码安装：工程需要能编译 C++。先装 uBotCore，再装其余的插件。
+
+<Steps>
+
+1. **克隆到 `Plugins/uBot/`**
+
+   把仓库克隆到 `<工程>/Plugins/uBot/<插件名>`，用版本标签检出（标签是版本号前加 `v`，各版本见[版本记录](/appendix/changelog/)）：
+
+   ```powershell
+   git clone --branch v0.1.1 https://github.com/AstreoX/uBotCore.git <工程>/Plugins/uBot/uBotCore
+   git clone --branch v0.1.1 https://github.com/AstreoX/uBotSensor.git <工程>/Plugins/uBot/uBotSensor
+   ```
+
+2. **启用插件**
+
+   在编辑器的 `Edit > Plugins` 里搜索 uBot Core（分类 uBot）并勾选。也可以在 `.uproject` 里加入：
+
+   ```json
+   "Plugins": [
+       { "Name": "UBotCore", "Enabled": true },
+       { "Name": "UBotSensor", "Enabled": true }
+   ]
+   ```
+
+3. **重启编辑器**
+
+   首次打开工程时，编辑器会提示编译模块。
+
+</Steps>
+
+装好 uBotCore 以后，也可以用命令行安装其余插件，缺少的依赖会一起装好并启用，之后需要重启编辑器：
+
+```powershell
+& '<UE_5.5>\Engine\Binaries\Win64\UnrealEditor-Cmd.exe' '<工程>\<工程>.uproject' -run=UBotPackage -Install=UBotSensor
+```
+
+## 确认安装成功
+
+<Steps>
+
+1. **打开 uBot 面板**
+
+   用 UE 5.5 打开工程，菜单 `Window > uBot` 打开 uBot 面板。
+
+2. **看已加载的 Package**
+
+   `Loaded Packages`（中文界面是“已加载的 Package”）列出已启用的 uBot 插件和版本。
+
+3. **看状态栏**
+
+   编辑器状态栏右侧显示 `uBot：2 个 Package · 0 个问题` 这样的统计。问题不为 0 时，面板的 `Problems` 里列出依赖缺失、版本不满足等问题，到 uBot Manager 的问题视图里处理。
+
+4. **看组件**
+
+   在任意 Actor 蓝图的 Components 面板点 **Add**，uBot 分类下应该有 `uBot IMU Sensor` 等传感器组件。
+
+</Steps>
+
+以后管理插件，可以直接在 uBot 面板里点 `Open uBot Manager`（中文界面是“打开 uBot Manager”），它会带着当前工程启动。
 
 ## 下一步
 
-装好后，继续看[五分钟上手](/start/quickstart/)：给 Actor 加一个 IMU，在屏幕上看到它的采样。
+装好后，继续看[五分钟上手](/start/quickstart/)：给 Actor 加一个 IMU，在屏幕上看到它的采样。需要一次装好一组插件，见[选择组合](/start/recipes/)。

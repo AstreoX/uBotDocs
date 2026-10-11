@@ -1,0 +1,7 @@
+UUBotPerceptionMedium:
+  summary: 影响感知的介质（烟、雾等）所实现的接口，传感器通过它取得介质的快照。
+  sourceHash: "e3b0c44298fc"
+
+UUBotPerceptionMedium.GetMediumSnapshot:
+  summary: 取得介质当前的快照；有快照可以提供时返回 true。
+  sourceHash: "decb3d863c41"
