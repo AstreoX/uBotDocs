@@ -54,7 +54,7 @@ test("the build gate passes when no block failed and throws once one did", () =>
     globalThis[key] = [];
     const gate = blueprintBuildGate();
     assert.doesNotThrow(() => gate.hooks["astro:build:done"]());
-    globalThis[key] = ["src/content/docs/guides/a.md:12: blueprint: unknown node"];
+    globalThis[key] = ["src/content/docs/sensor/a.md:12: blueprint: unknown node"];
     assert.throws(() => gate.hooks["astro:build:done"](), /1 invalid blueprint block.*a\.md:12/s);
   } finally {
     globalThis[key] = before;

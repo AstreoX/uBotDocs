@@ -11,4 +11,4 @@ Closes #
 - [ ] `npm test`
 - [ ] `npm run check`（没有新增的警告）
 - [ ] `npm run build`
-- [ ] 新页面声明了 `packages`（frontmatter 或目录的 `_group.yml`）
+- [ ] 新页面声明了 `packages`（frontmatter 或目录的 `_group.yml`），有 `pageKind`，写完的页面已删掉 `{/* STUB */}` 标记

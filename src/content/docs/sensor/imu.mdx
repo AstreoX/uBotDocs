@@ -1,15 +1,18 @@
 ---
-title: 读取 IMU 姿态角
+title: IMU 传感器
 description: 把 uBot IMU Sensor 的姿态四元数换算成 Roll、Pitch、Yaw（度），有事件和主动读取两种写法。
+pageKind: feature
 sidebar:
-  order: 10
+  order: 40
 ---
 
 这一页把 IMU 的姿态四元数换算成横滚（Roll）、俯仰（Pitch）和偏航（Yaw）三个角度，单位是度。
 
-需要一个装了 `uBot IMU Sensor` 组件的 Actor，做法见[第一个传感器](/start/first-sensor/)。
+需要一个装了 `uBot IMU Sensor` 组件的 Actor，做法见[五分钟上手](/start/quickstart/)。
 
-## 每次采样时读取
+## 读取姿态角
+
+### 每次采样时读取
 
 IMU 每采样一次就触发 `On Imu Data Updated`，在这个事件里换算：
 
@@ -33,9 +36,9 @@ notes:
 
 这是组件在 UE 世界坐标系下的姿态。需要 ROS 约定的四元数时，用 [`UE To ROS Rotation`](/reference/ubotcore/uubotconventionslibrary/#RotationUEToROS) 换算。
 
-姿态不靠差分计算，预热样本（`Warming Up`）里也是当前姿态，所以这里不用检查 `Valid`。角速度（Angular Velocity）和线加速度（Linear Acceleration，即比力 Specific Force）只在有效样本里有值，见[采样与帧头](/concepts/sampling-and-frame-header/)。
+姿态不靠差分计算，预热样本（`Warming Up`）里也是当前姿态，所以这里不用检查 `Valid`。角速度（Angular Velocity）和线加速度（Linear Acceleration，即比力 Specific Force）只在有效样本里有值，见[帧头与采样状态](/concepts/frame-header/)。
 
-## 在自己的时机读取
+### 在自己的时机读取
 
 不想用事件时，在 `Event Tick` 或计时器里调用 `Get Latest IMUData`，拿到最近一次样本，后面的换算与上一节相同。
 
@@ -54,6 +57,13 @@ notes:
 
 - `Get Latest IMUData` 只读缓存，不会触发采样，开销很小。
 - 每帧都读时可能连续读到同一个样本，比较帧头的 `Sequence` 可以判断是不是新数据。
+
+{/*
+待补章节（功能页，章节顺序见 docs-templates/feature.mdx）：
+- [ ] 角速度与比力
+- [ ] 噪声 / 偏置 / 滤波
+- [ ] 状态码
+*/}
 
 ## 相关参考
 

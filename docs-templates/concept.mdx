@@ -1,0 +1,34 @@
+---
+title: 帧头与采样状态
+description: 一句话说明这一页解释哪个机制。
+pageKind: concept
+packages: [UBotSensor]
+sidebar:
+  order: 10
+---
+
+{/* 模板：概念页，解释一个机制。复制到 src/content/docs/concepts/，替换内容，删掉所有注释；章节和顺序不要改。 */}
+
+这一页说明帧头（Frame Header）里有什么，以及怎样判断一帧数据能不能用。
+
+{/* 一句话之后马上放一张图、一张表或一张蓝图图，让读者先看到全貌。 */}
+
+| 字段 | 类型 | 含义 |
+| --- | --- | --- |
+| `Sequence` | Integer64 | 帧序号，每次采样加 1 |
+| `Valid` | Boolean | 只有 `Status` 为 `Valid` 时为 true |
+
+## 第一个分节
+
+{/* 分节说明：每节一个问题，每段不超过 3 句；能用表格或图的就不写长段落。 */}
+
+不是 `Valid` 的样本也会触发事件。用到差分结果之前，先检查 `Valid`。
+
+## 第二个分节
+
+状态码的完整列表在参考里。
+
+## 相关页面
+
+- [仿真时钟与采样调度](/concepts/clock-and-scheduling/)：采样什么时候发生。
+- [五分钟上手](/start/quickstart/)：在屏幕上打印采样序号。

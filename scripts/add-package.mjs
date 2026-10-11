@@ -56,8 +56,18 @@ export function addPackage({ root, name, submodule = true, run = (cmd, args) => 
   if (api) done.push(`data/api/${name}.json exists (documents ${pkg.documentedVersion})`);
   else if (!pkg.released) todo.push(`after the release (a version without planned: true in the index): npm run sync-index, then npm run sync-api -- --from-github --package ${name}`);
   else todo.push(`get the API data: npm run sync-api -- --from-github --package ${name} (or locally: scripts/export-api.ps1 -Plugins ${name}, see CLAUDE.md)`);
+  // 4. the plugin's folder in the docs: placeholder page while planned, manual once released
+  const docsDir = `src/content/docs/${pkg.docsSlug}`;
+  const docsIndex = join(root, docsDir, "index.mdx");
+  const placeholder = existsSync(docsIndex) && /^pageKind:\s*placeholder\s*$/m.test(readFileSync(docsIndex, "utf8"));
+  if (!existsSync(docsIndex)) {
+    todo.push(pkg.released
+      ? `write the manual in ${docsDir}/: index.mdx (overview), _group.yml with label: ${pkg.label} and packages: [${name}], then the feature pages (docs-templates/ has one example per page kind)`
+      : `add the placeholder page ${docsDir}/index.mdx (docs-templates/placeholder.mdx): the sidebar and the dependency graph link to it`);
+  } else if (pkg.released && placeholder) {
+    todo.push(`${docsDir}/index.mdx is still the placeholder: write the manual there (overview from docs-templates/overview.mdx, _group.yml with label: ${pkg.label} and packages: [${name}], feature pages)`);
+  } else done.push(`${docsDir}/index.mdx exists`);
   todo.push(
-    `write guides in src/content/docs/guides/<topic>/ with a _group.yml: label: <中文名> and packages: [${name}]`,
     `engine nodes from an engine plugin (${pkg.enginePlugins.join(", ") || "none listed in the index"}): list them in data/engine-nodes/<area>.txt`,
     "npm run zh -- status " + name + "   then write summaries into data/zh/" + name + "/<Owner>.yaml",
     "npm test && npm run check && npm run build",

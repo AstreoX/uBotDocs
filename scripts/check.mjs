@@ -2,6 +2,7 @@
 // npm run check: validates data/index.json, data/api, data/zh, data/engine-nodes, every ```blueprint
 // block, the packages pages declare and the writing rules.
 // Errors fail (exit 1); warnings are printed and do not fail. Runs in CI on every pull request.
+// Pages that are still stubs ({/* STUB */}) are warnings; `npm run check -- --no-stubs` makes them errors.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -10,12 +11,17 @@ import { loadSite } from "../lib/blueprint/site.mjs";
 import { loadPackages } from "../lib/packages.mjs";
 import { LEGACY_ENGINE_LIST, checkEngineLists, readEngineLists } from "../lib/engine-nodes.mjs";
 import { checkContent, checkLockfile, formatFinding, githubAnnotation, GENERATED_DIR } from "../lib/check.mjs";
+import { checkProviderData } from "../lib/reference/index.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const quiet = process.argv.includes("--quiet");
+const noStubs = process.argv.includes("--no-stubs");
 const packages = loadPackages({ root });
 const site = loadSite(root);
-const findings = [...packages.diagnostics, ...site.diagnostics, ...checkContent(root, site.registry, { packages: packages.registry })];
+const findings = [...packages.diagnostics, ...site.diagnostics, ...checkContent(root, site.registry, { packages: packages.registry, stubs: noStubs ? "error" : "warning" })];
+// A released package without the data of a reference provider (data/api/<Name>.json): a warning only,
+// a content-only package may have no Blueprint API.
+findings.push(...checkProviderData({ packages: packages.registry, dataDir: join(root, "data"), indexText: packages.text }));
 
 findings.push(...checkEngineLists(readEngineLists(join(root, "data"))));
 if (existsSync(join(root, LEGACY_ENGINE_LIST))) {
@@ -44,5 +50,7 @@ for (const d of findings) {
   console.log(formatFinding(d));
 }
 if (process.env.GITHUB_ACTIONS === "true") for (const d of findings) console.log(githubAnnotation(d));
+const stubCount = findings.filter((d) => d.message.startsWith("stub page")).length;
+if (stubCount) console.log(`\nstubs: ${stubCount} page(s) still to write${noStubs ? "" : " (npm run check -- --no-stubs makes them errors)"}`);
 console.log(`\ncheck: ${errors.length} error(s), ${warnings.length} warning(s)`);
 process.exit(errors.length ? 1 : 0);

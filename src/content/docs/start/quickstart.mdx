@@ -1,16 +1,19 @@
 ---
-title: 第一个传感器
+title: 五分钟上手
 description: 给 Actor 加一个 uBot IMU Sensor，运行后在屏幕上看到它的采样序号。
+pageKind: feature
 packages: [UBotSensor]
 sidebar:
-  order: 3
+  order: 30
 ---
 
 import { Steps } from "@astrojs/starlight/components";
 
 这一页给一个 Actor 装上 IMU，运行后在屏幕左上角看到采样序号不断增加，确认插件已经正常工作。
 
-开始前先按[安装 uBot Manager](/start/install/)装好 `UBotCore` 和 `UBotSensor`。
+## 准备
+
+先按[安装](/start/install/)装好 `UBotCore` 和 `UBotSensor`，用 UE 5.5 打开工程。
 
 ## 搭一个最小的例子
 
@@ -51,9 +54,10 @@ notes:
   D: 展开 `Print String` 的高级引脚，给 `Key` 填一个固定值，同一行文字会原地刷新。
 ```
 
-`On Sensor Sampled` 是所有 uBot 传感器共有的事件，`Header` 是这一次采样的[帧头](/concepts/sampling-and-frame-header/)。
+`On Sensor Sampled` 是所有 uBot 传感器共有的事件，`Header` 是这一次采样的[帧头](/concepts/frame-header/)。
 
 ## 下一步
 
-- [读取 IMU 姿态角](/guides/sensors/imu-orientation/)：把姿态换算成 Roll、Pitch、Yaw。
-- [采样与帧头](/concepts/sampling-and-frame-header/)：采样时刻、`Sequence` 和状态码。
+- [IMU 传感器](/sensor/imu/)：把姿态换算成 Roll、Pitch、Yaw。
+- [帧头与采样状态](/concepts/frame-header/)：`Sequence` 和状态码。
+- [仿真时钟与采样调度](/concepts/clock-and-scheduling/)：采样时刻，以及帧率低时会发生什么。

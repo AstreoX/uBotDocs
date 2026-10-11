@@ -1,0 +1,30 @@
+---
+title: uBotSensor 常见问题
+description: 一句话说明这一页回答哪些问题。
+pageKind: faq
+packages: [UBotSensor]
+sidebar:
+  order: 130
+---
+
+{/* 模板：常见问题，各手册的最后一页。复制到 src/content/docs/<插件目录>/faq.mdx，替换内容，删掉所有注释。 */}
+
+这一页回答 uBotSensor 最常被问到的问题，按主题分组。
+
+{/* 每个主题一个二级标题，每个问题一个三级标题；每题 1 到 3 句，再加一个链接。 */}
+
+## 采样
+
+### 为什么实际采样频率比 Update Rate Hz 低？
+
+帧率低于采样频率时，每帧最多采样一次。见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+
+### 为什么刚启动时的样本不是 Valid？
+
+靠差分计算的传感器（比如 IMU）启动后的前两次采样是预热样本，状态为 `Warming Up`。见[帧头与采样状态](/concepts/frame-header/)。
+
+## 蓝图
+
+### 找不到传感器的节点怎么办？
+
+先确认 uBotSensor 已在工程里启用，再在节点索引里按名称搜索。见[节点索引](/reference/nodes/)。

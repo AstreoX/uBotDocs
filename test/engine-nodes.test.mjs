@@ -23,7 +23,7 @@ test("duplicates across files are errors that name the first file", () => {
   assert.equal(f[0].file, "data/engine-nodes/vehicles.txt");
   assert.equal(f[0].line, 2);
   assert.match(f[0].message, /listed twice \(first in data\/engine-nodes\/core\.txt:2\)/);
-  assert.match(checkEngineLists([{ rel: "x.txt", text: "# only a comment\n" }])[0].message, /no entries/);
+  assert.deepEqual(checkEngineLists([{ rel: "x.txt", text: "# only a comment: a list waiting for its first node\n" }]), [], "a list with only comments is fine");
 });
 
 test("merging keeps every entry once, with its source file and line for error messages", () => {

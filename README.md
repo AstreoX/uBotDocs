@@ -7,7 +7,7 @@
 
 uBot 插件的中文文档站，基于 Astro Starlight。蓝图示例以 UE 编辑器的样式绘制，参考页面由插件的反射数据自动生成。
 
-有哪些插件由 `data/index.json`（uBot 包索引的副本）决定：参考页面、侧边栏、搜索的插件过滤和检查都从它读取。新增插件只需要数据和页面，不需要改代码，步骤见下面的“新增一个 uBot 插件”。
+有哪些插件由 `data/index.json`（uBot 包索引的副本）决定：参考页面、侧边栏、依赖图、搜索的插件过滤和检查都从它读取。新增插件只需要数据和页面，不需要改代码，步骤见下面的“新增一个 uBot 插件”。
 
 ## 本地开发
 
@@ -17,17 +17,26 @@ uBot 插件的中文文档站，基于 Astro Starlight。蓝图示例以 UE 编�
 npm ci            # 依赖从 npm 官方源安装；想走镜像时：npm ci --registry=https://registry.npmmirror.com
 npm run dev        # http://localhost:4321
 npm test           # 单元测试
-npm run check      # 检查 API 数据、中文摘要、蓝图代码块和写作规范
+npm run check      # 检查 API 数据、中文摘要、蓝图代码块、页面类型和写作规范（还没写的页面是警告）
+npm run check -- --no-stubs   # 同上，但还没写的页面算错误
 npm run build      # 构建到 dist/，同时生成搜索索引并校验站内链接
 ```
 
 写页面的规则（目录、frontmatter、`blueprint` 代码块语法、写作规范）见 [CLAUDE.md](CLAUDE.md)。
 
+## 页面结构
+
+侧边栏的顺序是：开始、核心概念、每个插件一项（已发布的在前，规划中的带“规划中”标记）、uBot Manager、开发者、参考、附录。每个插件有自己的文件夹（`core/`、`sensor/`、`ros/`、`vehicles/` ……，文件夹名是包名去掉 `UBot` 前缀后的小写）：已发布的插件放手册，规划中的插件只有一个占位页，发布后在同一个文件夹里扩写，网址不变。插件之间的关系用简介页的依赖图表示，文档里不讲分层。
+
+每个页面在 frontmatter 里写 `pageKind`：`overview`（手册概述）、`feature`（功能页，要有蓝图图）、`concept`（概念页）、`settings`（设置页）、`faq`（常见问题）、`placeholder`（占位页）。每种页面的章节和顺序在 `docs-templates/` 里各有一个示例文件，复制过去改就行，不会被发布。
+
+骨架里的页面先建成“桩页面”：只有 frontmatter 和 `{/* STUB */}` 标记，加一段要写的章节清单。写完一页就删掉标记和清单；`npm run check` 会列出还没写的页面。
+
 ## 数据从哪里来
 
 | 路径 | 内容 | 怎么更新 |
 | --- | --- | --- |
-| `data/index.json` | uBot 包索引（格式 2）：插件、层级、版本、依赖 | `npm run sync-index`，逐字节复制 uBotCore 的 `Index/index.json` |
+| `data/index.json` | uBot 包索引（格式 2）：插件、版本、依赖、组合 | `npm run sync-index`，逐字节复制 uBotCore 的 `Index/index.json` |
 | `data/api/<插件>.json` | 类、节点、属性、结构体、枚举（格式 1） | `npm run sync-api -- --from-github`，或在装有 UE 5.5 的 Windows 上运行 `scripts/export-api.ps1` |
 | `data/engine-nodes/<领域>.txt` | 文档用到的 UE 引擎节点清单（`core.txt` 等） | 手工维护，导出时合并写入 `data/api/engine.json` |
 | `data/zh/<插件>/<类名>.yaml` | 中文摘要，每个类、结构体、枚举一个文件 | 手工维护，`npm run zh -- todo <插件或类名>` 列出缺的条目 |
@@ -47,19 +56,19 @@ npm run build      # 构建到 dist/，同时生成搜索索引并校验站内�
 2. 在插件的 `.gitattributes` 里加一行 `docs/api.json text eol=lf`。
 3. 在本仓库运行 `scripts/export-api.ps1 -Plugins <插件名>`，打 tag 发布之前提交插件的 `docs/api.json`。
 
-包索引（uBotCore 的 `Index/index.json`）：加上插件条目，写好 `layer`、`description`（`en`、`zh-CN`）、`repository`、`versions`（`ref` 为 tag）、`requires`、`enginePlugins`、`provides`。
+包索引（uBotCore 的 `Index/index.json`）：加上插件条目，写好 `description`（`en`、`zh-CN`）、`repository`、`versions`（`ref` 为 tag）、`requires`、`enginePlugins`、`provides`（索引里的 `layer` 给 uBot Manager 用，文档不显示）。
 
 文档仓库：
 
 1. `npm run sync-index`，然后 `npm run add-package -- <插件名>`：建 `data/zh/<插件名>/`、加 `vendor/` 子模块（只用来读插件源码，构建不需要，`--no-submodule` 可跳过），并列出剩下的步骤。
 2. `npm run sync-api -- --from-github --package <插件名>`（或等同步工作流的 PR）得到 `data/api/<插件名>.json`。
-3. 指南放在 `src/content/docs/guides/<主题>/`，目录里的 `_group.yml` 写 `label:` 和 `packages: [<插件名>]`。
+3. 插件的文件夹是 `src/content/docs/<包名去掉 UBot 后的小写>/`。规划中的插件只放一个占位页 `index.mdx`（见 `docs-templates/placeholder.mdx`）；发布后把它改成手册概述，加上 `_group.yml`（`label:` 写 `uBotXxx`，`packages: [<插件名>]`），再写功能页、设置项和常见问题。
 4. 页面要用引擎插件的节点时，写进 `data/engine-nodes/<领域>.txt` 再导出一次。
 5. `npm test`、`npm run check`、`npm run build` 全部通过。
 
-参考页面（`/reference/<插件名小写>/`）、侧边栏分组、节点索引和搜索过滤都会自动出现。规划中的插件只出现在参考概览页的“规划中”表格里。
+参考页面（`/reference/<插件名小写>/`）、侧边栏分组、依赖图、节点索引和搜索过滤都会自动出现。规划中的插件出现在侧边栏（带“规划中”标记）、依赖图和参考概览页的“规划中”表格里，都指向它的占位页。
 
-新增插件只改数据和页面，不改代码和测试：`npm test` 里的 `test/new-package.test.mjs` 会在仓库副本里模拟一次发布（让一个规划中的插件发布，再加一个新插件），副本必须通过全部测试、检查和参考页面生成。
+新增插件只改数据和页面，不改代码和测试：`npm test` 里的 `test/new-package.test.mjs` 会在仓库副本里模拟一次发布（让规划中的插件发布，再加一个新插件），副本必须通过全部测试、检查和参考页面生成。
 
 ## 部署
 

@@ -7,13 +7,16 @@ import { satteri } from "@astrojs/markdown-satteri";
 import { blueprintPlugin, blueprintBuildGate, headingIdsPlugin } from "./src/plugins/blueprint.mjs";
 import { loadPackages } from "./lib/packages.mjs";
 import { referenceSidebar } from "./lib/reference/index.mjs";
+import { docsSidebar } from "./lib/sidebar.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const dataDir = fileURLToPath(new URL("./data", import.meta.url));
 
-// The 参考 section comes from the package registry (data/index.json): 概览, 节点索引, 引擎节点, then
-// one group per layer with released packages. A new package needs no edit here.
-const reference = referenceSidebar({ packages: loadPackages({ root, dataDir }).registry, dataDir });
+// The sidebar comes from the package registry (data/index.json), see lib/sidebar.mjs: one entry per
+// plugin (a group for a released one, a link with the badge 规划中 for a planned one). The 参考 section
+// lists 概览, 节点索引, 引擎节点 and then the released packages by name. A new package needs no edit here.
+const packages = loadPackages({ root, dataDir }).registry;
+const reference = referenceSidebar({ packages, dataDir });
 
 // The public URL is set per deployment (GitHub repository variable SITE_URL). The fallback keeps
 // local builds working until the domain exists; `.invalid` can never resolve by accident.
@@ -34,7 +37,7 @@ export default defineConfig({
     ...(strict ? [blueprintBuildGate()] : []),
     starlight({
       title: "uBot 文档",
-      description: "uBot 是一组 Unreal Engine 5.5 插件，用来在 UE 里搭建机器人仿真：传感器、仿真时钟和 ROS 2 桥接。",
+      description: "uBot 是一组 Unreal Engine 5.5 插件，用来在 UE 里搭建机器人仿真，按需组合，蓝图里直接可用。",
       logo: {
         light: "./src/assets/ubot-mark-dark.svg",
         dark: "./src/assets/ubot-mark-light.svg",
@@ -49,12 +52,7 @@ export default defineConfig({
       social: [{ icon: "github", label: "GitHub", href: "https://github.com/AstreoX" }],
       // Every group is generated from its folder; page order comes from `sidebar.order` in the
       // frontmatter and nested folder labels from `_group.yml` (see src/route-middleware.mjs).
-      sidebar: [
-        { label: "开始", items: [{ autogenerate: { directory: "start" } }] },
-        { label: "指南", items: [{ autogenerate: { directory: "guides" } }] },
-        { label: "概念", items: [{ autogenerate: { directory: "concepts" } }] },
-        reference,
-      ],
+      sidebar: docsSidebar({ packages, reference }),
       customCss: ["./src/styles/theme.css", "./src/styles/blueprint.css"],
       components: {
         Head: "./src/components/Head.astro",

@@ -1,0 +1,81 @@
+---
+// The status and package data of one uBot package, for the placeholder page of a planned plugin and
+// for the overview of a manual: a status line (已发布 with the latest version, or 规划中 with the
+// planned version), then the Chinese description, the packages it requires (links), the engine plugins
+// to enable, what it provides (code) and the recipes that include it (links to 选择组合). Data:
+// data/index.json through lib/packages.mjs; nothing is written by hand, so it changes by itself when
+// the plugin is released.
+//
+//   import PackageStatus from "../../../components/PackageStatus.astro";
+//   <PackageStatus name="UBotVehicles" />
+import index from "../../data/index.json";
+import { createPackageRegistry } from "../../lib/packages.mjs";
+
+const { name } = Astro.props;
+const registry = createPackageRegistry(index);
+const pkg = registry.get(name);
+if (!pkg || pkg.name !== name) throw new Error(`PackageStatus: ${JSON.stringify(name)} is not a package in data/index.json`);
+
+const requires = pkg.requires.filter((r) => r.optional !== true);
+const recipes = registry.recipes().filter((r) => r.packages.includes(pkg.name));
+const version = pkg.released ? pkg.latest?.version : pkg.planned?.version;
+---
+
+<div class="ubot-status not-content">
+  <p class="ubot-status__line">
+    <span class={`ubot-status__badge${pkg.released ? " is-released" : ""}`}>{pkg.released ? "已发布" : "规划中"}</span>
+    {pkg.released ? ` 最新版本 ${version ?? ""}` : ` 尚未发布，计划版本 ${version ?? ""}`}
+  </p>
+  <dl class="ref-meta">
+    <dt>简介</dt>
+    <dd>{pkg.description("zh-CN")}</dd>
+    <dt>需要的插件</dt>
+    <dd>
+      {requires.length === 0 ? "只依赖引擎" : requires.map((r, i) => {
+        const dep = registry.get(r.name);
+        return (
+          <>
+            {i > 0 && "、"}
+            {dep ? <a href={dep.docsPath}>{dep.label}</a> : r.name}
+            {r.version && <> <code>{r.version}</code></>}
+          </>
+        );
+      })}
+    </dd>
+    <dt>引擎插件</dt>
+    <dd>
+      {pkg.enginePlugins.length === 0 ? "无" : pkg.enginePlugins.map((e, i) => <>{i > 0 && "、"}<code>{e}</code></>)}
+    </dd>
+    <dt>提供</dt>
+    <dd>
+      {pkg.provides.length === 0 ? "—" : pkg.provides.map((x, i) => <>{i > 0 && "、"}<code>{x}</code></>)}
+    </dd>
+    <dt>用在这些组合里</dt>
+    <dd>
+      {recipes.length === 0 ? "还没有组合包含它" : recipes.map((r, i) => <>{i > 0 && "、"}<a href="/start/recipes/">{r.name}</a></>)}
+    </dd>
+  </dl>
+</div>
+
+<style>
+  .ubot-status {
+    margin: 1.25rem 0;
+  }
+  .ubot-status__line {
+    margin: 0 0 0.75rem;
+  }
+  .ubot-status__badge {
+    display: inline-block;
+    padding: 0 0.5rem;
+    border: 1px solid var(--sl-color-orange);
+    border-radius: 0.3rem;
+    color: var(--sl-color-orange-high);
+    background: var(--sl-color-orange-low);
+    font-size: var(--sl-text-xs);
+  }
+  .ubot-status__badge.is-released {
+    border-color: var(--sl-color-green);
+    color: var(--sl-color-green-high);
+    background: var(--sl-color-green-low);
+  }
+</style>

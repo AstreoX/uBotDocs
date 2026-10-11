@@ -9,7 +9,7 @@ import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadSite } from "../lib/blueprint/site.mjs";
 import { ApiRegistry } from "../lib/blueprint/api.mjs";
-import { loadPackages } from "../lib/packages.mjs";
+import { docsSlug, loadPackages } from "../lib/packages.mjs";
 
 export const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const site = () => loadSite(root);
@@ -55,13 +55,14 @@ const camelWords = (s) => s.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
 /**
  * The data and pages a first release of the package `name` (a UE plugin name such as UBotTestKit)
  * brings to the docs repository, and nothing else: its entry in the package index (`indexEntry`), the
- * api.json its exporter writes (`api`), and one guide folder (`topic`, with a _group.yml that declares
- * the package, and ping.mdx). `class` is the id of its one component class, `slug` its reference folder.
+ * api.json its exporter writes (`api`), and its manual folder (`docsSlug`: a _group.yml that declares
+ * the package, the overview index.mdx and ping.mdx; for a planned package the overview replaces its
+ * placeholder page). `class` is the id of its one component class, `slug` its reference folder. The
+ * index entry carries a `layer` like the real index does; the docs must not care about it.
  */
-export function packageKit(name, { friendlyName = `uBot ${camelWords(name.replace(/^UBot/, ""))}`, version = "0.1.0", layer = "Capability", requires = [] } = {}) {
+export function packageKit(name, { friendlyName = `uBot ${camelWords(name.replace(/^UBot/, ""))}`, version = "0.1.0", requires = [] } = {}) {
   const cls = `U${name}Component`;
   const folder = name.replace(/^UBot/, "uBot");
-  const bare = name.replace(/^UBot/, "").toLowerCase();
   const api = {
     format: 1, plugin: name, version, engine: "5.5", repository: `https://github.com/AstreoX/${folder}`, generator: "UBotDocExport 1", culture: "en",
     modules: [{ name, type: "Runtime" }],
@@ -82,14 +83,31 @@ export function packageKit(name, { friendlyName = `uBot ${camelWords(name.replac
   const indexEntry = {
     name, friendlyName,
     description: { en: `${friendlyName} exists only in tests.`, "zh-CN": "只在测试里存在的插件。" },
-    layer,
+    layer: "Capability",
     repository: `https://github.com/AstreoX/${folder}.git`,
     tags: ["test"],
     versions: [{ version, ref: `v${version}`, engine: "~5.5", requires, enginePlugins: [], provides: ["Test.Ping"] }],
   };
+  const overview = `---
+title: ${friendlyName} 概述
+description: ${friendlyName} 能做什么。
+pageKind: overview
+sidebar:
+  order: 10
+---
+
+${friendlyName} 提供一个会回答 Ping 的组件。
+
+| 组件 | 作用 |
+| --- | --- |
+| \`${cls}\` | 回答 Ping |
+`;
   const guide = `---
 title: 发一次 Ping
 description: 用 ${friendlyName} 组件发一次 Ping。
+pageKind: feature
+sidebar:
+  order: 20
 ---
 
 这一页用 \`Ping\` 节点检查测试组件是否在线。
@@ -105,20 +123,21 @@ wires:
 \`\`\`
 `;
   return {
-    name, friendlyName, class: cls, slug: name.toLowerCase(), topic: `sim-${bare}`,
-    api, indexEntry, guide,
-    group: `label: 测试套件 ${friendlyName}\npackages: [${name}]\n`,
+    name, friendlyName, class: cls, slug: name.toLowerCase(), docsSlug: docsSlug(name),
+    api, indexEntry, overview, guide,
+    group: `label: ${friendlyName}\npackages: [${name}]\n`,
   };
 }
 
-/** Writes a kit's api.json and guide folder into the repository (or a copy of it) at `dir`; the index is the caller's. */
+/** Writes a kit's api.json and manual folder into the repository (or a copy of it) at `dir`; the index is the caller's. */
 export function writeKit(dir, kit) {
   mkdirSync(join(dir, "data", "api"), { recursive: true });
   writeFileSync(join(dir, "data", "api", `${kit.name}.json`), `${JSON.stringify(kit.api, null, 2)}\n`);
-  const guides = join(dir, "src", "content", "docs", "guides", kit.topic);
-  mkdirSync(guides, { recursive: true });
-  writeFileSync(join(guides, "_group.yml"), kit.group);
-  writeFileSync(join(guides, "ping.mdx"), kit.guide);
+  const manual = join(dir, "src", "content", "docs", kit.docsSlug);
+  mkdirSync(manual, { recursive: true });
+  writeFileSync(join(manual, "_group.yml"), kit.group);
+  writeFileSync(join(manual, "index.mdx"), kit.overview);
+  writeFileSync(join(manual, "ping.mdx"), kit.guide);
 }
 
 /** Rewrites data/index.json of the repository (or a copy of it) at `dir` with the changes `edit(index)` makes. */

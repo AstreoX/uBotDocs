@@ -11,8 +11,8 @@ body:
     id: path
     attributes:
       label: 页面路径
-      description: 相对 `src/content/docs/` 的文件路径。指南放在 `guides/<主题>/`，概念放在 `concepts/`。
-      placeholder: guides/sensors/imu-angular-velocity.mdx
+      description: 相对 `src/content/docs/` 的文件路径。页面已经以“桩页面”的形式建好（只有 frontmatter 和 `{/* STUB */}` 标记），一个 issue 写一个桩页面；插件手册在 `<插件目录>/`（`core/`、`sensor/`、`ros/` ……），概念在 `concepts/`。
+      placeholder: sensor/lidar-2d.mdx
     validations:
       required: true
   - type: input
@@ -20,19 +20,23 @@ body:
     attributes:
       label: 插件
       description: |
-        这一页讲哪个插件，写进页面 frontmatter 的 `packages:`（所在目录的 `_group.yml` 已声明时可以不写）。可以带版本范围，例如 `UBotSensor@^0.1`。
-        可用的插件见参考概览页 /reference/ 和 `data/index.json`，只能写已发布的插件。
+        这一页讲哪个插件，写进页面 frontmatter 的 `packages:`，可以带版本范围，例如 `UBotSensor@^0.1`。
+        插件手册里的页面必须有：写在这里，或者由所在目录的 `_group.yml` 提供（那样这里可以留空）。开始页和概念页只在内容针对某个插件、或蓝图用到插件的节点时才需要，否则留空。
+        只能写已发布的插件，见参考概览页 /reference/ 和 `data/index.json`。
       placeholder: UBotSensor
     validations:
-      required: true
+      required: false
   - type: dropdown
     id: kind
     attributes:
       label: 页面类型
       options:
-        - 指南（解决一个具体任务，至少一张蓝图图）
-        - 概念（解释一个机制，至少一个图表或表格）
-        - 开始（安装、入门）
+        - 手册概述 overview（每本手册的第一页，要有表格）
+        - 功能页 feature（解决一个具体任务，至少一张蓝图图）
+        - 概念页 concept（解释一个机制，至少一个图表或表格）
+        - 设置页 settings（某个插件的设置项）
+        - 常见问题 faq（某个插件手册的最后一页）
+        - 占位页 placeholder（规划中的插件，不写蓝图图）
     validations:
       required: true
   - type: textarea
@@ -71,9 +75,10 @@ body:
       label: 验收标准
       options:
         - label: "`npm test`、`npm run check`、`npm run build` 全部通过，且这一页没有新的检查警告"
-        - label: 指南页至少有一张 `blueprint` 蓝图图；概念页至少有一个图表、蓝图或表格
+        - label: "页面有 `pageKind`，章节按 `docs-templates/` 里这一类页面的示例排列；功能页至少有一张 `blueprint` 蓝图图（不讲蓝图的页面写 `graph: false`），概览页有表格，概念页至少有一个图表、蓝图或表格"
+        - label: 写完以后删掉 `{/* STUB */}` 标记和章节清单
         - label: 第一句话说明这一页解决什么问题；每段不超过 3 句，优先用步骤、表格和蓝图
         - label: 节点、引脚、属性名与蓝图编辑器一致（英文、代码样式）；数字带单位，默认值取自参考数据
         - label: 中文排版：全角标点，中文与英文、数字之间有空格
-        - label: 页面（或所在目录的 `_group.yml`）声明了 `packages`，蓝图只用到声明的插件及其依赖的节点
+        - label: 插件手册里的页面（或所在目录的 `_group.yml`）声明了 `packages`；蓝图只用到声明的插件及其依赖的节点，没有声明插件的页面只用引擎节点
         - label: 需要的类或节点中文说明写进 `data/zh/<插件>/<类名>.yaml`，没有修改生成的参考页面

@@ -1,0 +1,258 @@
+---
+// The plugin dependency graph, drawn like the "依赖图" view of uBot Manager: dark canvas with a dot
+// grid, a card per plugin with a coloured top bar, name and version, orthogonal arrows from a
+// dependency to its dependents ("A → B": B depends on A). Plugins stand in columns by dependency
+// depth, uBotCore (which every plugin requires) as one tall card on the left. Layout:
+// lib/dependency-graph.mjs; data: data/index.json through lib/packages.mjs, so a release or a new
+// plugin changes the drawing without touching a page.
+//
+// A card shows the latest released version, or "规划中" (dashed and dimmed) for a plugin that is
+// planned, and links to the plugin's manual or placeholder page. Rendered on the server, no script.
+// On a phone the graph scrolls sideways inside its own box (scrollables.js adds the hint).
+//
+//   import DependencyGraph from "../../../components/DependencyGraph.astro";
+//   <DependencyGraph />
+import index from "../../data/index.json";
+import { createPackageRegistry } from "../../lib/packages.mjs";
+import { layoutDependencyGraph } from "../../lib/dependency-graph.mjs";
+
+const registry = createPackageRegistry(index);
+const packages = registry.list();
+const layout = layoutDependencyGraph(
+  packages.map((p) => ({ name: p.name, planned: !p.released, requires: registry.dependencies(p.name, { transitive: false }) })),
+  // a little tighter than the Manager so that three columns fit the width of a page
+  { margin: 20, top: 24, gap: 80 },
+);
+const byName = new Map(packages.map((p) => [p.name, p]));
+
+// Top bar colour per package: [dark theme, light theme], as in the Manager's palette. Decoration only:
+// a package that is not listed gets one of the spare colours, stable for its name.
+const PALETTE: Record<string, [string, string]> = {
+  UBotCore: ["#8c8f96", "#8c8f96"],
+  UBotSensor: ["#3d6bb3", "#4f7fdb"],
+  UBotROS: ["#4f8a3a", "#5a9c48"],
+  UBotVehicles: ["#2a8c82", "#2fa398"],
+  UBotAerial: ["#3a8fb7", "#4aa3cc"],
+  UBotEnvironment: ["#b8862a", "#d19a2e"],
+  UBotMCP: ["#7a5bb8", "#8d6fd1"],
+  UBotLearning: ["#b0508f", "#c9609f"],
+  UBotCombat: ["#a83c3c", "#cf5050"],
+};
+const SPARE: [string, string][] = [
+  ["#6f8a3a", "#7fa046"],
+  ["#3a6fb8", "#4a82d1"],
+  ["#b86a3a", "#d17c46"],
+  ["#5b8f8f", "#6aa6a6"],
+  ["#8f5b8f", "#a66aa6"],
+];
+const colors = (name: string): [string, string] => {
+  const own = PALETTE[name];
+  if (own) return own;
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return SPARE[h % SPARE.length] as [string, string];
+};
+
+const cards = layout.nodes.map((node) => {
+  const pkg = byName.get(node.name)!;
+  const [dark, light] = colors(node.name);
+  return {
+    node,
+    pkg,
+    version: pkg.released ? pkg.latest?.version ?? "" : "",
+    style: `left:${node.x}px;top:${node.y}px;width:${node.w}px;height:${node.h}px;--pc-dark:${dark};--pc-light:${light}`,
+  };
+});
+// For screen readers, who get the facts of the drawing as a list.
+const needs = packages
+  .map((p) => ({ p, deps: registry.dependencies(p.name, { transitive: false }).map((d) => byName.get(d)?.label ?? d) }))
+  .filter(({ deps }) => deps.length > 0);
+---
+
+{layout.nodes.length > 0 && (
+  <figure class="dep-graph not-content">
+    <div class="dep-graph__scroll" data-scrollable="插件依赖图">
+      <div class="dep-graph__canvas" style={`width:${layout.width}px;height:${layout.height}px`}>
+        <svg class="dep-graph__edges" width={layout.width} height={layout.height} aria-hidden="true">
+          <defs>
+            <marker id="dep-graph-arrow" orient="auto" markerWidth="5" markerHeight="5" refX="2" refY="2" overflow="visible">
+              <path d="M0 0 L4 2 L0 4 Z" class="dep-graph__arrow" />
+            </marker>
+          </defs>
+          {layout.edges.map((e) => (
+            <path d={e.path} class="dep-graph__edge" marker-end="url(#dep-graph-arrow)" />
+          ))}
+        </svg>
+        {cards.map(({ node, pkg, version, style }) => (
+          <a
+            class={`dep-graph__card${node.planned ? " is-planned" : ""}${node.tall ? " is-tall" : ""}`}
+            href={pkg.docsPath}
+            style={style}
+            title={pkg.description("zh-CN")}
+          >
+            <span class="dep-graph__text">
+              <b class="dep-graph__name">{pkg.label}</b>
+              <span class={`dep-graph__sub${node.planned ? "" : " is-version"}`}>{node.planned ? "规划中" : version}</span>
+              {node.tall && <span class="dep-graph__sub">所有 Package 都依赖</span>}
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+    <figcaption>
+      <svg width="22" height="8" viewBox="0 0 22 8" aria-hidden="true"><path d="M1 4h15" class="dep-graph__edge" stroke-width="1.5" /><path d="M15 1l5 3-5 3z" class="dep-graph__arrow" /></svg>
+      A → B：B 依赖 A。虚线是规划中的插件。点击插件进入它的手册。
+    </figcaption>
+    <ul class="dep-graph__sr">
+      {needs.map(({ p, deps }) => <li>{p.label} 依赖 {deps.join("、")}</li>)}
+    </ul>
+  </figure>
+)}
+
+<style>
+  .dep-graph {
+    /* the Manager's dark theme; the light one is below */
+    --dg-bg: #1e1f22;
+    --dg-dot: #34363b;
+    --dg-border: #393b40;
+    --dg-edge: #868a91;
+    --dg-text: #dfe1e5;
+    --dg-muted: #868a91;
+    --dg-card-bg: #2b2d30;
+    --dg-card-border: #4e5157;
+    --dg-card-ghost-bg: #1e1f22;
+    --dg-card-planned-border: #4a4d53;
+    margin: 1.25rem 0;
+  }
+  :global(:root[data-theme="light"]) .dep-graph {
+    --dg-bg: #ffffff;
+    --dg-dot: #e3e5ea;
+    --dg-border: #ebecf0;
+    --dg-edge: #818594;
+    --dg-text: #000000;
+    --dg-muted: #6c707e;
+    --dg-card-bg: #ffffff;
+    --dg-card-border: #c9ccd6;
+    --dg-card-ghost-bg: #f7f8fa;
+    --dg-card-planned-border: #c9ccd6;
+  }
+
+  .dep-graph__scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--dg-border);
+    border-radius: 0.6rem;
+    background-color: var(--dg-bg);
+    background-image: radial-gradient(var(--dg-dot) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .dep-graph__canvas {
+    position: relative;
+    margin: 0 auto;
+  }
+  .dep-graph__edges {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .dep-graph__edge {
+    fill: none;
+    stroke: var(--dg-edge);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .dep-graph__arrow {
+    fill: var(--dg-edge);
+  }
+
+  .dep-graph__card {
+    --pc: var(--pc-dark);
+    position: absolute;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--dg-card-bg);
+    border: 1px solid var(--dg-card-border);
+    border-top: 4px solid var(--pc);
+    border-radius: 6px;
+    color: var(--dg-text);
+    font-size: 13px;
+    line-height: 20px;
+    text-decoration: none;
+    overflow: hidden;
+  }
+  :global(:root[data-theme="light"]) .dep-graph__card {
+    --pc: var(--pc-light);
+  }
+  .dep-graph__card:hover {
+    box-shadow: 0 0 0 2px var(--sl-color-accent);
+  }
+  .dep-graph__card:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+  .dep-graph__card.is-planned {
+    background: var(--dg-card-ghost-bg);
+    border-style: dashed;
+    border-color: var(--dg-card-planned-border);
+    border-top-style: solid;
+    border-top-color: color-mix(in srgb, var(--pc) 45%, var(--dg-card-ghost-bg));
+    color: var(--dg-muted);
+  }
+  .dep-graph__card.is-tall {
+    justify-content: center;
+    padding: 12px;
+    text-align: center;
+  }
+  .dep-graph__text {
+    min-width: 0;
+  }
+  .dep-graph__name {
+    display: block;
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dep-graph__sub {
+    display: block;
+    overflow: hidden;
+    color: var(--dg-muted);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dep-graph__sub.is-version {
+    font-family: var(--sl-font-mono);
+  }
+
+  .dep-graph figcaption {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-xs);
+  }
+  .dep-graph figcaption .dep-graph__edge {
+    stroke: var(--sl-color-gray-3);
+  }
+  .dep-graph figcaption .dep-graph__arrow {
+    fill: var(--sl-color-gray-3);
+  }
+  .dep-graph__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

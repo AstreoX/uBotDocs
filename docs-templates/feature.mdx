@@ -1,0 +1,70 @@
+---
+title: IMU 传感器
+description: 一句话说明这一页解决什么问题（搜索结果和链接预览会用到）。
+pageKind: feature
+packages: [UBotSensor]
+sidebar:
+  order: 20
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+{/* 模板：功能页，手册里的大部分页面。复制到 src/content/docs/<插件目录>/，替换内容，删掉所有注释；章节和顺序不要改。 */}
+
+这一页把 IMU 的姿态四元数换算成横滚（Roll）、俯仰（Pitch）和偏航（Yaw）三个角度，单位是度。
+
+## 快速用法
+
+{/* 一张最小的节点图，3 到 6 个节点；功能不是蓝图操作（安装、命令行、C++）时，在 frontmatter 里写 graph: false，并去掉这一节。 */}
+
+```blueprint
+caption: 每次采样时把姿态换算成三个角度
+nodes:
+  A: { ref: UUBotImuSensorComponent.OnImuDataUpdated, component: IMU }
+  B: { ref: Break:FUBotImuSensorData, hideUnconnected: true }
+  C: UKismetMathLibrary.Quat_Rotator
+  D: UKismetMathLibrary.BreakRotator
+wires:
+  - A.Data -> B.UBotImuSensorData
+  - B.OrientationQuaternion -> C.Q
+  - C.ReturnValue -> D.Rotation
+```
+
+## 步骤
+
+{/* 读者要做的操作，一步一件事；用 Steps。 */}
+
+<Steps>
+
+1. **添加组件**
+
+   在 Components 面板点 **Add**，搜索 `uBot IMU Sensor`，重命名为 `IMU`。
+
+2. **连蓝图**
+
+   选中组件，在 Details 面板的 Events 区点 `On Imu Data Updated` 旁的 **+**，照上图连线。
+
+</Steps>
+
+## 关键属性
+
+{/* 只列常用的，数值和默认值取自参考；其余链到参考页。 */}
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Update Rate Hz` | 100 | 采样频率，单位 Hz |
+| `Auto Start` | true | 开始运行时自动启动 |
+
+## 输出与事件
+
+- `On Imu Data Updated`：每次采样后触发，`Data` 是这一次的 IMU 数据。
+- `Get Latest IMUData`：读取最近一次的样本，不会触发新的采样。
+
+## 注意事项
+
+- 角速度和线加速度只在有效样本里有值，先检查帧头的 `Valid`。
+
+## 相关参考
+
+- [uBot IMU Sensor](/reference/ubotsensor/uubotimusensorcomponent/)：全部节点和属性。
+- [帧头与采样状态](/concepts/frame-header/)：`Valid` 和状态码。

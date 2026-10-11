@@ -1,0 +1,28 @@
+---
+// Every uBot package as a table, in the order of the sidebar (released ones first, then the planned
+// ones, each in index order): name (a link to the plugin's manual, or to its placeholder page), status
+// (the latest released version, or 规划中) and the Chinese description. Data: data/index.json
+// through lib/packages.mjs, so a release changes this table without touching the page that uses it.
+//
+//   import PackageList from "../../../components/PackageList.astro";
+//   <PackageList />
+import index from "../../data/index.json";
+import { createPackageRegistry } from "../../lib/packages.mjs";
+
+const packages = createPackageRegistry(index).ordered();
+---
+
+<table class="ref-table ubot-packages">
+  <thead>
+    <tr><th>插件</th><th>状态</th><th>简介</th></tr>
+  </thead>
+  <tbody>
+    {packages.map((p) => (
+      <tr>
+        <td><a href={p.docsPath}>{p.label}</a></td>
+        <td>{p.released ? `已发布 ${p.latest?.version ?? ""}`.trim() : "规划中"}</td>
+        <td class="ref-desc">{p.description("zh-CN")}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>

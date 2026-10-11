@@ -4,13 +4,13 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { root } from "./helpers.mjs";
 
-// The concept page "采样与帧头" lists the fields of UBot Frame Header and the values of
+// The concept page "帧头与采样状态" lists the fields of UBot Frame Header and the values of
 // EUBot Sample Status by hand (a table reads better there than a link). These tests fail when the
 // plugin data changes and the page does not follow.
 
 const read = (rel) => readFileSync(join(root, rel), "utf8").replace(/\r\n/g, "\n");
 const api = JSON.parse(read("data/api/UBotCore.json"));
-const page = read("src/content/docs/concepts/sampling-and-frame-header.mdx");
+const page = read("src/content/docs/concepts/frame-header.mdx");
 
 /** `code` values in the first column of the first table under `## heading`. */
 function firstColumn(md, heading) {
@@ -23,7 +23,7 @@ function firstColumn(md, heading) {
 
 test("the frame header table lists exactly the fields of UBot Frame Header", () => {
   const struct = api.structs.find((s) => s.id === "FUBotFrameHeader");
-  const documented = firstColumn(page, "帧头");
+  const documented = firstColumn(page, "帧头字段");
   assert.deepEqual([...documented].sort(), struct.fields.map((f) => f.displayName).sort());
 });
 

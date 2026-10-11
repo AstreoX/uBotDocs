@@ -9,7 +9,7 @@ import { packageKit, removeDir } from "./helpers.mjs";
 // A small index of its own: add-package works from whatever data/index.json lists, so this test does
 // not read the repository's (which gains a released package with every plugin release).
 const planned = { ...packageKit("UBotBeta").indexEntry, versions: [{ version: "0.1.0", planned: true, requires: [], enginePlugins: [], provides: [] }] };
-const index = { formatVersion: 2, packages: [packageKit("UBotAlpha", { layer: "Foundation" }).indexEntry, planned, packageKit("UBotGamma").indexEntry] };
+const index = { formatVersion: 2, packages: [packageKit("UBotAlpha").indexEntry, planned, packageKit("UBotGamma").indexEntry] };
 
 test("add-package: needs the package in the index, creates data/zh/<Name>/, is idempotent, touches nothing else", () => {
   const dir = mkdtempSync(join(tmpdir(), "ubot-add-"));
@@ -31,6 +31,7 @@ test("add-package: needs the package in the index, creates data/zh/<Name>/, is i
     assert.ok(existsSync(join(dir, "data", "zh", "UBotAlpha", ".gitkeep")));
     assert.ok(first.todo.some((l) => /sync-api -- --from-github --package UBotAlpha/.test(l)), "no data/api/UBotAlpha.json here");
     assert.ok(!existsSync(join(dir, ".github")), "no file outside data/ and vendor/ is written: the docs need no other file for a new package");
+    assert.ok(first.todo.some((l) => /write the manual in src\/content\/docs\/alpha\/: index\.mdx \(overview\), _group\.yml with label: uBotAlpha and packages: \[UBotAlpha\]/.test(l)), first.todo.join("\n"));
 
     // second run: the submodule is registered now (simulate what git wrote), nothing else changes
     writeFileSync(join(dir, ".gitmodules"), `${readFileSync(join(dir, ".gitmodules"), "utf8")}[submodule "vendor/uBotAlpha"]\n\tpath = vendor/uBotAlpha\n\turl = https://github.com/AstreoX/uBotAlpha.git\n`);

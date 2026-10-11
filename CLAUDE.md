@@ -6,16 +6,22 @@ Simplified Chinese. Most changes come from Claude Code cloud sessions: one GitHu
 page, one session writes it and opens one PR.
 
 Which packages exist is data, not code: `data/index.json` (a copy of the uBot package index) drives
-the reference, the sidebar, the search filter and the checks. Never write a list of packages into a
-script or a component; ask `lib/packages.mjs` (see "Packages" below).
+the reference, the sidebar, the dependency graph, the search filter and the checks. Never write a list
+of packages into a script or a component; ask `lib/packages.mjs` (see "Packages" below). The one
+exception is the colour of a card in the dependency graph (see "Components").
+
+The docs do not talk about layers (Foundation, Capability, Adapter, Content). The index still has a
+`layer` per package, but nothing shows it: no layer groups in a sidebar, no layer column or row on a
+page, no sentence that explains layers. The relations between plugins are drawn by the dependency graph.
 
 ## Commands
 
 ```bash
 npm ci            # install (exact versions from package-lock.json, resolved from registry.npmjs.org)
-npm test          # unit tests (node:test): graph parser, layout, checks, reference, and a simulated package release
+npm test          # unit tests (node:test): graph parser, layouts, checks, page kinds, templates, reference, and a simulated package release
 npm run check     # validates data/index.json, data/api, data/zh, every ```blueprint block, the packages
-                  # pages declare and the writing rules
+                  # pages declare, the page kinds and the writing rules; pages that are still stubs are warnings
+npm run check -- --no-stubs   # the same, but a page that is still a stub is an error (when the writing is done)
 npm run build     # generates the reference, builds dist/, builds the search index, validates links
 npm run dev       # local server with live reload (http://localhost:4321)
 npm run gen       # regenerate the reference pages only (dev and build do this first)
@@ -42,22 +48,32 @@ fails when `package-lock.json` points at another host.
 ```
 src/content/docs/
   index.mdx                 home page (splash)
-  start/                    开始: introduction, install, first sensor
-  guides/<topic>/           指南: one task per page (sensors/, ros/, manager/, ...)
-  concepts/                 概念: mechanisms worth understanding once
+  start/                    开始: introduction, install, quickstart, recipes
+  concepts/                 核心概念: mechanisms every plugin shares (frame header, clock, coordinates, identity, interfaces)
+  <plugin>/                 one folder per plugin, named after the package without the "UBot" prefix, lower case:
+                            core/ sensor/ ros/ vehicles/ aerial/ environment/ mcp/ learning/ combat/
+                            released: the manual (index = overview, feature pages, settings, faq);
+                            planned: index.mdx only, a placeholder page
+  manager/                  uBot Manager: tour, packages, recipes, settings, command line
+  develop/                  开发者: C++, ROS publishers, writing a package, migration
+  appendix/                 附录: glossary, changelog
   reference/                参考: GENERATED from data/, git-ignored. Never edit, never commit.
+docs-templates/             one example page per page kind (not published, see "Page templates")
 data/index.json             the uBot package index (byte copy of uBotCore's Index/index.json, format 2)
 data/api/<Package>.json     API description exported from UE (format 1), one file per package + engine.json
 data/zh/<Package>/<Owner>.yaml  Chinese summaries, one file per class, struct or enum (engine: data/zh/Engine/)
-data/engine-nodes/<area>.txt    UE engine nodes the exporter writes into data/api/engine.json (core.txt, ...)
+data/engine-nodes/<area>.txt    UE engine nodes the exporter writes into data/api/engine.json (core.txt, sensor.txt, ros.txt, ...)
 lib/packages.mjs            the package registry: every package list comes from here
 lib/semver.mjs              versions and ranges (the grammar of uBotCore's UBotSemVer)
-lib/content-packages.mjs    which packages a page declares (frontmatter or folder default)
+lib/content-packages.mjs    which packages a page declares (frontmatter or folder default), the page kinds, the sections
+lib/sidebar.mjs             the sidebar: built from the registry
+lib/dependency-graph.mjs    layout of the dependency graph (columns by dependency depth, orthogonal arrows)
 lib/reference/              reference generator: package framework (index.mjs) and providers (blueprint.mjs)
 lib/blueprint/              graph parser, validator, layout and HTML renderer (shared by all tools)
 lib/engine-nodes.mjs        engine node lists: check, merge
 src/plugins/blueprint.mjs   Markdown plugin: ```blueprint block -> graph HTML
-src/components/PageTitle.astro  the "需要：…" line under the title and the search's package filter
+src/components/             PackageList, RecipeTable, PackageStatus, DependencyGraph (see "Components"),
+                            SamplingTimeline, PageTitle (the "需要：…" line under the title and the search's package filter)
 src/scripts/blueprint.js    client: wires, node cards, full-screen view, node index filter
 src/scripts/scrollables.js  client: tab stop and scroll hint for tables and diagrams that scroll sideways
 scripts/                    gen-reference, check, sync-index, sync-api, sync-branch, add-package, export-api.ps1 (Windows + UE only), zh, find-node
@@ -65,15 +81,21 @@ vendor/<folder>/            plugin repositories as git submodules, for reading s
 deploy/                     server setup (nginx, SSH gate), see deploy/README.md
 ```
 
-The sidebar is generated from folders. Do not edit a central list to add a page:
+The sidebar is built from the registry (`lib/sidebar.mjs`, called by `astro.config.mjs`). Do not edit a
+central list to add a page or a plugin:
 
-- Order inside a group comes from `sidebar.order` in the frontmatter (use steps of 10).
-- A new folder needs a `_group.yml` next to its pages: `label: 传感器` (the Chinese group name), and
-  for a guide folder about one package `packages: [UBotSensor]` (the default for its pages).
-- The 参考 section is built in `astro.config.mjs` from the package registry: 概览, 节点索引, 引擎节点,
-  then one group per layer (基础, 能力, 适配, 内容) with a group per released package. A new package
-  appears there by itself.
-- Do not create empty folders or stub pages for future content.
+- The order is 开始, 核心概念, one entry per plugin, uBot Manager, 开发者, 参考, 附录. A released
+  plugin is a group generated from its folder (labelled `uBotSensor`), the released ones first in index
+  order; a planned plugin is one link to `<folder>/index` with the badge 规划中, after them, in index
+  order. There are no layer groups and no 规划中 group.
+- Order inside a group comes from `sidebar.order` in the frontmatter (use steps of 10, the overview
+  first). The sidebar label is the page title, so titles of settings and faq pages start with the plugin
+  ("uBotROS 常见问题"): the previous/next links at the bottom of a page use the same text.
+- A plugin folder needs a `_group.yml` next to its pages once the plugin is released:
+  `label: uBotSensor` and `packages: [UBotSensor]` (the default for its pages, see below).
+- The 参考 section is built in `lib/reference/index.mjs` from the registry: 概览, 节点索引, 引擎节点, then
+  one group per released package, listed by name. A new package appears there by itself.
+- Do not create empty folders. A planned plugin's folder holds its placeholder page and nothing else.
 
 ## Writing a page
 
@@ -81,20 +103,34 @@ Frontmatter:
 
 ```yaml
 ---
-title: 读取 IMU 姿态角
+title: IMU 传感器
 description: 一句话说明这一页解决什么问题（搜索结果和链接预览会用到）。
+pageKind: feature           # overview | feature | concept | settings | faq | placeholder (required)
 packages: [UBotSensor]      # optional when the folder's _group.yml sets it; "UBotSensor@^0.1" adds a range
+graph: false                # only for a feature page that is not about Blueprint nodes (install, command line, C++)
 sidebar:
-  order: 20
+  order: 40
 ---
 ```
 
-`packages` names the uBot packages the page is about (names from `data/index.json`). The site shows
-it as one line under the title ("需要：uBot Sensor 0.1+（含依赖 uBot Core）"), the search can be
-filtered by it, and the package's reference page lists the page under 相关指南. A page's own list
-replaces its folder's default. `npm run check`:
+`pageKind` decides the structure of the page (see "Page templates") and what `npm run check` requires:
 
-- fails when a guide declares no package (directly or through its folder);
+| pageKind | check |
+| --- | --- |
+| `overview` | needs a table (what the plugin can do, its components) |
+| `feature` | needs at least one `blueprint` graph, unless the frontmatter says `graph: false` |
+| `concept` | warns when there is no diagram, graph or table (`<DependencyGraph />` and the other components count) |
+| `settings`, `faq` | no extra rule |
+| `placeholder` | no `blueprint` graph, no link into the reference, must show `<PackageStatus name="UBotX" />`; warns when that package is released (turn the page into the manual) |
+
+`packages` names the uBot packages the page is about (names from `data/index.json`). The site shows
+it as one line under the title ("需要：uBotSensor 0.1.x（含依赖 uBotCore），并启用引擎插件 …"), the
+search can be filtered by it, and the package's reference page lists the page under 相关页面. A page's
+own list replaces its folder's default. The version text is the family of the package's current version
+("0.1.x", never "0.1+": a caret on 0.x pins the minor version), or the range written out. `npm run check`:
+
+- fails when a page of a released plugin's manual declares no package (directly or through the folder's
+  `_group.yml`); placeholders are exempt;
 - fails on unknown names, planned packages and ranges that match no released version;
 - fails when a graph uses a node of a package that is neither declared nor a dependency (direct or
   transitive) of a declared one; engine nodes are always fine. A page that declares nothing (a concept
@@ -102,17 +138,69 @@ replaces its folder's default. `npm run check`:
 - warns when a declared package is not used by any graph of a page that has graphs.
 
 Use `.mdx` when you need Starlight components (`import { Steps } from "@astrojs/starlight/components";`),
-otherwise `.md`. Link with absolute paths: `/guides/sensors/imu-orientation/`. Broken internal links and
-anchors fail the build.
+otherwise `.md`. Link with absolute paths: `/sensor/imu/`. Broken internal links and anchors fail the
+build.
 
 Where things go:
 
-- A task ("how do I …") is a guide: `src/content/docs/guides/<topic>/<slug>.mdx`. Every guide has at
-  least one blueprint graph (`npm run check` fails otherwise).
-- A mechanism ("how does … work") is a concept page: `src/content/docs/concepts/<slug>.mdx`, with at
-  least one diagram, graph or table.
-- Facts about a class, node or property belong in the generated reference, not in guides. Guides link
+- A task ("how do I …") in a plugin's manual is a feature page: `src/content/docs/<plugin>/<slug>.mdx`,
+  with a graph. A mechanism ("how does … work") that more than one plugin shares is a concept page in
+  `concepts/`; one that belongs to a single plugin is a `concept` page in its folder.
+- The first page of every manual (`index.mdx`) is its overview; settings and faq pages end the manual.
+- Facts about a class, node or property belong in the generated reference, not in the manual. Pages link
   to it instead of copying pin tables.
+
+### Stub pages
+
+The skeleton of the site (every page, its kind and its sections) is created as stubs: frontmatter
+(Chinese title and description, sidebar order, `pageKind`, `packages` where relevant) and a body that is
+only the marker `{/* STUB */}` plus a comment with the checklist of the sections to write. A page that
+is a stub is a warning in `npm run check` (one line per page); `npm run check -- --no-stubs` makes them
+errors, for when the writing is done. To write a page: copy the structure of its kind from
+`docs-templates/`, write the sections of the checklist, delete the marker and the checklist. Stubs are
+not listed on the reference pages and are exempt from the content rules until the marker is gone.
+
+## Page templates
+
+`docs-templates/` has one example file per page kind. They are outside `src/content`, so they are not
+published; `npm test` checks that each passes `npm run check` and has its sections in this order.
+Copy the one you need, replace the content, delete the comments. Sections and their order are fixed:
+
+| pageKind | used for | sections, in this order |
+| --- | --- | --- |
+| `overview` (`overview.mdx`) | the first page of a manual | 一句话定位 → 能做什么（表）→ 依赖与安装（`<PackageStatus />`）→ 组件一览（表，链到参考）→ 下一步 |
+| `feature` (`feature.mdx`) | most pages of a manual | 一句话目标 → 快速用法（节点图）→ 步骤 → 关键属性（表，只列常用的）→ 输出与事件 → 注意事项 → 相关参考 |
+| `concept` (`concept.mdx`) | core concepts | 一句话 → 图或表 → 分节说明 → 相关页面 |
+| `settings` (`settings.mdx`) | the 设置项 page of a manual | 在哪里改 → 设置表（名称、默认值、作用）→ 保存位置 |
+| `faq` (`faq.mdx`) | the last page of a manual | 按主题分组（二级标题），每题（三级标题）1 到 3 句加链接 |
+| `placeholder` (`placeholder.mdx`) | a planned plugin | 状态行和包信息（`<PackageStatus />`，从索引生成）→ 定位 → 计划提供的能力 → 与现有插件的关系 → 发布前可以先怎么做 |
+
+The "一句话" is the opening sentence of the page, not a heading; the status line and the package data
+of a placeholder are the `<PackageStatus />` component. The writing style below applies to every kind.
+
+## Components
+
+Components read `data/index.json` through `lib/packages.mjs`, so a release changes them without a
+page edit. Import them with a relative path (`import PackageList from "../../../components/PackageList.astro";`).
+
+| component | what it draws |
+| --- | --- |
+| `<PackageList />` | every package as a table: name (link to its manual or placeholder), status (version or 规划中), description |
+| `<RecipeTable />` | the recipes of the index with their packages, planned ones marked 规划中; `<RecipeTable available />` only those that can be applied today |
+| `<PackageStatus name="UBotX" />` | status line, description, required packages (links), engine plugins, what it provides, the recipes that include it |
+| `<DependencyGraph />` | the dependency graph, drawn like uBot Manager's 依赖图 view |
+
+The dependency graph (`src/components/DependencyGraph.astro`, layout in `lib/dependency-graph.mjs`,
+tests in `test/dependency-graph.test.mjs`): columns by dependency depth from left to right (a package
+without dependencies in column 0, any other one column right of the deepest package it requires),
+"A → B" means B depends on A, orthogonal arrows. A package every other package requires and that is
+alone in column 0 (uBotCore) is one tall card, "所有 Package 都依赖", without arrows. A card shows the
+name, the latest released version or 规划中 (dashed, dimmed), and links to the plugin's manual or
+placeholder. It is rendered on the server, works in the light and the dark theme, and scrolls sideways
+inside its own box on a phone. The colour of a card's top bar comes from a small palette keyed by
+package name inside the component (decoration only; an unknown package gets a stable spare colour), not
+from the index. If you change the layout, keep `test/dependency-graph.test.mjs` green: arrows never
+overlap and stay inside the canvas, also in 500 random graphs.
 
 ## Writing style
 
@@ -126,11 +214,13 @@ prose. Follow every rule.
   `<Card>`/`<CardGrid>` outside the home page.
 - No cards or boxes of text (the maintainer does not like long text rectangles): use lists, tables and
   blueprint graphs. Keep `:::caution` for real warnings only, one or two sentences.
-- Every guide has at least one blueprint graph. Concept pages have at least one diagram, graph or table.
+- Every feature page has at least one blueprint graph (unless it sets `graph: false`). Overview pages
+  have a table; concept pages have at least one diagram, graph or table. Follow the sections of the
+  page kind (see "Page templates").
 - Node, pin and property names stay in English exactly as the Blueprint editor shows them, in code
   style: `Get Latest IMUData`, `Update Rate Hz`, `X (Roll)`. On first use of a Chinese technical term,
   give the English term: 横滚（Roll）, 自动启动（`Auto Start`）.
-- Guides link to the reference instead of copying pin tables. Numbers carry units (100 Hz, 0.5 s,
+- Pages link to the reference instead of copying pin tables. Numbers carry units (100 Hz, 0.5 s,
   9.8 m/s²). Defaults come from the reference data, not from memory.
 - Chinese typography: full-width punctuation（，。：；！？（））, and a space between Chinese and Latin
   letters or digits: 采样频率 100 Hz，`Sequence` 每次加 1。
@@ -188,7 +278,8 @@ Finding node ids and pins:
 
 If an engine node you need is not in `data/api/engine.json`, use an `inline` node (it produces a check
 warning) and add its path to a list in `data/engine-nodes/` in the same PR (`core.txt` for general
-nodes; nodes of an engine plugin go into the file of their area, e.g. `vehicles.txt`), e.g.
+nodes; nodes only one manual needs into the file of its area: `sensor.txt` and `ros.txt` (empty for now), or
+`vehicles.txt` for nodes of an engine plugin), e.g.
 `/Script/Engine.KismetMathLibrary:Add_VectorVector`, `event /Script/Engine.Actor:ReceiveEndPlay`,
 `node /Script/BlueprintGraph.K2Node_DynamicCast`. The next local export picks it up; then replace the
 inline node with its id.
@@ -197,7 +288,7 @@ inline node with its id.
 
 `src/content/docs/reference/` is regenerated from `data/` on every `npm run dev`/`build`
 (`scripts/gen-reference.mjs`, see "Reference providers"). Never edit it and never commit it. URLs are
-`/reference/<package in lower case>/...` and never contain the layer or a version.
+`/reference/<package in lower case>/...` and never contain a version.
 
 Chinese text for API items goes into `data/zh/<Package>/<Owner>.yaml`: one file per class, struct or
 enum, so sessions that describe different classes never touch the same file. Nodes and properties go
@@ -273,22 +364,32 @@ Manager reads, spec in uBotManager's docs/SPEC.md). Update it with `npm run sync
 
 `loadPackages()` returns the registry every script, component and test uses:
 
-- `list()` all packages, ordered by layer (Foundation 基础, Capability 能力, Adapter 适配, Content 内容),
-  then by name; `released()` (a version without `planned: true`) and `planned()`;
-- per package: `friendlyName`, `description()` (zh-CN, English fallback), `layer` and `layerLabel`,
-  `latest` released version, `documentedVersion` (the version of `data/api/<Name>.json`, else the
-  latest), `requires`/`enginePlugins`/`provides`/`prebuilt` of that version, `folder` (the index's
-  `folder`, else the repository name: `uBotSensor`), `githubUrl`, `hasApi`, `path` (`/reference/<slug>/`);
-- `dependencies(name)` (transitive, optional ones skipped), `closure(names)`, `releasedByLayer()`.
+- `list()` all packages in the order of the index; `released()` (a version without `planned: true`) and
+  `planned()` in that order; `ordered()` released first, then planned (the order of the sidebar and of
+  `<PackageList />`);
+- per package: `friendlyName` (the index value, "uBot Sensor"), `label` (how the docs write the name:
+  "uBotSensor"), `description()` (zh-CN, English fallback), `latest` released version, `planned` (the
+  planned version of a package without a release), `documentedVersion` (the version of
+  `data/api/<Name>.json`, else the latest), `requires`/`enginePlugins`/`provides`/`prebuilt` of that
+  version, `folder` (the index value `folder`, else the repository name: `uBotSensor`), `githubUrl`,
+  `hasApi`, `path` (`/reference/<slug>/`), `docsSlug` (`sensor`: the name without "UBot", lower case) and
+  `docsPath` (`/sensor/`, the manual or the placeholder page of the plugin);
+- `dependencies(name)` (transitive, optional ones skipped), `closure(names)`, `byDocsSlug(slug)`,
+  `recipes()` (the recipes of the index, `available` when every package in them is released).
 
-Released packages get a reference home page, a sidebar group and a search filter value; planned ones
-only a row in the "规划中" table on `/reference/`.
+The registry has no layer: the `layer` of the index is ignored on purpose. A docs folder name may not be
+one of the sections of the site or the folder of another package (`validateIndex`).
+
+Released packages get a reference home page, a group in the reference and one in the main sidebar, and
+a search filter value; planned ones a row in the "规划中" table on `/reference/`, a link in the sidebar
+and a card in the dependency graph, all pointing at the placeholder page.
 
 ## Reference providers (lib/reference/)
 
 `lib/reference/index.mjs` is the framework: it writes the overview (`/reference/`, with the 规划中
-table) and one home page per released package (description, layer, documented version, dependencies,
-engine plugins, provides, prebuilt binaries, repository, 相关指南, then the providers' sections). Each
+table) and one home page per released package (description, link to the manual, documented version,
+dependencies, engine plugins, provides, prebuilt binaries, repository, 相关页面, then the sections of
+the providers; stub and placeholder pages are not listed). Each
 kind of data has a provider, registered in `PROVIDERS`:
 
 - `blueprint` (`lib/reference/blueprint.mjs`): classes, structs, enums and nodes from
@@ -307,7 +408,7 @@ for UBotMCP:
    extend it for the new file). Do not write such data by hand and do not add a provider before the
    data exists.
 2. Add `lib/reference/<id>.mjs` exporting the provider, append it to `PROVIDERS`. Its pages go under
-   `<package slug>/<something>/` (never a layer or version in the path); site-wide pages (an index of
+   `<package slug>/<something>/` (never a version in the path); site-wide pages (an index of
    all topics) get a `sidebarLinks` entry.
 3. Validate the data in `npm run check`, test the provider with a temporary data folder (see
    `test/extensibility.test.mjs`), and document the data file here.
@@ -315,10 +416,10 @@ for UBotMCP:
 ## Adding a new uBot package
 
 The docs need no code change for a new package, only data and pages: `data/index.json`,
-`data/api/<Name>.json`, `data/engine-nodes/<area>.txt` if needed, `data/zh/<Name>/` and the guides.
-`test/new-package.test.mjs` keeps that true: it copies the repository, releases a planned package and
-adds a new one (data and a guide each), and the copy must pass the whole test suite, `npm run check`
-without warnings and the generator. If it fails, a test or a file depends on today's list of packages;
+`data/api/<Name>.json`, `data/engine-nodes/<area>.txt` if needed, `data/zh/<Name>/` and the manual.
+`test/new-package.test.mjs` keeps that true: it copies the repository, releases every planned package
+and adds a new one (data and a manual folder each), and the copy must pass the whole test suite,
+`npm run check` without new warnings and the generator. If it fails, a test or a file depends on today's list of packages;
 fix that place to read `lib/packages.mjs` (tests: `repoPackages()` and `packageKit()` in
 `test/helpers.mjs`). The sync bot releases packages by changing data only, so a red `npm test` there
 means no PR.
@@ -331,8 +432,9 @@ Plugin repository:
 3. Run `scripts/export-api.ps1 -Plugins <Name>` here (Windows, UE 5.5); it checks the project first and
    prints what to add. Commit the plugin's `docs/api.json` before tagging the release.
 
-Index (uBotCore `Index/index.json`): the package entry with `layer`, `description` (`en`, `zh-CN`),
-`repository`, `versions` (`ref` = the tag), `requires`, `enginePlugins`, `provides`.
+Index (uBotCore `Index/index.json`): the package entry with `description` (`en`, `zh-CN`),
+`repository`, `versions` (`ref` = the tag), `requires`, `enginePlugins`, `provides` (and the `layer`
+that uBot Manager uses; the docs ignore it).
 
 Docs repository:
 
@@ -340,8 +442,12 @@ Docs repository:
    submodule for reading the plugin's source, which the build does not need: `--no-submodule` skips it;
    it prints what is left).
 2. `npm run sync-api -- --from-github --package <Name>` (or the sync workflow's PR) for `data/api/<Name>.json`.
-3. Guides in `src/content/docs/guides/<topic>/` with a `_group.yml` that sets `label:` and
-   `packages: [<Name>]`.
+3. The folder of the plugin, `src/content/docs/<slug>/` (`<slug>` = the name without "UBot", lower case).
+   While the plugin is planned it holds one page, `index.mdx`, a placeholder
+   (`docs-templates/placeholder.mdx`): the sidebar and the dependency graph link to it. When the plugin is
+   released, turn `index.mdx` into the manual overview (`docs-templates/overview.mdx`), add `_group.yml`
+   with `label: <uBotName>` and `packages: [<Name>]`, and write the feature, settings and faq pages
+   (stubs first, see "Stub pages"). `npm run check` warns while a released plugin still has a placeholder.
 4. Engine nodes from an engine plugin the pages need: `data/engine-nodes/<area>.txt`, then an export.
 5. `npm test`, `npm run check`, `npm run build`.
 
@@ -358,10 +464,13 @@ not `/reference/ubotsensor-0.1/`); write version-specific facts as text ("从 0.
 
 - edit or commit `src/content/docs/reference/`, `dist/`, `.astro/` or `node_modules/`;
 - add web fonts, CDNs or other runtime requests to third-party hosts (readers may be in mainland China);
-- add a page without a description, or a guide without a graph or without `packages`;
+- add a page without a description or a `pageKind`, a feature page without a graph (unless `graph: false`),
+  or a page of a plugin manual without `packages`;
+- show layers anywhere (sidebar groups, table columns, explanations): the `layer` of the index is not for readers;
 - list packages, plugin folders or versions in code (scripts, components, tests that mean "every
   package", "the released ones" or "the planned one"): read them from `lib/packages.mjs`; a test that
-  needs a package that does not exist builds one with `packageKit()`;
+  needs a package that does not exist builds one with `packageKit()`. The one list is the colour
+  palette of the dependency graph cards, which is decoration;
 - write version numbers into URLs or file names under `src/content/docs/` and `data/`;
-- add empty folders, stub pages or "coming soon" content;
+- add empty folders, or "coming soon" text outside the stubs and placeholder pages of the skeleton;
 - put secrets or server details in the repository (deployment uses GitHub secrets, see deploy/README.md).

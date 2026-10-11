@@ -1,11 +1,14 @@
 ---
-title: 安装 uBot Manager
-description: 用 uBot Manager 把 UBotCore、UBotSensor 和 UBotROS 装进 UE 5.5 工程。
+title: 安装 uBot
+description: 用 uBot Manager 把 uBot 插件装进 UE 5.5 工程，依赖一并装好。
+pageKind: feature
+graph: false
 sidebar:
-  order: 2
+  order: 20
 ---
 
 import { Steps } from "@astrojs/starlight/components";
+import RecipeTable from "../../../components/RecipeTable.astro";
 
 这一页把 uBot 插件装进你的 UE 5.5 工程：先装 uBot Manager，再用它安装插件。
 
@@ -27,14 +30,11 @@ uBot Manager 是 Windows 桌面程序，负责下载插件、处理依赖、修�
 
 3. **选择要装的插件**
 
-   点标题栏的 `Recipe`，在 `应用 Recipe` 里选一个组合：
+   点标题栏的 `Recipe`，在 `应用 Recipe` 里选一个组合。目前可以应用的组合：
 
-   | Recipe | 包含 |
-   | --- | --- |
-   | 仅传感器 | `UBotCore`、`UBotSensor` |
-   | ROS 2 传感器 | `UBotCore`、`UBotSensor`、`UBotROS` |
+   <RecipeTable available />
 
-   然后点 `查看更改…`。也可以在 Package 视图里逐个选中插件点安装。
+   然后点 `查看更改…`。也可以在 Package 视图里逐个选中插件点安装，依赖会自动加入。
 
 4. **应用**
 
@@ -65,4 +65,4 @@ uBot Manager 优先下载预编译包，条件不满足时改为克隆源码并�
 
 ## 下一步
 
-装好后，继续看[第一个传感器](/start/first-sensor/)：给 Actor 加一个 IMU，在屏幕上看到它的采样。
+装好后，继续看[五分钟上手](/start/quickstart/)：给 Actor 加一个 IMU，在屏幕上看到它的采样。

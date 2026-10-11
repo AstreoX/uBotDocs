@@ -1,15 +1,16 @@
 ---
 // Starlight's page title, plus:
 // - on a page that declares uBot packages (frontmatter `packages:` or its folder's _group.yml), one
-//   line under the title: "需要：uBot Sensor 0.1+（含依赖 uBot Core）" with links to the package pages;
-// - the Pagefind filter "package" (search can be narrowed per package): the declared packages, and
-//   for the generated reference the package whose folder the page is in (/reference/<package>/...).
+//   line under the title: "需要：uBotSensor 0.1.x（含依赖 uBotCore）", with links to the package pages
+//   and, when they need any, "，并启用引擎插件 …" (lib/content-packages.mjs, requiresLine);
+// - the Pagefind filter "插件" (search can be narrowed per package): the declared packages, and for
+//   the generated reference the package whose folder the page is in (/reference/<package>/...).
 // Package data comes from data/index.json through lib/packages.mjs, like everywhere else.
 import Default from "@astrojs/starlight/components/PageTitle.astro";
 import { parse } from "yaml";
 import index from "../../data/index.json";
 import { createPackageRegistry, requirementsOf } from "../../lib/packages.mjs";
-import { effectivePackages, groupDefaults } from "../../lib/content-packages.mjs";
+import { PACKAGE_FILTER, effectivePackages, groupDefaults, requiresLine } from "../../lib/content-packages.mjs";
 
 const groupFiles = import.meta.glob("/src/content/docs/**/_group.yml", { query: "?raw", import: "default", eager: true });
 const defaults = groupDefaults(
@@ -19,11 +20,6 @@ const defaults = groupDefaults(
   })),
 );
 const registry = createPackageRegistry(index);
-const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const link = (d: { href: string; friendlyName: string; name: string }, filter: boolean) =>
-  d.href
-    ? `<a href="${esc(d.href)}"${filter ? ` data-pagefind-filter="package:${esc(d.name)}"` : ""}>${esc(d.friendlyName)}</a>`
-    : `<span${filter ? ` data-pagefind-filter="package:${esc(d.name)}"` : ""}>${esc(d.friendlyName)}</span>`;
 
 const { entry } = Astro.locals.starlightRoute;
 const id: string = entry.id;
@@ -34,15 +30,10 @@ if (id === "reference" || id.startsWith("reference/")) {
 } else {
   const rel = String(entry.filePath ?? `${id}.md`).replaceAll("\\", "/").replace(/^.*?src\/content\/docs\//, "");
   const { specs } = effectivePackages(rel, entry.data, defaults);
-  const { declared, dependencies } = requirementsOf(specs, registry);
-  if (declared.length) {
-    const main = declared.map((d) => `${link(d, true)}${d.version ? ` ${esc(d.version)}` : ""}`).join("、");
-    const deps = dependencies.length ? `（含依赖 ${dependencies.map((d) => link(d, false)).join("、")}）` : "";
-    requires = `需要：${main}${deps}`;
-  }
+  requires = requiresLine(requirementsOf(specs, registry));
 }
 ---
 
 <Default />
 {requires && <p class="ubot-requires" set:html={requires} />}
-{referencePackage && <span hidden data-pagefind-filter={`package:${referencePackage}`}></span>}
+{referencePackage && <span hidden data-pagefind-filter={`${PACKAGE_FILTER}:${referencePackage}`}></span>}

@@ -1,0 +1,43 @@
+---
+title: uBotSensor 概述
+description: 一句话说明这个插件能做什么，适合什么场景。
+pageKind: overview
+packages: [UBotSensor]
+sidebar:
+  order: 10
+---
+
+import PackageStatus from "../../../components/PackageStatus.astro";
+
+{/* 模板：手册概述，每本手册的第一页。复制到 src/content/docs/<插件目录>/index.mdx，替换内容，删掉所有注释；章节和顺序不要改。 */}
+
+uBotSensor 给 Actor 装上仿真传感器，在蓝图里读数据，不需要写代码。
+
+## 能做什么
+
+{/* 一张表：能力、输出、链到对应的页面。 */}
+
+| 传感器 | 输出 | 页面 |
+| --- | --- | --- |
+| IMU | 姿态、角速度、线加速度 | [IMU 传感器](/sensor/imu/) |
+
+## 依赖与安装
+
+{/* PackageStatus 从包索引生成：状态、依赖、引擎插件、提供的能力、用到它的组合。 */}
+
+<PackageStatus name="UBotSensor" />
+
+用 [uBot Manager](/manager/) 安装，依赖会一并装好。
+
+## 组件一览
+
+{/* 一张表：组件、一句话作用、链到参考。 */}
+
+| 组件 | 作用 | 参考 |
+| --- | --- | --- |
+| `uBot IMU Sensor` | 输出姿态、角速度和线加速度 | [uBot IMU Sensor](/reference/ubotsensor/uubotimusensorcomponent/) |
+
+## 下一步
+
+- [五分钟上手](/start/quickstart/)：给 Actor 加一个 IMU，在屏幕上看到采样序号。
+- [传感器通用用法](/sensor/basics/)：所有传感器共有的属性和事件。

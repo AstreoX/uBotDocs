@@ -1,24 +1,15 @@
 ---
-title: 采样与帧头
-description: uBot 传感器什么时候采样，帧头里有什么，怎样判断一帧数据能不能用。
+title: 帧头与采样状态
+description: 每次采样的帧头里有什么，状态码是什么意思，怎样判断一帧数据能不能用。
+pageKind: concept
 packages: [UBotSensor]
 sidebar:
   order: 10
 ---
 
-import SamplingTimeline from "../../../components/SamplingTimeline.astro";
+这一页说明帧头（Frame Header）里有什么，以及怎样判断一帧数据能不能用。
 
-这一页解释 uBot 传感器什么时候采样，以及怎样用帧头（Frame Header）判断一帧数据能不能用。
-
-## 采样时刻
-
-传感器启动时立即采样一次，之后按 `Update Rate Hz` 在仿真时间上排出固定的采样时刻。每帧最多采样一次：一帧跨过多个时刻时只采一次，其余的计入 [`Get Dropped Sample Count`](/reference/ubotsensor/uubotsensorcomponent/#GetDroppedSampleCount)。
-
-<SamplingTimeline />
-
-所以帧率低于 `Update Rate Hz` 时，实际采样频率等于帧率。时间戳取实际采样那一帧的仿真时间，也就是 World 的游戏时间：暂停时不走，跟随时间膨胀。
-
-## 帧头
+## 帧头字段
 
 每次采样都会生成一个帧头（[`UBot Frame Header`](/reference/ubotcore/structs/fubotframeheader/)），随数据一起出现在事件和 `Get Latest …` 节点里。
 
@@ -44,6 +35,8 @@ import SamplingTimeline from "../../../components/SamplingTimeline.astro";
 | `Disabled` | `Sensor Enabled` 为 false 时的采样 |
 | `Error` | 还没采样过（帧头的默认值），或采样出错 |
 
+## 判断一帧能不能用
+
 不是 `Valid` 的样本也会触发事件。用到速度、加速度这类差分结果之前，先检查 `Valid`：
 
 ```blueprint
@@ -57,3 +50,13 @@ wires:
   - A.Header -> B.UBotFrameHeader
   - B.bValid -> C.Condition
 ```
+
+{/*
+待补章节（概念页，章节顺序见 docs-templates/concept.mdx）：
+- [ ] 用 `Sequence` 判断是否有新数据
+*/}
+
+## 相关页面
+
+- [仿真时钟与采样调度](/concepts/clock-and-scheduling/)：采样什么时候发生，时间戳取哪一帧的仿真时间。
+- [五分钟上手](/start/quickstart/)：在屏幕上打印采样序号。

@@ -1,0 +1,47 @@
+---
+// uBot Manager's recipes (preset package sets) from the index's top-level "recipes", as a table: name
+// as the Manager shows it in Chinese, what it is for and the packages it installs. A recipe that
+// contains a planned package cannot be applied yet and carries the mark 规划中, like the planned package
+// in its list. `available` leaves those recipes out, so a page that tells readers what to click today
+// lists only what works. Data: data/index.json through lib/packages.mjs.
+//
+//   import RecipeTable from "../../../components/RecipeTable.astro";
+//   <RecipeTable />             all recipes
+//   <RecipeTable available />   only the ones that can be applied today
+import index from "../../data/index.json";
+import { createPackageRegistry } from "../../lib/packages.mjs";
+
+const { available = false } = Astro.props;
+const registry = createPackageRegistry(index);
+const recipes = registry.recipes().filter((r) => !available || r.available);
+---
+
+{recipes.length > 0 ? (
+  <table class="ref-table ubot-recipes">
+    <thead>
+      <tr><th>组合</th><th>用途</th><th>包含</th></tr>
+    </thead>
+    <tbody>
+      {recipes.map((r) => (
+        <tr>
+          <td>{r.name}{!r.available && <span class="ref-badge">规划中</span>}</td>
+          <td class="ref-desc">{r.description}</td>
+          <td>
+            {r.packages.map((name, i) => {
+              const pkg = registry.get(name);
+              return (
+                <>
+                  {i > 0 && "、"}
+                  <a href={pkg?.docsPath ?? "/"}>{pkg?.label ?? name}</a>
+                  {pkg && !pkg.released && <span class="ref-badge">规划中</span>}
+                </>
+              );
+            })}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+) : (
+  <p>包索引里暂时没有可以直接应用的 Recipe，在 Package 视图里逐个安装插件即可。</p>
+)}

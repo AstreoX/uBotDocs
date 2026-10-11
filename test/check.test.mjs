@@ -11,31 +11,29 @@ import { groupDefaults } from "../lib/content-packages.mjs";
 import { createPackageRegistry } from "../lib/packages.mjs";
 import { tinyRegistry, site, root, repoPackages, removeDir } from "./helpers.mjs";
 
-const page = (body, fm = "title: 测试\ndescription: 说明") => `---\n${fm}\n---\n\n${body}`;
+const page = (body, fm = "title: 测试\ndescription: 说明\npageKind: concept") => `---\n${fm}\n---\n\n${body}`;
 const msgs = (fs, sev) => fs.filter((f) => !sev || f.severity === sev).map((f) => `${f.line}: ${f.message}`).join("\n");
 
 test("fenced blocks are found with their line numbers", () => {
   const p = splitPage(page("第一段。\n\n```blueprint\nnodes:\n  A: X\n```\n\n````md\n```blueprint\nnot a block\n```\n````\n"));
   assert.equal(p.blocks.length, 2);
   assert.equal(p.blocks[0].lang, "blueprint");
-  assert.equal(p.blocks[0].line, 8);
+  assert.equal(p.blocks[0].line, 9);
   assert.equal(p.blocks[1].lang, "md", "a blueprint fence inside a longer fence is content, not a block");
 });
 
-test("guides need a blueprint graph", () => {
-  const fs = checkPage("src/content/docs/guides/x/a.mdx", page("这一页说明一件事。"), tinyRegistry());
-  assert.match(msgs(fs, "error"), /guide pages need at least one/);
+test("a concept page without a diagram, graph or table is a warning", () => {
   const ok = checkPage("src/content/docs/concepts/a.mdx", page("这一页说明一件事。"), tinyRegistry());
   assert.equal(msgs(ok, "error"), "");
   assert.match(msgs(ok, "warning"), /concept pages should have at least one diagram/);
 });
 
 test("blueprint errors point at page lines", () => {
-  const fs = checkPage("src/content/docs/guides/a.mdx", page("这一页说明一件事。\n\n```blueprint\nnodes:\n  A: UChild.Nope\n```\n"), tinyRegistry());
+  const fs = checkPage("src/content/docs/develop/a.mdx", page("这一页说明一件事。\n\n```blueprint\nnodes:\n  A: UChild.Nope\n```\n"), tinyRegistry());
   const e = fs.filter((f) => f.severity === "error");
   assert.equal(e.length, 1);
-  assert.equal(e[0].line, 10);
-  assert.equal(e[0].file, "src/content/docs/guides/a.mdx");
+  assert.equal(e[0].line, 11);
+  assert.equal(e[0].file, "src/content/docs/develop/a.mdx");
 });
 
 test("long paragraphs and style issues are warnings", () => {
@@ -90,7 +88,7 @@ const ROS = "  R: UUBotROSBridgeSubsystem.GetBridgeEndpoint";
 const BRANCH = "  B: K2Node_IfThenElse";
 const FENCE = "```";
 const graph = (...nodes) => `\n\n${FENCE}blueprint\nnodes:\n${nodes.join("\n")}\n${FENCE}\n`;
-const withPackages = (list, body) => page(`这一页说明一件事。${body}`, `title: 测试\ndescription: 说明${list === null ? "" : `\npackages: ${JSON.stringify(list)}`}`);
+const withPackages = (list, body, kind = "feature") => page(`这一页说明一件事。${body}`, `title: 测试\ndescription: 说明\npageKind: ${kind}${list === null ? "" : `\npackages: ${JSON.stringify(list)}`}`);
 function checkWith(rel, text, defaults = new Map(), packages = repoPackages()) {
   const findings = checkPage(rel, text, site().registry, { packages, defaults });
   return { errors: msgs(findings, "error"), warnings: msgs(findings, "warning"), findings };
@@ -103,18 +101,20 @@ function registryWithPlanned(name) {
   return createPackageRegistry({ ...index, packages: [...index.packages, entry] });
 }
 
-test("guides declare their packages, directly or through the folder's _group.yml", () => {
-  const none = checkWith("src/content/docs/guides/x/a.mdx", withPackages(null, graph(IMU)));
-  assert.match(none.errors, /guides declare the packages they are about/);
-  const empty = checkWith("src/content/docs/guides/x/a.mdx", withPackages([], graph(IMU)));
-  assert.match(empty.errors, /guides declare the packages they are about/);
-  const viaFolder = checkWith("src/content/docs/guides/x/a.mdx", withPackages(null, graph(IMU)), new Map([["guides/x", ["UBotSensor"]]]));
+test("pages of a plugin's manual declare their packages, directly or through the folder's _group.yml", () => {
+  const sensor = repoPackages().get("UBotSensor");
+  const rel = `src/content/docs/${sensor.docsSlug}/a.mdx`;
+  const none = checkWith(rel, withPackages(null, graph(IMU)));
+  assert.ok(none.errors.includes(`pages of the ${sensor.label} manual (${sensor.docsSlug}/) declare the packages they are about`), none.errors);
+  const empty = checkWith(rel, withPackages([], graph(IMU)));
+  assert.match(empty.errors, /declare the packages they are about/);
+  const viaFolder = checkWith(rel, withPackages(null, graph(IMU)), new Map([[sensor.docsSlug, ["UBotSensor"]]]));
   assert.equal(viaFolder.errors, "");
   assert.equal(viaFolder.warnings, "");
-  const pageWins = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotROS"], graph(ROS)), new Map([["guides/x", ["UBotSensor"]]]));
+  const pageWins = checkWith(rel, withPackages(["UBotROS"], graph(ROS)), new Map([[sensor.docsSlug, ["UBotSensor"]]]));
   assert.equal(pageWins.errors, "", "the page's own list replaces the folder default");
-  const released = repoPackages().released().map((p) => p.name).join(", ");
-  assert.ok(none.errors.includes(`add packages: [<Package>] to the frontmatter (released: ${released})`), "the hint is a placeholder plus the released packages, not one package's name");
+  assert.ok(none.errors.includes(`add packages: [${sensor.name}] to the frontmatter`), "the hint names the package of the folder");
+  assert.equal(checkWith("src/content/docs/develop/a.mdx", withPackages(null, graph(BRANCH))).errors, "", "pages outside the manuals need no package");
 });
 
 test("pages that declare no package may use engine nodes only", () => {
@@ -122,8 +122,8 @@ test("pages that declare no package may use engine nodes only", () => {
     const engine = checkWith(rel, withPackages(null, graph(BRANCH)));
     assert.equal(engine.errors, "", `${rel}: engine nodes need no package`);
     const sensor = checkWith(rel, withPackages(null, graph(IMU, "  J: UUBotImuSensorComponent.GetLatestIMUData", ROS)));
-    assert.match(sensor.errors, /^10: blueprint: node I \("Get Latest IMUData"\) comes from UBotSensor, but the page declares no package; add packages: \[UBotSensor\] to the frontmatter/m, rel);
-    assert.match(sensor.errors, /^12: blueprint: node R \("Get Bridge Endpoint"\) comes from UBotROS, but the page declares no package/m);
+    assert.match(sensor.errors, /^11: blueprint: node I \("Get Latest IMUData"\) comes from UBotSensor, but the page declares no package; add packages: \[UBotSensor\] to the frontmatter/m, rel);
+    assert.match(sensor.errors, /^13: blueprint: node R \("Get Bridge Endpoint"\) comes from UBotROS, but the page declares no package/m);
     assert.equal(sensor.findings.filter((f) => f.severity === "error").length, 2, "one error per package, not per node");
     const empty = checkWith(rel, withPackages([], graph(IMU)));
     assert.match(empty.errors, /comes from UBotSensor, but the page declares no package/, "an empty list declares nothing either");
@@ -131,39 +131,40 @@ test("pages that declare no package may use engine nodes only", () => {
   }
   const viaFolder = checkWith("src/content/docs/concepts/a.mdx", withPackages(null, graph(IMU)), new Map([["concepts", ["UBotSensor"]]]));
   assert.equal(viaFolder.errors, "", "a folder default counts as a declaration");
-  const guide = checkWith("src/content/docs/guides/x/a.mdx", withPackages(null, graph(IMU)));
-  assert.equal(guide.findings.filter((f) => f.severity === "error").length, 1, "a guide without packages gets the one error that says how to fix it");
+  const sensor = repoPackages().get("UBotSensor");
+  const manual = checkWith(`src/content/docs/${sensor.docsSlug}/a.mdx`, withPackages(null, graph(IMU)));
+  assert.equal(manual.findings.filter((f) => f.severity === "error").length, 1, "a manual page without packages gets the one error that says how to fix it");
   assert.equal(checkWith("src/content/docs/index.mdx", withPackages(null, graph(IMU))).errors, "", "the home page shows what a graph looks like and is about no package");
 });
 
 test("unknown names and ranges that match no released version are errors on the packages: line", () => {
-  const unknown = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotNope"], graph(IMU)));
+  const unknown = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotNope"], graph(IMU)));
   const known = repoPackages().released().map((p) => p.name).join(", ");
-  assert.ok(unknown.errors.includes(`4: frontmatter packages: unknown package "UBotNope" (known: ${known})`), unknown.errors);
-  const range = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotSensor@^9"], graph(IMU)));
+  assert.ok(unknown.errors.includes(`5: frontmatter packages: unknown package "UBotNope" (known: ${known})`), unknown.errors);
+  const range = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotSensor@^9"], graph(IMU)));
   assert.match(range.errors, /"UBotSensor@\^9" matches no released version of UBotSensor/);
-  const planned = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotPlannedOnly"], graph(IMU)), new Map(), registryWithPlanned("UBotPlannedOnly"));
+  const planned = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotPlannedOnly"], graph(IMU)), new Map(), registryWithPlanned("UBotPlannedOnly"));
   assert.match(planned.errors, /UBotPlannedOnly has no released version yet/);
-  const ok = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotSensor@^0.1"], graph(IMU)));
+  const ok = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotSensor@^0.1"], graph(IMU)));
   assert.equal(ok.errors, "");
 });
 
 test("graphs may use nodes of declared packages, their transitive dependencies and the engine", () => {
-  const sensor = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotSensor"], graph(IMU, FRAME, BRANCH)));
+  const sensor = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotSensor"], graph(IMU, FRAME, BRANCH)));
   assert.equal(sensor.errors, "", "UBotCore is a dependency of UBotSensor; engine nodes are always fine");
-  const ros = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotROS"], graph(ROS, IMU, FRAME)));
+  const ros = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotROS"], graph(ROS, IMU, FRAME)));
   assert.equal(ros.errors, "", "UBotROS -> UBotSensor -> UBotCore");
-  const missing = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotSensor"], graph(IMU, ROS)));
-  assert.match(missing.errors, /^12: blueprint: node R \("Get Bridge Endpoint"\) comes from UBotROS, which the page does not declare/m);
-  const variable = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotCore"], graph("  V: { var: IMU, class: UUBotImuSensorComponent }")));
+  const missing = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotSensor"], graph(IMU, ROS)));
+  assert.match(missing.errors, /^13: blueprint: node R \("Get Bridge Endpoint"\) comes from UBotROS, which the page does not declare/m);
+  const variable = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotCore"], graph("  V: { var: IMU, class: UUBotImuSensorComponent }")));
   assert.match(variable.errors, /node V \("IMU"\) comes from UBotSensor/, "a variable counts for its class's package");
 });
 
 test("a declared package that no graph uses is a warning", () => {
-  const unused = checkWith("src/content/docs/guides/x/a.mdx", withPackages(["UBotROS"], graph(IMU)));
+  const unused = checkWith("src/content/docs/develop/a.mdx", withPackages(["UBotROS"], graph(IMU)));
   assert.equal(unused.errors, "");
   assert.match(unused.warnings, /package UBotROS is declared but no graph on the page uses its nodes/);
-  const noGraphs = checkWith("src/content/docs/concepts/a.mdx", withPackages(["UBotROS"], "\n\n| a |\n| - |\n"));
+  const noGraphs = checkWith("src/content/docs/concepts/a.mdx", withPackages(["UBotROS"], "\n\n| a |\n| - |\n", "concept"));
   assert.doesNotMatch(noGraphs.warnings, /declared but no graph/, "only pages with graphs");
 });
 

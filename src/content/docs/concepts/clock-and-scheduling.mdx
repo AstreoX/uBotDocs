@@ -1,0 +1,33 @@
+---
+title: 仿真时钟与采样调度
+description: uBot 传感器什么时候采样：采样时刻怎么排，一帧里最多采几次，帧率低时会发生什么。
+pageKind: concept
+packages: [UBotSensor]
+sidebar:
+  order: 20
+---
+
+import SamplingTimeline from "../../../components/SamplingTimeline.astro";
+
+这一页解释 uBot 传感器什么时候采样，以及帧率低于采样频率时会发生什么。
+
+{/*
+待补章节（概念页，章节顺序见 docs-templates/concept.mdx）：
+- [ ] 仿真时间从哪里来
+- [ ] 固定步长、暂停与单步
+*/}
+
+## 采样调度
+
+传感器启动时立即采样一次，之后按 `Update Rate Hz` 在仿真时间上排出固定的采样时刻。每帧最多采样一次：一帧跨过多个时刻时只采一次，其余的计入 [`Get Dropped Sample Count`](/reference/ubotsensor/uubotsensorcomponent/#GetDroppedSampleCount)。
+
+## 采样频率与帧率的关系
+
+<SamplingTimeline />
+
+所以帧率低于 `Update Rate Hz` 时，实际采样频率等于帧率。时间戳取实际采样那一帧的仿真时间，也就是 World 的游戏时间：暂停时不走，跟随时间膨胀。
+
+## 相关页面
+
+- [帧头与采样状态](/concepts/frame-header/)：时间戳和 `Sequence` 在帧头里的位置。
+- [uBotCore 的仿真时钟](/core/clock/)：读取仿真时间，固定步长，暂停与单步。

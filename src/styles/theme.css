@@ -88,6 +88,14 @@
   outline-offset: 2px;
 }
 
+/* The badge 规划中 next to the planned plugins in the sidebar: an outline in muted grey, not a solid
+   orange block six times over. */
+.sidebar-content .sl-badge.caution {
+  --sl-color-bg-badge: transparent;
+  --sl-color-text-badge: var(--sl-color-gray-3);
+  --sl-color-border-badge: var(--sl-color-gray-4);
+}
+
 /* Home page hero logo */
 .hero img {
   max-height: 7rem;
