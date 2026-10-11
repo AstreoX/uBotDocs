@@ -6,12 +6,117 @@ sidebar:
   order: 60
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 扫描参数
-- [ ] 按索引读距离（节点图）
-- [ ] 整帧复制（High Cost）
-- [ ] 强度
-- [ ] 射线检测设置
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+这一页说明怎样用 `uBot 2D LiDAR Sensor` 扫描传感器所在的水平面，并在蓝图里按索引读出每一束射线的距离。
+
+## 快速用法
+
+```blueprint
+caption: 每次扫描后读出正前方那一束射线的距离
+nodes:
+  A: { ref: UUBot2DLidarSensorComponent.On2DLidarFrameReady, component: Lidar2D }
+  B: { ref: UUBot2DLidarFrame.GetRangeByIndex, set: { Index: 270 } }
+  C: K2Node_IfThenElse
+  D: UKismetStringLibrary.Conv_DoubleToString
+  E: UKismetSystemLibrary.PrintString
+wires:
+  - A.then -> C.execute
+  - A.Frame -> B.Target
+  - B.Hit -> C.Condition
+  - B.RangeMeters -> D.InDouble
+  - C.then -> E.execute
+  - D.ReturnValue -> E.InString
+notes:
+  B: 默认 541 束射线覆盖 -135° 到 135°，索引 270 正好在 0°，即传感器的 X 轴方向。
+  C: 没有命中（或索引越界）时 `Hit` 为 false，此时 `Range Meters` 不是真实距离。
+```
+
+## 步骤
+
+<Steps>
+
+1. **添加组件**
+
+   在 Components 面板点 **Add**，搜索 `uBot 2D LiDAR Sensor`，重命名为 `Lidar2D`，并附着到机器人上。组件本身就是传感器坐标系，X 轴指向扫描的 0° 方向。
+
+2. **设置扫描范围**
+
+   选中组件，在 Details 面板的 `2D LiDAR > Scan` 里设置起止角、射线数和量程（range）。默认值是 -135° 到 135°、541 束、0.05 m 到 30 m。
+
+3. **连蓝图**
+
+   在 Events 区点 `On 2DLidar Frame Ready` 旁的 **+**，照上图连线。
+
+4. **运行**
+
+   `Auto Start` 默认开启，开始运行后传感器立即扫描一次，之后按 `Update Rate Hz`（10 Hz）持续扫描。
+
+</Steps>
+
+## 关键属性
+
+### 扫描参数
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Start Angle Degrees` | -135 | 扫描起始角，单位 °。向右（+Y）为正，必须小于 `End Angle Degrees` |
+| `End Angle Degrees` | 135 | 扫描结束角，单位 ° |
+| `Horizontal Samples` | 541 | 射线数，范围 2 到 4096。首尾两束都在扫描范围的边界上，相邻射线的间隔等于角度范围除以（射线数 - 1） |
+| `Minimum Range Meters` | 0.05 | 最小量程，单位 m |
+| `Maximum Range Meters` | 30 | 最大量程，单位 m，必须大于最小量程 |
+| `Range Noise Std Dev Meters` | 0 | 距离噪声的标准差，单位 m。同时需要开启 `Noise Enabled`，只作用于命中的射线 |
+| `Update Rate Hz` | 10 | 扫描频率，单位 Hz |
+| `Sensor Id`、`Frame Id` | `lidar_2d` | 帧头里的传感器 ID 和 TF frame id，见[帧头与采样状态](/concepts/frame-header/) |
+
+### 射线检测设置
+
+每束射线做一次按通道的单线检测（Line Trace by Channel）。
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Trace Channel` | Visibility | 检测用的碰撞通道，只有对该通道设为阻挡（Block）的物体会被扫到 |
+| `Trace Complex` | false | 为 true 时对复杂碰撞（逐三角面）检测，开销更高 |
+| `Ignore Owner` | true | 忽略传感器所属的 Actor，避免扫到机器人自己 |
+| `Ignored Actors` | 空 | 额外忽略的 Actor 列表 |
+| `Debug Visualization` | false | 运行时抽样画出一部分射线，命中为绿色，未命中为红色 |
+
+## 输出与事件
+
+- `On 2DLidar Frame Ready`：每次产生有效帧后触发，`Frame` 是这一帧。
+- `Get Latest 2DLidar Frame`：返回最近一帧，不会触发新的扫描；还没有采过样时为空。
+- `Sample 2DLidar`：手动扫描一次，得到有效帧时返回 true。
+- 通用事件 `On Sensor Sampled`、`On Sensor Error` 见[传感器通用用法](/sensor/basics/)。
+
+`Frame` 是一个 `UBot 2DLidar Frame` 对象，按下表读取：
+
+| 节点 | 返回 |
+| --- | --- |
+| `Get Sample Count` | 射线数 |
+| `Get Range by Index` | `Range Meters`（单位 m）、`Hit`，以及索引是否有效的 `Return Value` |
+| `Get Intensities` | 每束射线一个强度 |
+| `Copy All Ranges (High Cost)` | 全部距离的副本 |
+| `Copy All Hit Flags (High Cost)` | 全部命中标志的副本 |
+
+帧上的属性有 `Angle Min Radians`、`Angle Max Radians`、`Angle Increment Radians`（单位 rad）、`Range Min Meters`、`Range Max Meters`、`Scan Period Seconds`（单位 s，等于 1 / `Update Rate Hz`）和 `Header`。`Sensor Transform World` 是扫描时传感器在 UE 世界里的变换，单位 cm。
+
+### 强度
+
+强度（Intensity）范围是 0 到 255，计算式为 `255 * Clamp(Dot(-RayDirectionWorld, ImpactNormal), 0, 1)`：射线垂直打在表面上最强，擦着表面时接近 0。未命中的射线和被烟雾截断的射线强度为 0。
+
+## 注意事项
+
+- 没有命中时 `Hit` 为 false，距离等于 `Maximum Range Meters`；先看 `Hit` 再用距离。
+- 距离被限制在 `Minimum Range Meters` 和 `Maximum Range Meters` 之间，近于最小量程的命中会按最小量程报告。
+- `Copy All ...（High Cost）` 每次调用都复制整个数组，射线数多、频率高时开销明显。只读几束射线时用 `Get Range by Index`，需要全部数据时调用一次并存进变量。
+- `Start Angle Degrees` 不小于 `End Angle Degrees`，或最大量程不大于最小量程时，这次采样的状态是 `Error`，触发 `On Sensor Error`，不产生帧。
+- 烟雾等感知介质会截断射线，见[感知介质（烟雾干扰）](/sensor/medium/)。
+- 每次扫描做 `Horizontal Samples` 次射线检测，默认每秒 5410 次。各传感器的开销对比见[性能与采样频率](/sensor/performance/)。
+
+## 相关参考
+
+- [uBot 2D LiDAR Sensor](/reference/ubotsensor/uubot2dlidarsensorcomponent/)：全部属性。
+- [UBot 2DLidar Frame](/reference/ubotsensor/uubot2dlidarframe/)：帧上的节点和属性。
+- [传感器通用用法](/sensor/basics/)：启动、停止、手动采样和通用事件。
+- [帧头与采样状态](/concepts/frame-header/)：`Header` 里的 `Valid` 和状态码。
+- [坐标系与单位](/concepts/coordinates-and-units/)：UE 坐标系和 uBot 的单位约定。

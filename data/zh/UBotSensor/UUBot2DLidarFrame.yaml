@@ -1,0 +1,55 @@
+UUBot2DLidarFrame:
+  summary: "2D 激光雷达的一帧扫描：每束射线的距离、命中标志和强度，以及扫描角度和量程。每次采样生成一个新对象。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.AngleIncrementRadians:
+  summary: "相邻两束射线的夹角，单位 rad。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.AngleMaxRadians:
+  summary: "最后一束射线的角度，单位 rad，向右（+Y）为正。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.AngleMinRadians:
+  summary: "第一束射线的角度，单位 rad，向右（+Y）为正。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.CopyAllHitFlags:
+  summary: "返回全部命中标志的副本。每次调用都复制整个数组，开销高。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.CopyAllRanges:
+  summary: "返回全部距离的副本，单位 m。每次调用都复制整个数组，开销高。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.GetIntensities:
+  summary: "返回每束射线的强度，范围 0 到 255。未命中和被烟雾截断的射线为 0。"
+  sourceHash: "15114deb5dc9"
+
+UUBot2DLidarFrame.GetRangeByIndex:
+  summary: "读取一束射线的距离（单位 m）和是否命中。索引越界时返回 false，距离为 0。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.GetSampleCount:
+  summary: "这一帧的射线数。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.Header:
+  summary: "帧头，含 Valid 和 Status。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.RangeMaxMeters:
+  summary: "最大量程，单位 m。未命中的射线距离等于它。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.RangeMinMeters:
+  summary: "最小量程，单位 m。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.ScanPeriodSeconds:
+  summary: "扫描周期，单位 s，等于 1 / Update Rate Hz。"
+  sourceHash: "e3b0c44298fc"
+
+UUBot2DLidarFrame.SensorTransformWorld:
+  summary: "扫描时传感器在 UE 世界里的变换，位置单位 cm。"
+  sourceHash: "e3b0c44298fc"

@@ -4,3 +4,7 @@
 # node /Script/Module.K2Node_X or macro /Path/Lib.Lib:Macro. scripts/export-api.ps1 merges every
 # data/engine-nodes/*.txt and writes data/api/engine.json. See CLAUDE.md, "Blueprint graphs".
 
+# sensor-b
+/Script/Engine.KismetStringLibrary:Conv_IntToString
+/Script/Engine.Actor:K2_GetActorLocation
+node /Script/BlueprintGraph.K2Node_MakeArray

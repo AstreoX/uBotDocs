@@ -1,0 +1,11 @@
+EUBotDepthPreviewMode:
+  summary: "深度预览的着色方式，用于 Update Depth Preview。"
+  sourceHash: "e3b0c44298fc"
+
+EUBotDepthPreviewMode.Grayscale:
+  summary: "灰度：近处亮、远处暗，无效像素为黑色。"
+  sourceHash: "e3b0c44298fc"
+
+EUBotDepthPreviewMode.PseudoColor:
+  summary: "伪彩色：近处红色、远处蓝色，无效像素为黑色。"
+  sourceHash: "e3b0c44298fc"

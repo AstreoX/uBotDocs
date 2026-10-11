@@ -1,0 +1,91 @@
+UUBotPointCloudFrame:
+  summary: "一帧点云，由 3D 激光雷达生成，或由深度图生成。只包含有效命中的点，坐标在传感器坐标系下，单位 m。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.CaptureDurationMilliseconds:
+  summary: "生成这一帧用的时间，单位 ms。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.ChannelCount:
+  summary: "垂直方向的通道数。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.CopyAllIntensities:
+  summary: "返回全部强度的副本。每次调用都复制整个数组，开销高。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.CopyAllPoints:
+  summary: "返回全部点的副本，单位 m。每次调用都复制整个数组，开销高。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.CopyAllRingIndices:
+  summary: "返回全部环号的副本。每次调用都复制整个数组，开销高。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.CopyAllTimeOffsets:
+  summary: "返回全部时间偏移的副本，单位 s。每次调用都复制整个数组，开销高。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.GetIntensities:
+  summary: "返回每个点的强度，范围 0 到 255，与点一一对应。没有强度的点云（例如由深度图生成的）为空，先检查 Has Intensity Data。"
+  sourceHash: "f8a29b17d6a0"
+
+UUBotPointCloudFrame.GetPointByIndex:
+  summary: "按索引读取一个点：传感器坐标系下的位置（单位 m）、环号、时间偏移（单位 s）和强度。索引越界时返回 false。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.GetPointCount:
+  summary: "点云里的点数，即有效命中数。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.GetTotalRayCount:
+  summary: "这次扫描发射的射线总数。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.HasIntensityData:
+  summary: "点云里有点，并且每个点都有强度时返回 true。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.Header:
+  summary: "帧头，含 Valid 和 Status。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.HitPointCount:
+  summary: "点云里的点数，即有效命中数。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.HorizontalFovRadians:
+  summary: "水平视场，单位 rad。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.HorizontalSampleCount:
+  summary: "每个通道的射线数。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.MaximumRangeMeters:
+  summary: "最大量程，单位 m。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.MinimumRangeMeters:
+  summary: "最小量程，单位 m。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.ScanPeriodSeconds:
+  summary: "扫描周期，单位 s，等于 1 / Update Rate Hz。由深度图生成的点云为 0。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.SensorTransformWorld:
+  summary: "扫描时传感器在 UE 世界里的变换，位置单位 cm。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.TotalRayCount:
+  summary: "发射的射线总数，等于通道数乘以每通道的射线数。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.VerticalFovDownRadians:
+  summary: "向下的垂直视场，单位 rad。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotPointCloudFrame.VerticalFovUpRadians:
+  summary: "向上的垂直视场，单位 rad。"
+  sourceHash: "e3b0c44298fc"

@@ -1,0 +1,75 @@
+UUBotCameraSensorComponent:
+  summary: "RGB 相机和深度相机的基类。每次采样把场景渲染到 Render Target 并发布一个 UBot Image Frame，像素不会自动读回 CPU。"
+  sourceHash: "ce0fa598a2c7"
+
+UUBotCameraSensorComponent.CaptureGroupId:
+  summary: "非空时，相机不再自己采样，由同组的相机采集协调器统一触发。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.ExternalRenderTarget:
+  summary: "使用自己的 Render Target 代替自动创建的。格式必须与相机编码匹配（RGB 相机为 RGBA8，深度相机为 R32f），图像尺寸取自它。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.GetLatestImageFrame:
+  summary: "返回最近一帧，不会触发新的采集。还没有采过样时为空。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.GetPreviewRenderTarget:
+  summary: "返回相机渲染到的 Render Target。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.GetSceneCaptureComponent:
+  summary: "返回相机内部使用的 Scene Capture Component 2D，第一次采集之前为空。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.HorizontalFovDegrees:
+  summary: "水平视场，单位 °，范围 1 到 170。垂直视场由宽高比算出。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.MaximumSmokeInterferenceOpacity:
+  summary: "烟雾叠加的不透明度上限，范围 0 到 1。仅 RGB 相机使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.OnImageFrameReady:
+  summary: "每次产生有效帧后触发，Frame 是这一帧。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.PreviewDistanceMeters:
+  summary: "编辑器视口里视锥的长度，单位 m。也是 RGB 相机烟雾叠加的最远距离。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.ResolutionHeight:
+  summary: "图像高度，单位像素，范围 16 到 4096。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.ResolutionWidth:
+  summary: "图像宽度，单位像素，范围 16 到 4096。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.SmokeCellRadiusScale:
+  summary: "烟雾单元半径的缩放倍数，至少 0.01。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.SmokeDensityThreshold:
+  summary: "有效密度（Density 乘以 Edge Factor）低于它的烟雾单元被忽略。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.SmokeInterferenceOpacityScale:
+  summary: "有效密度乘以它得到烟雾的不透明度。仅 RGB 相机使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.SmokeInterferenceTint:
+  summary: "旧版标签路径的烟雾颜色；来自 UBot Perception Medium 接口的快照用自己的 Tint。仅 RGB 相机使用。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.SmokeVolumeActorTag:
+  summary: "旧版标签路径用的 Actor 标签，默认 AgentSensor.SmokeVolume。设为 None 只关闭旧版路径，接口路径不受影响。"
+  sourceHash: "5053cb9f6faa"
+
+UUBotCameraSensorComponent.UpdateRateHz:
+  summary: "采集频率，单位 Hz，默认 30。属于采集组的相机不使用它。"
+  sourceHash: "e3b0c44298fc"
+
+UUBotCameraSensorComponent.bEnableSmokeInterference:
+  summary: "为 true 时，感知介质（烟雾）会影响读回的像素或深度。"
+  sourceHash: "e3b0c44298fc"
