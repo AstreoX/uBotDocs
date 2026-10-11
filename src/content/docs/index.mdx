@@ -1,66 +1,66 @@
 ---
 title: uBot 文档
-description: uBot 是一套面向 Unreal Engine 5.5 的具身智能仿真插件：画面接近真机，功能按需安装，蓝图中就能上手，可以接 ROS 2。
+description: uBot 是一套用 Unreal Engine 搭建具身智能仿真的插件：高质量场景、多种传感器，可接入 ROS 2、MuJoCo、PhysX 等，按需组合，蓝图里就能上手。
 template: splash
 hero:
   title: uBot
-  tagline: 面向 Unreal Engine 5.5 的具身智能仿真插件。画面接近真机，功能按需安装，蓝图里就能上手，需要时接上 ROS 2。
-  image:
-    light: ../../assets/ubot-mark-dark.svg
-    dark: ../../assets/ubot-mark-light.svg
-    alt: uBot
+  tagline: 用 Unreal Engine 搭建具身智能仿真：高质量场景、多种传感器，可接入 ROS 2、MuJoCo、PhysX 等，以插件的方式按需组合。
   actions:
+    - text: 下载 uBot Manager
+      link: https://github.com/AstreoX/uBotManager/releases
+      icon: download
     - text: 开始使用
       link: /start/introduction/
-      icon: right-arrow
-    - text: 五分钟上手
-      link: /start/quickstart/
-      variant: minimal
-    - text: 节点索引
-      link: /reference/nodes/
-      variant: minimal
+      variant: secondary
 ---
 
-import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
-import DependencyGraph from "../../components/DependencyGraph.astro";
+import { CardGrid, Icon, LinkCard } from "@astrojs/starlight/components";
+import HomePlugins from "../../components/HomePlugins.astro";
 
 ## uBot 的特色
 
-<CardGrid>
-  <Card title="画面接近真机" icon="star">Lumen 和 Nanite 渲染大场景，Fab 上的资产直接可用，相机拍到的画面接近真机。</Card>
-  <Card title="装进原版 UE" icon="puzzle">uBot 是插件，装在原版 UE 5.5 上；uBot Manager 下载预编译包，不用编译。</Card>
-  <Card title="蓝图就能上手" icon="pencil">搭场景、读传感器、处理 `cmd_vel` 都不用写 C++，文档里的节点图可以照着搭。</Card>
-  <Card title="时间和数据有据可查" icon="clock">统一的仿真时钟支持固定步长、暂停和单步；每帧数据带序号、时间戳和状态码。</Card>
-  <Card title="环境会干扰感知" icon="random">烟雾会截断激光雷达、改写深度、给相机画面染色。</Card>
-  <Card title="ROS 2 可选" icon="link">话题、TF、`/clock` 和 `cmd_vel`；不用 ROS 2 时不必安装。</Card>
-</CardGrid>
+<ul class="home-features not-content">
+  <li>
+    <Icon name="star" size="1.5rem" />
+    <h3>高质量场景</h3>
+    <p>结合 UE 的 Lumen 和 Nanite 渲染大规模场景，可使用 Fab 上的资产，相机画面接近真实。</p>
+  </li>
+  <li>
+    <Icon name="puzzle" size="1.5rem" />
+    <h3>原版 UE 即可使用</h3>
+    <p>以插件形式安装在原版 UE 5.5 上，uBot Manager 提供预编译包，免去编译。</p>
+  </li>
+  <li>
+    <Icon name="pencil" size="1.5rem" />
+    <h3>对新手友好</h3>
+    <p>功能在蓝图中即可使用，无需编写 C++，文档提供对应的节点图。</p>
+  </li>
+  <li>
+    <Icon name="clock" size="1.5rem" />
+    <h3>统一的时间与数据</h3>
+    <p>仿真时钟支持固定步长、暂停和单步；每帧数据携带序号、时间戳和状态码。</p>
+  </li>
+  <li>
+    <Icon name="random" size="1.5rem" />
+    <h3>模拟多种复杂真实环境</h3>
+    <p>例如烟雾会影响激光雷达和相机的感知。</p>
+  </li>
+  <li>
+    <Icon name="link" size="1.5rem" />
+    <h3>可接入 ROS 2、MuJoCo 等</h3>
+    <p>实机上使用的 ROS 2 算法可以连接到仿真；MuJoCo、PhysX 等物理引擎在规划中。</p>
+  </li>
+</ul>
 
-## 一个插件一件事
+## 插件
 
-只装用得上的插件，uBot Manager 会处理依赖。规划中的插件点开可以看它打算做什么。
+可按需选择插件，适配多种场景需求。各插件之间的依赖关系见[简介](/start/introduction/#插件依赖图)。
 
-<DependencyGraph />
-
-规划中的 [uBotMuJoCo](/mujoco/) 让 MuJoCo 计算机械臂、足式机器人等的物理，算完映射回 UE：接触更精确，画面、传感器和 ROS 2 照常工作。
-
-## 蓝图里直接用
-
-文档里的示例都画成蓝图编辑器里的样子，点任意节点可以看说明和引脚。
-
-```blueprint
-caption: 每次采样时把 IMU 姿态换算成角度
-nodes:
-  A: { ref: UUBotImuSensorComponent.OnImuDataUpdated, component: IMU }
-  B: { ref: Break:FUBotImuSensorData, hideUnconnected: true }
-  C: UKismetMathLibrary.Quat_Rotator
-  D: UKismetMathLibrary.BreakRotator
-wires:
-  - A.Data -> B.UBotImuSensorData
-  - B.OrientationQuaternion -> C.Q
-  - C.ReturnValue -> D.Rotation
-```
+<HomePlugins />
 
 ## 从这里开始
+
+[uBot Manager](/manager/) 是安装 uBot 的入口：它在 UE 工程里选择、安装和更新插件，启动时检查新版本，并处理插件之间的依赖。目前提供 Windows 版本，到 [Releases 页面](https://github.com/AstreoX/uBotManager/releases)下载安装包，安装步骤见[安装 uBot](/start/install/)。
 
 <CardGrid>
   <LinkCard title="简介" description="uBot 是什么、能做什么、各插件的关系。" href="/start/introduction/" />

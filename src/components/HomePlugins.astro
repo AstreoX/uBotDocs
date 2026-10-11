@@ -1,0 +1,97 @@
+---
+// The plugin list of the home page: one row per plugin (name, what it does, version or 规划中), the
+// released ones first, then the planned ones, in the order of the index. A plain list with hairlines,
+// like a module index; every row links to the plugin's manual or placeholder page. The dependencies
+// are drawn on the introduction page (<DependencyGraph />). Data: data/index.json through
+// lib/packages.mjs, so a release changes the list without touching the page.
+//
+//   import HomePlugins from "../../components/HomePlugins.astro";
+//   <HomePlugins />
+import index from "../../data/index.json";
+import { createPackageRegistry } from "../../lib/packages.mjs";
+
+const rows = createPackageRegistry(index)
+  .ordered()
+  .map((p) => ({
+    name: p.label,
+    href: p.docsPath,
+    description: p.description("zh-CN"),
+    status: p.released ? (p.latest?.version ?? "") : "规划中",
+    planned: !p.released,
+  }));
+---
+
+<ul class="home-plugins not-content">
+  {rows.map((p) => (
+    <li>
+      <a href={p.href} class:list={{ planned: p.planned }}>
+        <span class="name">{p.name}</span>
+        <span class="desc">{p.description}</span>
+        <span class="status">{p.status}</span>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .home-plugins {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--sl-color-gray-5);
+  }
+  li {
+    margin: 0;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+  }
+  a {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.15rem 1rem;
+    padding: 0.6rem 0.5rem;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+  a:hover {
+    background: var(--sl-color-accent-low);
+  }
+  .name {
+    font-weight: 600;
+    color: var(--sl-color-text-accent);
+  }
+  .desc {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: var(--sl-text-sm);
+    line-height: 1.7;
+  }
+  .status {
+    grid-column: 2;
+    grid-row: 1;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+    align-self: center;
+  }
+  .planned .name {
+    color: var(--sl-color-gray-2);
+  }
+  .planned .status {
+    font-family: inherit;
+  }
+  @media (min-width: 50rem) {
+    a {
+      grid-template-columns: 9.5rem 1fr 4.5rem;
+      align-items: baseline;
+      gap: 0 1rem;
+    }
+    .desc {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .status {
+      grid-column: 3;
+      text-align: end;
+    }
+  }
+</style>
