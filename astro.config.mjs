@@ -62,6 +62,8 @@ export default defineConfig({
       customCss: ["./src/styles/theme.css", "./src/styles/blueprint.css"],
       components: {
         Head: "./src/components/Head.astro",
+        // The home page: headline and buttons beside a Blueprint graph.
+        Hero: "./src/components/Hero.astro",
         // The "需要：…" line under the title and the Pagefind "package" filter.
         PageTitle: "./src/components/PageTitle.astro",
       },

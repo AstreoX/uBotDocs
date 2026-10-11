@@ -5,10 +5,6 @@ template: splash
 hero:
   title: uBot
   tagline: 面向 Unreal Engine 5.5 的具身智能仿真插件。画面接近真机，功能按需安装，蓝图里就能上手，需要时接上 ROS 2。
-  image:
-    light: ../../assets/ubot-mark-dark.svg
-    dark: ../../assets/ubot-mark-light.svg
-    alt: uBot
   actions:
     - text: 开始使用
       link: /start/introduction/
@@ -21,44 +17,51 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
-import DependencyGraph from "../../components/DependencyGraph.astro";
+import { CardGrid, Icon, LinkCard } from "@astrojs/starlight/components";
+import HomePlugins from "../../components/HomePlugins.astro";
 
 ## uBot 的特色
 
-<CardGrid>
-  <Card title="画面接近真机" icon="star">Lumen 和 Nanite 渲染大场景，Fab 上的资产直接可用，相机拍到的画面接近真机。</Card>
-  <Card title="装进原版 UE" icon="puzzle">uBot 是插件，装在原版 UE 5.5 上；uBot Manager 下载预编译包，不用编译。</Card>
-  <Card title="蓝图就能上手" icon="pencil">搭场景、读传感器、处理 `cmd_vel` 都不用写 C++，文档里的节点图可以照着搭。</Card>
-  <Card title="时间和数据有据可查" icon="clock">统一的仿真时钟支持固定步长、暂停和单步；每帧数据带序号、时间戳和状态码。</Card>
-  <Card title="环境会干扰感知" icon="random">烟雾会截断激光雷达、改写深度、给相机画面染色。</Card>
-  <Card title="ROS 2 可选" icon="link">话题、TF、`/clock` 和 `cmd_vel`；不用 ROS 2 时不必安装。</Card>
-</CardGrid>
+<ul class="home-features not-content">
+  <li>
+    <Icon name="star" size="1.5rem" />
+    <h3>画面接近真机</h3>
+    <p>Lumen 和 Nanite 渲染大场景，Fab 上的资产直接可用，相机拍到的画面接近真机。</p>
+  </li>
+  <li>
+    <Icon name="puzzle" size="1.5rem" />
+    <h3>装进原版 UE</h3>
+    <p>uBot 是插件，装在原版 UE 5.5 上；uBot Manager 下载预编译包，不用编译。</p>
+  </li>
+  <li>
+    <Icon name="pencil" size="1.5rem" />
+    <h3>蓝图就能上手</h3>
+    <p>搭场景、读传感器、处理 <code>cmd_vel</code> 都不用写 C++，文档里的节点图可以照着搭。</p>
+  </li>
+  <li>
+    <Icon name="clock" size="1.5rem" />
+    <h3>时间和数据有据可查</h3>
+    <p>统一的仿真时钟支持固定步长、暂停和单步；每帧数据带序号、时间戳和状态码。</p>
+  </li>
+  <li>
+    <Icon name="random" size="1.5rem" />
+    <h3>环境会干扰感知</h3>
+    <p>烟雾会截断激光雷达、改写深度、给相机画面染色。</p>
+  </li>
+  <li>
+    <Icon name="link" size="1.5rem" />
+    <h3>ROS 2 可选</h3>
+    <p>话题、TF、<code>/clock</code> 和 <code>cmd_vel</code>；不用 ROS 2 时不必安装。</p>
+  </li>
+</ul>
 
 ## 一个插件一件事
 
 只装用得上的插件，uBot Manager 会处理依赖。规划中的插件点开可以看它打算做什么。
 
-<DependencyGraph />
+<HomePlugins />
 
-规划中的 [uBotMuJoCo](/mujoco/) 让 MuJoCo 计算机械臂、足式机器人等的物理，算完映射回 UE：接触更精确，画面、传感器和 ROS 2 照常工作。
-
-## 蓝图里直接用
-
-文档里的示例都画成蓝图编辑器里的样子，点任意节点可以看说明和引脚。
-
-```blueprint
-caption: 每次采样时把 IMU 姿态换算成角度
-nodes:
-  A: { ref: UUBotImuSensorComponent.OnImuDataUpdated, component: IMU }
-  B: { ref: Break:FUBotImuSensorData, hideUnconnected: true }
-  C: UKismetMathLibrary.Quat_Rotator
-  D: UKismetMathLibrary.BreakRotator
-wires:
-  - A.Data -> B.UBotImuSensorData
-  - B.OrientationQuaternion -> C.Q
-  - C.ReturnValue -> D.Rotation
-```
+规划中的 [uBotMuJoCo](/mujoco/) 让 MuJoCo 计算机械臂、足式机器人等的物理，算完映射回 UE：接触更精确，画面、传感器和 ROS 2 照常工作。完整的依赖关系见[简介](/start/introduction/#插件依赖图)。
 
 ## 从这里开始
 

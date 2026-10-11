@@ -96,10 +96,73 @@
   --sl-color-border-badge: var(--sl-color-gray-4);
 }
 
-/* Home page hero logo */
-.hero img {
-  max-height: 7rem;
-  width: auto;
+/* Home page (the splash template with a hero; components: Hero.astro, HomePlugins.astro) */
+:root[data-has-hero] body {
+  /* a soft accent glow behind the hero and a faint dot grid that fades out downwards */
+  background-image:
+    radial-gradient(56rem 26rem at 12% 3rem, color-mix(in srgb, var(--sl-color-accent) 14%, transparent), transparent 70%),
+    radial-gradient(color-mix(in srgb, var(--sl-color-gray-3) 22%, transparent) 1px, transparent 1.5px);
+  background-size: auto, 22px 22px;
+  background-repeat: no-repeat, repeat;
+  background-position: 0 0, 0 0;
+}
+.home-hero .bp-figure {
+  margin: 0;
+}
+.home-hero .bp-canvas {
+  border-color: var(--sl-color-gray-5);
+  border-radius: 14px;
+  box-shadow: 0 24px 48px -28px rgba(15, 20, 40, 0.55);
+}
+.home-hero .bp-stage {
+  /* a little closer than in the manuals, so that the graph is scaled down less in a column of about 40rem */
+  column-gap: 24px;
+}
+.home-hero .bp-bar {
+  margin-top: 0.5rem;
+}
+
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1.75rem 2.5rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.home-features li {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  column-gap: 0.9rem;
+  margin: 0;
+}
+.home-features svg {
+  grid-row: span 2;
+  box-sizing: content-box;
+  padding: 0.5rem;
+  border-radius: 0.6rem;
+  background: var(--sl-color-accent-low);
+  color: var(--sl-color-accent-high);
+}
+.home-features h3 {
+  margin: 0;
+  font-size: var(--sl-text-base);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--sl-color-white);
+}
+.home-features p {
+  margin: 0.2rem 0 0;
+  font-size: var(--sl-text-sm);
+  line-height: 1.75;
+  color: var(--sl-color-gray-2);
+}
+:root[data-has-hero] .sl-markdown-content h2 {
+  margin-top: 3.5rem;
+}
+:root[data-has-hero] .sl-link-card {
+  border-radius: 0.75rem;
 }
 
 

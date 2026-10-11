@@ -1,0 +1,135 @@
+---
+// The plugin overview of the home page: a card per released plugin (name, version, what it does, what
+// it needs) and one row of links for the planned ones. The full dependency graph is on the
+// introduction page (<DependencyGraph />). Data: data/index.json through lib/packages.mjs, so a
+// release changes the cards without touching the page.
+//
+//   import HomePlugins from "../../components/HomePlugins.astro";
+//   <HomePlugins />
+import index from "../../data/index.json";
+import { createPackageRegistry } from "../../lib/packages.mjs";
+
+const registry = createPackageRegistry(index);
+const released = registry.released().map((p) => ({
+  name: p.label,
+  href: p.docsPath,
+  version: p.latest?.version ?? "",
+  description: p.description("zh-CN"),
+  requires: registry.dependencies(p.name, { transitive: false }).map((n) => registry.get(n).label),
+}));
+const planned = registry.planned().map((p) => ({ name: p.label, href: p.docsPath, description: p.description("zh-CN") }));
+---
+
+<div class="home-plugins not-content">
+  <ul class="released">
+    {released.map((p) => (
+      <li>
+        <a class="plugin" href={p.href}>
+          <span class="head">
+            <span class="name">{p.name}</span>
+            {p.version && <span class="version">{p.version}</span>}
+          </span>
+          <span class="desc">{p.description}</span>
+          <span class="needs">{p.requires.length ? `依赖 ${p.requires.join("、")}` : "所有插件都依赖它"}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+  {planned.length > 0 && (
+    <div class="planned">
+      <span class="label">规划中</span>
+      <ul>
+        {planned.map((p) => (
+          <li><a href={p.href} title={p.description}>{p.name}</a></li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
+
+<style>
+  .home-plugins {
+    display: grid;
+    gap: 1rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .released {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  .plugin {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    height: 100%;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    background: var(--sl-color-bg-nav);
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .plugin:hover {
+    border-color: var(--sl-color-accent);
+    box-shadow: 0 6px 20px -12px var(--sl-color-accent);
+  }
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .name {
+    font-size: var(--sl-text-lg);
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+  .version {
+    font-family: var(--sl-font-mono);
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+  .desc {
+    flex: 1;
+    font-size: var(--sl-text-sm);
+    line-height: 1.7;
+  }
+  .needs {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+  .planned {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.75rem;
+  }
+  .label {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+  .planned ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.5rem;
+  }
+  .planned a {
+    display: inline-block;
+    padding: 0.15rem 0.7rem;
+    border: 1px dashed var(--sl-color-gray-4);
+    border-radius: 999rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+  .planned a:hover {
+    border-color: var(--sl-color-accent);
+    color: var(--sl-color-accent-high);
+  }
+</style>

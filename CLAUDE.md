@@ -73,7 +73,8 @@ lib/blueprint/              graph parser, validator, layout and HTML renderer (s
 lib/engine-nodes.mjs        engine node lists: check, merge
 src/plugins/blueprint.mjs   Markdown plugin: ```blueprint block -> graph HTML
 src/components/             PackageList, RecipeTable, PackageStatus, DependencyGraph (see "Components"),
-                            SamplingTimeline, PageTitle (the "需要：…" line under the title and the search's package filter)
+                            SamplingTimeline, PageTitle (the "需要：…" line under the title and the search's package filter),
+                            Hero (the home page's headline beside a Blueprint graph; replaces Starlight's Hero), HomePlugins (home page only)
 src/scripts/blueprint.js    client: wires, node cards, full-screen view, node index filter
 src/scripts/scrollables.js  client: tab stop and scroll hint for tables and diagrams that scroll sideways
 scripts/                    gen-reference, check, sync-index, sync-api, sync-branch, add-package, export-api.ps1 (Windows + UE only), zh, find-node, rebase-links
@@ -199,6 +200,7 @@ page edit. Import them with a relative path (`import PackageList from "../../../
 | `<RecipeTable />` | the recipes of the index with their packages, planned ones marked 规划中; `<RecipeTable available />` only those that can be applied today |
 | `<PackageStatus name="UBotX" />` | status line, description, required packages (links), engine plugins, what it provides, the recipes that include it |
 | `<DependencyGraph />` | the dependency graph, drawn like uBot Manager's 依赖图 view |
+| `<HomePlugins />` | the home page only: a card per released package (version, description, what it needs) and one row of links for the planned ones |
 
 The dependency graph (`src/components/DependencyGraph.astro`, layout in `lib/dependency-graph.mjs`,
 tests in `test/dependency-graph.test.mjs`): columns by dependency depth from left to right (a package
