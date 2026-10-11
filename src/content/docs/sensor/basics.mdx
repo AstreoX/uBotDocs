@@ -34,7 +34,7 @@ wires:
   - V.Pose -> T.Target
 ```
 
-想自己决定每次采样的时机，就不启动传感器，只调用 `Sample Sensor`：
+想自己决定每次采样的时机，就关掉 `Auto Start`，也不要调用 `Start Sensor`，只调用 `Sample Sensor`。传感器运行时会按 `Update Rate Hz` 自己采样，再手动采一次，同一仿真时刻就有两个样本，IMU 和里程计的第二个样本是 `Invalid Delta Time`：
 
 ```blueprint
 caption: 每个 Tick 手动采一个样本，样本有效时打印一行
@@ -110,7 +110,7 @@ wires:
 
 1. **添加传感器**
 
-   在 Components 面板点 **Add**，在 `uBot` 分类下选一个传感器，比如 `uBot Pose Sensor`。
+   在「Components」面板点「Add」，在「uBot」分类下选一个传感器，比如 `uBot Pose Sensor`。
 
 2. **摆放**
 
@@ -118,7 +118,7 @@ wires:
 
 3. **设置标识和频率**
 
-   在 Details 面板的 `uBot Sensor` 类别里设置 `Sensor Id`、`Frame Id` 和 `Update Rate Hz`。
+   在「Details」面板的「uBot Sensor」类别里设置 `Sensor Id`、`Frame Id` 和 `Update Rate Hz`。
 
 4. **决定怎么启动**
 
@@ -126,13 +126,13 @@ wires:
 
 5. **取数**
 
-   选中组件，在 Details 面板底部 Events 区点事件旁的 **+**，生成事件节点；或者用上面的主动读取。
+   选中组件，在「Details」面板底部「Events」区点事件旁的「+」，生成事件节点；或者用上面的主动读取。
 
 </Steps>
 
 ## 关键属性
 
-所有传感器共有的属性在 Details 面板的 `uBot Sensor` 类别（及其 `Debug`、`Model`、`Noise` 子类别）下：
+所有传感器共有的属性在「Details」面板的「uBot Sensor」类别（及其「Debug」、「Model」、「Noise」子类别）下：
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
@@ -154,7 +154,7 @@ wires:
 
 | 做法 | 说明 |
 | --- | --- |
-| `Hide Sensor Model in Game` | 默认打开，游戏中隐藏模型；在 Details 面板里取消勾选即可显示 |
+| `Hide Sensor Model in Game` | 默认打开，游戏中隐藏模型；在「Details」面板里取消勾选即可显示 |
 | `Set Sensor Model Visible in Game` | 运行中切换，参数 `Model Visible` 为 true 时显示 |
 | `Is Sensor Model Visible in Game` | 读取当前是否显示 |
 
@@ -175,7 +175,7 @@ wires:
 
 ## 注意事项
 
-- 组件的 `BeginPlay` 先于 Actor 的 `Event BeginPlay`。`Auto Start` 在那时已经触发了 `On Sensor Started` 和第一个样本，所以在 `Event BeginPlay` 里再绑定事件会漏掉它们。用 Details 面板 Events 区的 **+** 生成事件节点就不会漏。
+- 组件的 `BeginPlay` 先于 Actor 的 `Event BeginPlay`。`Auto Start` 在那时已经触发了 `On Sensor Started` 和第一个样本，所以在 `Event BeginPlay` 里再绑定事件会漏掉它们。用「Details」面板「Events」区的「+」生成事件节点就不会漏。
 - 传感器自己的数据事件（比如 `On Pose Data Updated`）在 `On Sensor Sampled` 之前触发。在数据事件里调用 `Get Latest Frame Header` 得到的是上一次的帧头，请改用数据自带的 `Header`。
 - 每个 world tick 最多采一个样本。帧率低于 `Update Rate Hz` 时，实际采样频率等于帧率，跳过的采样时刻计入 `Get Dropped Sample Count`。见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
 - 暂停时不自动采样；手动调用 `Sample Sensor` 仍然可以，但仿真时间不前进，时间戳不变。

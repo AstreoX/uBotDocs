@@ -22,7 +22,7 @@ sidebar:
 | 版本约束 | Version constraint | 依赖的版本范围，比如 `^0.1.0` 表示 `>=0.1.0 <0.2.0` | [编写自己的 uBot Package](/develop/package-authoring/) |
 | 引擎插件 | Engine plugin | UE 自带的插件，比如 `ChaosVehiclesPlugin`；uBot Manager 只在 `.uproject` 里启用它，不安装它 | [安装、更新、移除插件](/manager/packages/) |
 | 扩展点 | Extension point | 一个 Package 声明的挂接位置，别的 Package 不依赖它的模块就能注册扩展，比如 `UBotROS.SensorPublisher` | [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/) |
-| uBot 面板 | uBot panel | 编辑器里 `Window > uBot` 打开的面板，显示已加载的 Package、运行时状态和问题 | [Package 查询与编辑器面板](/core/packages/) |
+| uBot 面板 | uBot panel | 编辑器里「Window > uBot」打开的面板，显示已加载的 Package、运行时状态和问题 | [Package 查询与编辑器面板](/core/packages/) |
 | 运行时状态 | Runtime status | 各 Package 在运行中报告的状态和问题，一次 PIE 或游戏运行结束时写入 `Saved/uBot/status.json` | [Package 查询与编辑器面板](/core/packages/) |
 | 命令行工具 | Commandlet | UE 的命令行工具，`-run=UBotPackage` 用来列出、校验、安装和启用 Package | [Package 查询与编辑器面板](/core/packages/) |
 | 重定向 | CoreRedirects | UE 的重定向机制，让用旧名字保存的资产加载成新名字 | [从旧插件迁移](/develop/migration/) |
@@ -33,7 +33,7 @@ sidebar:
 | --- | --- | --- | --- |
 | 仿真时间 | Simulation time | 所有 uBot 时间戳共用的时间基准，即 World 的游戏时间，遵循暂停和时间膨胀 | [仿真时钟与采样调度](/concepts/clock-and-scheduling/) |
 | 仿真时钟 | Sim clock | 提供仿真时间、固定步长、暂停和单步的 World 子系统（`UBot Clock Subsystem`） | [仿真时钟](/core/clock/) |
-| world tick | World tick | 世界推进一帧的一次更新，仿真帧号数的就是游戏时间前进过的 world tick | [仿真时钟与采样调度](/concepts/clock-and-scheduling/) |
+| world tick | World tick | 世界推进一帧的一次更新；单步（`Step Simulation`）以它为单位计数 | [仿真时钟与采样调度](/concepts/clock-and-scheduling/) |
 | 固定步长 | Fixed time step | 引擎每帧使用固定时间增量（1 / `Step Hz` 秒）的模式 | [仿真时钟](/core/clock/) |
 | 单步 | Frame step | 恢复运行恰好指定个数的 world tick 后再暂停（`Step Simulation`） | [仿真时钟](/core/clock/) |
 | 采样 | Sample | 传感器取一次数据，得到一个样本 | [传感器通用用法](/sensor/basics/) |
@@ -56,7 +56,7 @@ sidebar:
 | 光学系 | Optical frame | 相机图像用的坐标系：z 前、x 右、y 下，frame id 带后缀 `_optical` | [坐标系与单位](/concepts/coordinates-and-units/) |
 | 极向量、轴向量 | Polar vector、axial vector | 位置、速度是极向量，角速度、力矩是轴向量，镜像时变换规则不同 | [坐标系与单位](/concepts/coordinates-and-units/) |
 | 四元数 | Quaternion | 表示旋转的四个分量 `(x, y, z, w)` | [坐标系与单位](/concepts/coordinates-and-units/) |
-| 比力 | Specific force | IMU 输出的线加速度，静止时约为 +9.81 m/s²，方向是世界向上 | [IMU 传感器](/sensor/imu/) |
+| 比力 | Specific force | IMU 输出的线加速度，静止时约为 +9.8 m/s²（World 的重力加速度），方向是世界向上 | [IMU 传感器](/sensor/imu/) |
 | 协方差 | Covariance | 描述测量误差的矩阵，里程计输出 6×6 的位姿协方差和速度协方差 | [里程计](/sensor/odometry/) |
 | 传感器 id | Sensor Id | 传感器的名字，留空时用组件名 | [标识与命名](/concepts/identity/) |
 | 坐标系 id | Frame Id | 传感器所在的坐标系名，留空时等于 `Sensor Id` | [标识与命名](/concepts/identity/) |
@@ -100,7 +100,7 @@ sidebar:
 | 话题 | Topic | ROS 2 里按名字发布和订阅消息的通道 | [发布传感器数据](/ros/publish-sensors/) |
 | QoS | Quality of Service | ROS 2 的服务质量设置，uBotROS 的传感器数据默认 best_effort，状态默认 reliable | [发布传感器数据](/ros/publish-sensors/) |
 | TF | TF | ROS 的坐标变换树 | [TF 与 /clock](/ros/tf-and-clock/) |
-| 静态 TF、动态 TF | Static TF、dynamic TF | 静态 TF 不随时间变化，比如机体到传感器，发布到 `/tf_static`；动态 TF 随时间变化，比如 `odom → base`，发布到 `/tf` | [TF 与 /clock](/ros/tf-and-clock/) |
+| 静态 TF、动态 TF | Static TF、dynamic TF | 静态 TF 不随时间变化，比如机体到传感器，发布到 `/tf_static`；动态 TF 随时间变化，比如 `odom → base_link`，发布到 `/tf` | [TF 与 /clock](/ros/tf-and-clock/) |
 | `/clock` | `/clock` | 发布仿真时间的话题，ROS 节点设 `use_sim_time` 为 true 才会使用它 | [TF 与 /clock](/ros/tf-and-clock/) |
 | `cmd_vel` | `cmd_vel` | 接收速度指令的话题，类型是 `geometry_msgs/msg/Twist` | [接收 cmd_vel](/ros/cmd-vel/) |
 | CDR | Common Data Representation | ROS 2 消息的序列化字节格式，uBotROS 在 UE 里自己编码 | [协议说明](/ros/protocol/) |

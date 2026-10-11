@@ -183,12 +183,25 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
 
 5. **编译并验证**
 
-   先启动 ROS 2 端的桥，见[准备 ROS 2 端](/ros/ros2-setup/)。在机器人 Actor 上添加 `UMyRangeSensorComponent` 和 **uBot ROS Sensor Bridge**，再加 **uBot Identity** 并把 `Namespace` 设为 `robot1`。进入 Play 后，Sensor Bridge 发现传感器并创建发布器，话题出现在 ROS 侧。
+   先启动 ROS 2 端的桥，见[准备 ROS 2 端](/ros/ros2-setup/)。在机器人 Actor 上添加 `UMyRangeSensorComponent` 和 `uBot ROS Sensor Bridge`，再加 `uBot Identity` 并把 `Namespace` 设为 `robot1`。进入 Play 后，Sensor Bridge 发现传感器并创建发布器，话题出现在 ROS 侧。
 
    ```bash
    ros2 topic list
    ros2 topic echo /robot1/range --once
    ```
+
+   示例里的 `UMyRangeSensorComponent` 不会自己采样：`PublishSample` 要由你调用，否则话题上没有数据，`ros2 topic echo` 会一直等下去。测试时让组件每帧发布一个样本，只在 `BeginPlay` 里调用一次不行，那时还没有订阅者，样本会被跳过。
+
+   ```cpp
+   // 测试用：构造函数里设置 PrimaryComponentTick.bCanEverTick = true，头文件里声明 TickComponent
+   void UMyRangeSensorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+   {
+       Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+       PublishSample(1.0f);   // 固定的距离，单位 m
+   }
+   ```
+
+   正式使用时用 `FUBotSampleScheduler` 按固定频率调用 `PublishSample`，见[在 C++ 中使用传感器与接口](/develop/cpp/)。
 
 6. **不经过传感器直接收发（可选）**
 
@@ -242,7 +255,7 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
 ## 输出与事件
 
 - 话题是 `/<namespace>/range`；同一个 Actor 上有多个同类型传感器时是 `/<namespace>/<SensorId>`。
-- `AdvertiseTopic` 的 `LogicalKey` 就是 Sensor Bridge 的 `TopicOverrides` 的键，这里是 `range`，所以话题可以在 Details 面板里替换。
+- `AdvertiseTopic` 的 `LogicalKey` 就是 Sensor Bridge 的 `TopicOverrides` 的键，这里是 `range`，所以话题可以在「Details」面板里替换。
 - 传感器 frame 的静态 TF 由 Sensor Bridge 按 `GetSensorFrameComponent` 自动发布，发布器不用管。
 - `Get Active Publisher Topics` 返回所有已声明的话题，`On ROSPublishers Refreshed` 在发布器重建后触发。
 

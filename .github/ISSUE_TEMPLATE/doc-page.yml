@@ -75,10 +75,11 @@ body:
       label: 验收标准
       options:
         - label: "`npm test`、`npm run check`、`npm run build` 全部通过，且这一页没有新的检查警告"
-        - label: "页面有 `pageKind`，章节按 `docs-templates/` 里这一类页面的示例排列；功能页至少有一张 `blueprint` 蓝图图（不讲蓝图的页面写 `graph: false`），概览页有表格，概念页至少有一个图表、蓝图或表格"
+        - label: "页面有 `pageKind`，章节按 `docs-templates/` 里这一类页面的示例排列；功能页至少有一张 `blueprint` 蓝图图（不讲蓝图的页面写 `graph: false`），概览页有表格，概念页至少有一个图表、蓝图或表格，教程或导览页（`guide`）以“下一步”结尾"
         - label: 写完以后删掉 `{/* STUB */}` 标记和章节清单
         - label: 第一句话说明这一页解决什么问题；每段不超过 3 句，优先用步骤、表格和蓝图
         - label: 节点、引脚、属性名与蓝图编辑器一致（英文、代码样式）；数字带单位，默认值取自参考数据
+        - label: 界面文字（uBot Manager 和 UE 编辑器里的菜单、按钮、面板）用「」，代码名称（节点、引脚、属性、文件、命令行选项）用代码样式
         - label: 中文排版：全角标点，中文与英文、数字之间有空格
         - label: 插件手册里的页面（或所在目录的 `_group.yml`）声明了 `packages`；蓝图只用到声明的插件及其依赖的节点，没有声明插件的页面只用引擎节点
         - label: 需要的类或节点中文说明写进 `data/zh/<插件>/<类名>.yaml`，没有修改生成的参考页面

@@ -84,6 +84,7 @@ import { Steps } from "@astrojs/starlight/components";
 | `friendlyName`、`docsUrl` | `FriendlyName`、`DocsURL` |
 | `layer` | `UBot.Layer` |
 | `repository` | `UBot.Repository`；有可安装版本时必填 |
+| `folder` | 只在索引里，可选：安装目录名，插件装到 `Plugins/uBot/<folder>`；省略时取仓库地址的最后一段，去掉 `.git` |
 | `tags` | `UBot.Tags` |
 | `versions[].version` | `VersionName`（该标签处的值） |
 | `versions[].ref` | 要检出的 git 标签，如 `v0.1.0`；规划中的版本（`"planned": true`）不写 |
@@ -91,6 +92,7 @@ import { Steps } from "@astrojs/starlight/components";
 | `versions[].provides` | `UBot.Provides` |
 | `versions[].enginePlugins` | `UBot.EnginePlugins` |
 | `versions[].engine` | 对 UE 版本的约束，如 `~5.5`；只在索引里 |
+| `versions[].binaries` | 只在索引里，可选：这个版本的预编译压缩包，按 UE 版本和平台给出 `url`、`sha256` 和 `size`；由 `ubot package --update-index` 写入，不用手写 |
 | `description` | 只在索引里：`en` 必填，`zh-CN` 建议填写 |
 
 一个完整的索引文件：
@@ -144,9 +146,19 @@ import { Steps } from "@astrojs/starlight/components";
 
    在这个 Package 的 `versions` 里追加新版本，`ref` 写标签名。旧版本留着，用户需要降级或固定版本。
 
-4. **校验**
+4. **制作预编译包（可选）**
 
-   运行 `ubot index validate`，见下一节。
+   用 `ubot package` 编译并打包，同时把下载地址和 SHA-256 写进索引的 `binaries`。新版本还没有推送，所以用 `--index` 指向本地的索引文件：
+
+   ```powershell
+   ubot --index Index/index.json package MyRangeSensor --out E:\release --update-index Index/index.json
+   ```
+
+   再把 `E:\release` 里的 zip 上传到对应标签的 GitHub Release。参数和要求见[命令行 ubot](/manager/cli/#制作预编译包)。
+
+5. **校验并推送**
+
+   运行 `ubot index validate`，见下一节。有预编译包时先上传压缩包，再提交并推送索引：索引一推送，用户就会开始下载。
 
 </Steps>
 
@@ -154,8 +166,8 @@ import { Steps } from "@astrojs/starlight/components";
 
 | 谁读 | 怎么加 |
 | --- | --- |
-| uBot Manager | 设置 > Package 索引 > 索引源，添加 `https://` 地址或文件路径。同一个 Package 以排在前面的源为准 |
-| 编辑器和 commandlet | 项目设置 uBot Core 的 `AdditionalPackageIndexFiles`。同名条目由后加载的覆盖 |
+| uBot Manager | 「设置 > Package 索引 > 索引源」，添加 `https://` 地址或文件路径。同一个 Package 以排在前面的源为准 |
+| 编辑器和 commandlet | 项目设置「uBot Core」的 `AdditionalPackageIndexFiles`。同名条目由后加载的覆盖 |
 
 ```ini
 [/Script/UBotCore.UBotCoreSettings]
@@ -167,7 +179,7 @@ import { Steps } from "@astrojs/starlight/components";
 | 方式 | 检查什么 | 入口 |
 | --- | --- | --- |
 | 编辑器启动日志 | `UBot` 块和依赖；每个问题是一条 `LogUBot` 警告，最后一行是 `uBot packages: N installed, M enabled, K problem(s).` | 打开工程（`bValidatePackagesOnStartup` 默认开启） |
-| uBot 面板 | 同上，显示在 Problems 分区 | `Window > uBot` |
+| uBot 面板 | 同上，显示在「Problems」分区 | 「Window > uBot」 |
 | commandlet | 同上；有问题时退出码为 1 | `-run=UBotPackage -Validate` |
 | `ubot index validate` | 索引文件的结构和跨条目的规则；不需要工程，不访问网络 | uBot Manager 的命令行 |
 

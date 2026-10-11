@@ -20,7 +20,7 @@ sidebar:
 
 ## Sensor Id 与 Frame Id
 
-两个名字都在传感器组件的 Details 面板里，留空时按下面的规则回退：
+两个名字都在传感器组件的「Details」面板里，留空时按下面的规则回退：
 
 - `Sensor Id` 留空：用组件名。
 - `Frame Id` 留空：用解析后的 `Sensor Id`。
@@ -52,7 +52,7 @@ sidebar:
 
 几点说明：
 
-- Actor 的名字取自 `AActor::GetName()`，不是大纲（Outliner）里显示的标签，所以改标签不会改变结果，打包后结果也相同。
+- Actor 的名字取自 `AActor::GetName()`，不是「Outliner」面板里显示的标签，所以改标签不会改变结果，打包后结果也相同。
 - 没有 `uBot Identity` 组件也能工作：使用方得到同样的回退结果，也就是 Actor 名、净化后的 Actor 名、`base_link` 和根组件。组件只在需要显式命名时才添加。
 - 蓝图里用 `Get Resolved Robot Id`、`Get Resolved Namespace`、`Get Base Frame Id` 和 `Get Base Component` 读取解析结果，见 [Identity 组件](/core/identity/)。
 

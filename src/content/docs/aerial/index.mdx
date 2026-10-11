@@ -20,16 +20,16 @@ uBotAerial 是规划中的多旋翼插件，这一页说明它打算做什么，
 
 ## 计划提供的能力
 
-包索引为它声明了两个能力标签（`provides`）：
+包索引为它声明了两个能力标签（`provides`）。索引只给标签名，下面的含义是根据名称推断的：
 
-| 能力标签 | 含义 |
+| 能力标签 | 含义（推断） |
 | --- | --- |
-| `Actuation.Velocity` | 速度控制，按速度指令驱动无人机。uBotCore 里已有对应的接口 `UBot Velocity Commandable`，它的 `Apply Velocity Command` 接收机体坐标系下的线速度（m/s）和角速度（rad/s） |
+| `Actuation.Velocity` | 速度控制，按速度指令驱动无人机。uBotCore 里已有接口 `UBot Velocity Commandable`，它的 `Apply Velocity Command` 接收机体坐标系下的线速度（m/s）和角速度（rad/s），这个标签是否对应它，尚未确定 |
 | `Body.Multirotor` | 多旋翼机体 |
 
-简介里还提到姿态控制。uBotCore 目前只有速度指令的接口，没有姿态指令的接口。
+定位里还提到姿态控制。uBotCore 目前只有速度指令的接口，没有姿态指令的接口。
 
-尚未确定：姿态指令用什么接口、什么形式传入，无人机组件和蓝图类的名称与属性，是否提供现成的 `UBot Velocity Commandable` 实现。
+尚未确定：能力标签的确切含义和它们与 `UBot Velocity Commandable` 的对应关系，姿态指令用什么接口、什么形式传入，无人机组件和蓝图类的名称与属性，是否提供现成的 `UBot Velocity Commandable` 实现。
 
 ## 与现有插件的关系
 

@@ -38,15 +38,15 @@ notes:
 
 1. **添加组件**
 
-   在 Components 面板点 **Add**，搜索 `uBot 2D LiDAR Sensor`，重命名为 `Lidar2D`，并附着到机器人上。组件本身就是传感器坐标系，X 轴指向扫描的 0° 方向。
+   在「Components」面板点「Add」，搜索 `uBot 2D LiDAR Sensor`，重命名为 `Lidar2D`，并附着到机器人上。组件本身就是传感器坐标系，X 轴指向扫描的 0° 方向。
 
 2. **设置扫描范围**
 
-   选中组件，在 Details 面板的 `2D LiDAR > Scan` 里设置起止角、射线数和量程（range）。默认值是 -135° 到 135°、541 束、0.05 m 到 30 m。
+   选中组件，在「Details」面板的「2D LiDAR > Scan」里设置起止角、射线数和量程（range）。默认值是 -135° 到 135°、541 束、0.05 m 到 30 m。
 
 3. **连蓝图**
 
-   在 Events 区点 `On 2DLidar Frame Ready` 旁的 **+**，照上图连线。
+   在「Events」区点 `On 2DLidar Frame Ready` 旁的「+」，照上图连线。
 
 4. **运行**
 
@@ -80,6 +80,20 @@ notes:
 | `Ignore Owner` | true | 忽略传感器所属的 Actor，避免扫到机器人自己 |
 | `Ignored Actors` | 空 | 额外忽略的 Actor 列表 |
 | `Debug Visualization` | false | 运行时抽样画出一部分射线，命中为绿色，未命中为红色 |
+
+### 编辑器预览
+
+在编辑器视口里选中组件，会画出扫描范围：填色的扇形、按距离画的圆弧、按角度画的射线，以及圆弧上的距离标注。下面的属性在「Details」面板的「2D LiDAR > Editor Preview」里，只用于编辑器，不影响采样：
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Range Preview Color` | 浅蓝 (0.05, 0.65, 1.0) | 扇形、圆弧、射线和标注的颜色 |
+| `Range Preview Opacity` | 0.12 | 扇形填色的不透明度，范围 0 到 1；0 表示不填色 |
+| `Distance Grid Interval Meters` | 5 | 距离圆弧的间隔，单位 m，最小 0.1。圆弧最多 8 条，量程很大时间隔会自动加倍 |
+| `Angular Grid Interval Degrees` | 15 | 角度射线的间隔，单位 °，范围 1 到 90 |
+| `Show Range Labels` | true | 在圆弧上标出距离，格式如 `5 m` |
+
+通用属性（`Auto Start`、`Noise Enabled` 等）见[传感器通用用法](/sensor/basics/)。
 
 ## 输出与事件
 

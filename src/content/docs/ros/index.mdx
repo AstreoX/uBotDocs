@@ -90,13 +90,13 @@ UE 是 TCP 客户端，桥是 TCP 服务器：蓝色箭头是 UE 发给 ROS 2 �
 | 连接桥，断线自动重连并重新注册 | UE ↔ 桥 | [连接与状态](/ros/connection/) |
 | 在 WSL 或 Linux 上运行桥 | — | [准备 ROS 2 端](/ros/ros2-setup/) |
 
-桥子系统只存在于 Game 和 PIE 世界，所以点 **Play** 之后才会发布数据。
+桥子系统只存在于 Game 和 PIE 世界，所以点「Play」之后才会发布数据。
 
 ## 依赖与安装
 
 <PackageStatus name="UBotROS" />
 
-用 [uBot Manager](/manager/) 安装，依赖会一并装好；应用组合“ROS 2 传感器”会同时装上 uBotCore、uBotSensor 和 uBotROS。插件在 Windows 上开发和测试，Linux 上的 UE 没有单独验证。
+用 [uBot Manager](/manager/) 安装，依赖会一并装好；应用组合「ROS 2 传感器」会同时装上 uBotCore、uBotSensor 和 uBotROS。插件在 Windows 上开发和测试，Linux 上的 UE 没有单独验证。
 
 ROS 2 端要另外准备：ROS 2 Humble 和桥节点 `ubot_ros_bridge`。桥的源码随插件放在 `ros2/ubot_ros_bridge`，做法见[准备 ROS 2 端](/ros/ros2-setup/)。
 

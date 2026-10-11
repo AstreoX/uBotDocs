@@ -1,0 +1,49 @@
+---
+title: 五分钟上手
+description: 一句话说明读者跟着这一页做完以后能得到什么（搜索结果和链接预览会用到）。
+pageKind: guide
+packages: [UBotSensor]
+sidebar:
+  order: 30
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+{/* 模板：教程或导览页（开始里的安装和上手，uBot Manager 的界面导览）。复制到 src/content/docs/ 下，替换内容，删掉所有注释。章节自己安排，只有两条固定：第一句话说明这一页解决什么问题，最后一节是「下一步」。节点图可有可无。 */}
+
+这一页给一个 Actor 装上 IMU，运行后在屏幕上看到采样序号不断增加。
+
+## 准备
+
+{/* 开始之前要有什么；没有可以去掉这一节。 */}
+
+先按[安装](/start/install/)装好 `UBotCore` 和 `UBotSensor`，用 UE 5.5 打开工程。
+
+## 第一部分
+
+{/* 读者要做的操作，一步一件事；用 Steps。章节名按内容起，数量不限。 */}
+
+<Steps>
+
+1. **新建 Actor 蓝图**
+
+   在「Content Browser」里右键，选「Blueprint Class → Actor」，命名为 `BP_ImuProbe`。
+
+2. **添加 IMU 组件**
+
+   打开 `BP_ImuProbe`，在「Components」面板点「Add」，搜索 `uBot IMU Sensor`。
+
+</Steps>
+
+## 第二部分
+
+{/* 需要时放一张最小的节点图（3 到 6 个节点）或一张截图、一张表。 */}
+
+运行后屏幕左上角的数字不断增加。
+
+## 下一步
+
+{/* 最后一节，用列表给出两三个链接：先读什么，再做什么。 */}
+
+- [IMU 传感器](/sensor/imu/)：把姿态换算成 Roll、Pitch、Yaw。
+- [帧头与采样状态](/concepts/frame-header/)：`Sequence` 和状态码。

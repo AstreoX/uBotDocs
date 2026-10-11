@@ -32,7 +32,7 @@ wires:
   - S.ReturnValue -> P.InString
   - C.True -> P.execute
 notes:
-  B: 选中节点，在 Details 面板里取消勾选不用的字段，引脚就会隐藏。
+  B: 选中节点，在「Details」面板里取消勾选不用的字段，引脚就会隐藏。
   C: 只有 `Valid` 样本的 `Has Velocity` 为 true。
 ```
 
@@ -44,23 +44,23 @@ notes:
 
 1. **添加组件**
 
-   在 Components 面板点 **Add**，搜索 `uBot Odometry Sensor`。默认跟踪 Actor 的根组件，所以组件摆在哪里不影响输出。
+   在「Components」面板点「Add」，搜索 `uBot Odometry Sensor`。默认跟踪 Actor 的根组件，所以组件摆在哪里不影响输出。
 
 2. **选择跟踪对象（可选）**
 
-   要跟踪别的组件时，在 Details 面板 `Odometry` 类别的 `Tracking` 子类别里设置 `Custom Tracked Component`。留空就跟踪 Actor 的根组件。
+   要跟踪别的组件时，在「Details」面板「Odometry」类别的「Tracking」子类别里设置 `Custom Tracked Component`。留空就跟踪 Actor 的根组件。
 
 3. **设置坐标系名（可选）**
 
-   `Odometry Frame Id` 默认是 `odom`，`Child Frame Id` 默认是 `base_link`，两者都写入输出数据。它们在 `Odometry` 类别的 `Frames` 子类别里。
+   `Odometry Frame Id` 默认是 `odom`，`Child Frame Id` 默认是 `base_link`，两者都写入输出数据。它们在「Odometry」类别的「Frames」子类别里。
 
 4. **设置噪声和漂移（可选）**
 
-   默认没有噪声。需要时先勾选 `Noise Enabled`，再填写 `Odometry` 类别的 `Noise` 和 `Drift` 子类别里的参数。
+   默认没有噪声。需要时先勾选 `Noise Enabled`，再填写「Odometry」类别的「Noise」和「Drift」子类别里的参数。
 
 5. **连蓝图**
 
-   选中组件，在 Details 面板底部 Events 区点 `On Odometry Data Updated` 旁的 **+**，照上图连线。
+   选中组件，在「Details」面板底部「Events」区点 `On Odometry Data Updated` 旁的「+」，照上图连线。
 
 </Steps>
 
@@ -160,7 +160,7 @@ notes:
 - 速度由相邻样本的位置差分得到，是被跟踪组件的本地轴向，不是世界轴向。
 - 被跟踪组件的世界缩放不是 1 时，`Position Meters` 会被缩放，不再是真实的米数。
 - 数据保持 UE 的轴向，位置从厘米换算成米。需要 ROS 约定时，见[坐标系与单位](/concepts/coordinates-and-units/)。
-- 所有属性在蓝图里只读，要在 Details 面板里设置。
+- 所有属性在蓝图里只读，要在「Details」面板里设置。
 
 ## 相关参考
 

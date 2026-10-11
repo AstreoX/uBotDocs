@@ -41,15 +41,15 @@ notes:
 
 1. **添加组件**
 
-   在 Components 面板点 **Add**，搜索 `uBot RGB Camera Sensor`，重命名为 `Rgb`，并附着到机器人上。相机朝向组件的 X 轴。
+   在「Components」面板点「Add」，搜索 `uBot RGB Camera Sensor`，重命名为 `Rgb`，并附着到机器人上。相机朝向组件的 X 轴。
 
 2. **设置分辨率与视场**
 
-   选中组件，在 Details 面板的 `Camera > Image` 里设置分辨率，在 `Camera > Projection` 里设置水平视场。默认是 640 × 480、90°。
+   选中组件，在「Details」面板的「Camera > Image」里设置分辨率，在「Camera > Projection」里设置水平视场。默认是 640 × 480、90°。
 
 3. **连蓝图**
 
-   在 Events 区点 `On Image Frame Ready` 旁的 **+**，照上图连线。
+   在「Events」区点 `On Image Frame Ready` 旁的「+」，照上图连线。
 
 4. **运行**
 
@@ -70,6 +70,8 @@ notes:
 | `Update Rate Hz` | 30 | 采集频率，单位 Hz |
 | `Sensor Id`、`Frame Id` | `rgb_camera` | 帧头里的传感器 ID 和 TF frame id，见[帧头与采样状态](/concepts/frame-header/) |
 
+通用属性（`Auto Start`、`Sensor Enabled` 等）见[传感器通用用法](/sensor/basics/)。
+
 烟雾相关的属性（`Enable Smoke Interference`、`Smoke Interference Tint` 等）见[感知介质（烟雾干扰）](/sensor/medium/)。
 
 ## 输出与事件
@@ -86,11 +88,11 @@ notes:
 | 节点 | 作用 |
 | --- | --- |
 | `Request Pixel Readback` | 把这一帧的像素读回 CPU，返回是否成功，失败原因在 `Error Message` 里 |
-| `Has CPU Pixel Data` | 像素是否已经在 CPU 上 |
+| `Has CPUPixel Data` | 像素是否已经在 CPU 上 |
 | `Get BGRAPixel by Coordinates` | 取坐标 (`X`, `Y`) 处的 `Color`。坐标越界或没有像素数据时 `Return Value` 为 false |
 | `Get Pixel Data Size Bytes` | 像素缓冲区的字节数 |
 | `Copy Pixel Bytes (High Cost)` | 全部像素字节的副本 |
-| `Clear CPU Pixel Data` | 释放 CPU 上的像素数据 |
+| `Clear CPUPixel Data` | 释放 CPU 上的像素数据 |
 
 - 编码（`Encoding`）是 `BGRA8`：每个像素 4 个字节，顺序为 B、G、R、A，`Row Stride Bytes` 等于 `Width` × 4。
 - 像素坐标的原点在左上角，X 向右，Y 向下。
@@ -117,7 +119,7 @@ notes:
 
 - `Request Pixel Readback` 是同步的，会等渲染完成，开销高。只在需要像素的时候调用，不需要每帧都读。
 - 只有最新一次采集的帧能读回。相机再次采集后，旧帧的读回会失败，`Error Message` 说明帧已过期；已经读回的数据不受影响。所以在 `On Image Frame Ready` 里读回最稳妥。
-- 读回后的像素缓冲区很大：640 × 480 时约 1.2 MB。用完后调用 `Clear CPU Pixel Data` 释放。
+- 读回后的像素缓冲区很大：640 × 480 时约 1.2 MB。用完后调用 `Clear CPUPixel Data` 释放。
 - `Copy Pixel Bytes (High Cost)` 每次调用都复制整个缓冲区。只读几个像素时用 `Get BGRAPixel by Coordinates`。
 - 烟雾叠加发生在读回时，只改 CPU 上的像素，Render Target 本身不受影响，所以预览画面里看不到烟雾。
 - `External Render Target` 的格式不是 RGBA8 时，这次采样的状态是 `Error`，触发 `On Sensor Error`，不产生帧。

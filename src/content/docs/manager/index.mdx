@@ -1,7 +1,7 @@
 ---
 title: 界面导览
 description: uBot Manager 的界面：启动与选择项目、各视图、任务，以及问题和快速修复。
-pageKind: overview
+pageKind: guide
 sidebar:
   order: 10
 ---
@@ -18,11 +18,11 @@ uBot Manager 在 UE 工程里安装、更新、启用、禁用和卸载 uBot 插
 
 | 方式 | 做法 |
 | --- | --- |
-| 从 UE 编辑器 | 打开 `Window > uBot`，点「打开 uBot Manager」（英文界面是 Open uBot Manager），它会带着当前工程启动 |
+| 从 UE 编辑器 | 打开「Window > uBot」，点「打开 uBot Manager」（英文界面是 Open uBot Manager），它会带着当前工程启动 |
 | 直接运行 | 运行 `ubot-manager.exe`，打开上次使用的项目 |
 | 指定项目 | `ubot-manager.exe --project E:\Sims\MyRobotSim\MyRobotSim.uproject` |
 
-同一时间只有一个 uBot Manager 在运行：再次启动时，新进程把项目交给已在运行的实例，由它打开并回到前台。编辑器找不到它时会弹出通知，也可以在 `Editor Preferences > Plugins > uBot` 的 `Manager Executable` 里指定路径。
+同一时间只有一个 uBot Manager 在运行：再次启动时，新进程把项目交给已在运行的实例，由它打开并回到前台。编辑器找不到它时会弹出通知，也可以在「Editor Preferences > Plugins > uBot」的 `Manager Executable` 里指定路径。
 
 首次启动的语言跟随系统界面语言，主题默认深色。
 
@@ -85,9 +85,9 @@ uBot Manager 在 UE 工程里安装、更新、启用、禁用和卸载 uBot 插
 
 ### 「依赖图」视图
 
-依赖图把插件画成卡片，按依赖从左到右排列，箭头 A → B 表示 B 依赖 A。有问题的卡片带警告图标，双击卡片回到「Package」视图并选中它。
+依赖图把插件画成卡片，从左到右分列，箭头 A → B 表示 B 依赖 A。有问题的卡片带警告图标，双击卡片回到「Package」视图并选中它。
 
-工具栏上的「可安装」和「规划中」两个复选框决定显示哪些卡片；按住 `Ctrl` 滚动滚轮缩放，拖动空白处平移，「适应窗口」恢复全貌。文档里的 [依赖图](/start/introduction/) 画法相同。
+工具栏上的「可安装」和「规划中」两个复选框决定显示哪些卡片；按住 `Ctrl` 滚动滚轮缩放，拖动空白处平移，「适应窗口」恢复全貌。文档里的[依赖图](/start/introduction/)卡片和箭头画法相同，分列方式不同。
 
 ### 状态栏
 
@@ -111,7 +111,7 @@ uBot Manager 在 UE 工程里安装、更新、启用、禁用和卸载 uBot 插
 - 「重新运行」只用于当前项目里已结束的任务。
 - 保留最近 30 个任务，每步最多 5000 行日志；程序退出时仍在运行的任务，下次启动标为失败。
 
-任务运行时，状态栏显示当前步骤、进度条和 `n/m`；下载预编译包时，进度是已下载的字节数。
+打开「任务」视图并且有任务在运行时，状态栏显示当前步骤、进度条和 `n/m`，右边的按钮可以停止任务；下载预编译包时，进度是已下载的字节数。在其他视图里，状态栏只有「任务」按钮，任务运行时它的图标会转动。
 
 ## 问题与快速修复
 

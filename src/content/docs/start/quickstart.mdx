@@ -1,7 +1,7 @@
 ---
 title: 五分钟上手
 description: 给 Actor 加一个 uBot IMU Sensor，运行后在屏幕上看到它的采样序号。
-pageKind: feature
+pageKind: guide
 packages: [UBotSensor]
 sidebar:
   order: 30
@@ -21,11 +21,11 @@ import { Steps } from "@astrojs/starlight/components";
 
 1. **新建 Actor 蓝图**
 
-   在 Content Browser 里右键，选 **Blueprint Class → Actor**，命名为 `BP_ImuProbe`。
+   在「Content Browser」里右键，选「Blueprint Class → Actor」，命名为 `BP_ImuProbe`。
 
 2. **添加 IMU 组件**
 
-   打开 `BP_ImuProbe`，在 Components 面板点 **Add**，搜索 `uBot IMU Sensor`，把新组件重命名为 `IMU`。
+   打开 `BP_ImuProbe`，在「Components」面板点「Add」，搜索 `uBot IMU Sensor`，把新组件重命名为 `IMU`。
 
 </Steps>
 
@@ -33,7 +33,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 ## 在屏幕上打印采样序号
 
-选中 `IMU` 组件，在 Details 面板最下面的 Events 区点 `On Sensor Sampled` 旁的 **+**，然后照下图连线：
+选中 `IMU` 组件，在「Details」面板最下面的「Events」区点 `On Sensor Sampled` 旁的「+」，然后照下图连线：
 
 ```blueprint
 caption: 每次采样时把帧序号打印到屏幕
@@ -60,11 +60,11 @@ notes:
 
 1. **放进关卡**
 
-   把 `BP_ImuProbe` 从 Content Browser 拖进关卡。
+   把 `BP_ImuProbe` 从「Content Browser」拖进关卡。
 
 2. **运行**
 
-   点 **Play**。屏幕左上角的数字不断增加。
+   点「Play」。屏幕左上角的数字不断增加。
 
 </Steps>
 

@@ -282,17 +282,17 @@ import { Steps } from "@astrojs/starlight/components";
 
 <Steps>
 
-1. **打开 Class Settings**
+1. **打开「Class Settings」**
 
-   打开蓝图 Actor 或蓝图组件，点工具栏的 **Class Settings**。
+   打开蓝图 Actor 或蓝图组件，点工具栏的「Class Settings」。
 
 2. **添加接口**
 
-   在 Details 面板的 **Interfaces** 区点 **Add**，选择 `UBot Velocity Commandable`。传感器选 `UBot Sensor`。
+   在「Details」面板的「Interfaces」区点「Add」，选择 `UBot Velocity Commandable`。传感器选 `UBot Sensor`。
 
 3. **实现函数**
 
-   在 My Blueprint 面板的 **Interfaces** 里，双击有返回值的函数（如 `Apply Velocity Command`）来实现它。没有返回值的函数（如 `Stop Motion`）在事件图表里右键添加为事件。
+   在「My Blueprint」面板的「Interfaces」里，双击有返回值的函数（如 `Apply Velocity Command`）来实现它。没有返回值的函数（如 `Stop Motion`）在事件图表里右键添加为事件。
 
 4. **编译并保存**
 
@@ -312,6 +312,8 @@ import { Steps } from "@astrojs/starlight/components";
 | `UBot::Actuation::FindVelocityCommandable` | `UBotActuatorInterface.h` | 第一个实现 `IUBotVelocityCommandable` 的对象，没有则为 `nullptr` |
 | `UBot::Interfaces::FindImplementers`、`FindFirstImplementer` | `UBotSensorInterface.h` | 上面两个函数的通用版本，参数是接口的 `UClass`，如 `UUBotActuator::StaticClass()` |
 | `UBot::Clock::GetSimTimeSeconds` | `UBotClock.h` | 仿真时间，单位秒 |
+| `FUBotExtensionRegistry` | `UBotExtensionRegistry.h` | 扩展点：`RegisterExtensionPoint` 声明，`RegisterExtension` 注册，`GetExtensions` 查询；例子见[为自定义传感器添加 ROS 发布器](/develop/ros-publisher/) |
+| `FUBotRuntimeStatus` | `UBotRuntimeStatus.h` | 运行状态：`SetItem` 发布一个状态项，`ReportProblem` 报告一个问题，显示在 uBot 面板的「Runtime」和「Problems」分区，见 [Package 查询与编辑器面板](/core/packages/) |
 | `UBot::Identity::Find`、`ResolveRobotId`、`ResolveNamespace`、`ResolveBaseFrameId`、`ResolveBaseComponent` | `UBotIdentityComponent.h` | 与 uBot Identity 组件相同的解析规则，Actor 没有组件时回退到默认值 |
 
 ## 输出与事件

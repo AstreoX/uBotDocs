@@ -28,7 +28,7 @@ wires:
   - V.Identity -> G.Target
   - G.ReturnValue -> P.InString
 notes:
-  V: 从 Components 面板把 Identity 组件拖进事件图。
+  V: 从「Components」面板把 Identity 组件拖进事件图。
 ```
 
 ## 步骤
@@ -37,15 +37,15 @@ notes:
 
 1. **添加组件**
 
-   打开机器人的 Actor 蓝图，在 Components 面板点 **Add**，搜索 `uBot Identity`（分类 uBot）。
+   打开机器人的 Actor 蓝图，在「Components」面板点「Add」，搜索 `uBot Identity`（在「uBot」分类下）。
 
 2. **填写字段**
 
-   在 Details 面板里按需要填 `Robot Id`、`Namespace` 等。全部字段都可以留空，留空时按下表回退。
+   在「Details」面板里按需要填 `Robot Id`、`Namespace` 等。全部字段都可以留空，留空时按下表回退。
 
 3. **读取结果**
 
-   需要名字时，从组件上拖出 `Get Resolved …` 节点。直接读 `Robot Id` 等属性拿到的是没有回退的原始值，可能是空的。
+   需要名字时，从组件上拖出 `Get Resolved Robot Id`、`Get Resolved Namespace` 或 `Get Base Frame Id`。直接读 `Robot Id` 等属性拿到的是没有回退的原始值，可能是空的。
 
 </Steps>
 
@@ -58,7 +58,7 @@ notes:
 | `Base Frame Id` | `base_link` | 用 `base_link` |
 | `Base Component` | 空 | 用所属 Actor 的根组件 |
 
-Actor 的名字是 `AActor::GetName()` 的结果，不是 Outliner 里显示的标签，所以打包后结果不变。`Base Component` 指向的必须是场景组件（Scene Component），否则同样回退到根组件。
+Actor 的名字是 `AActor::GetName()` 的结果，不是「Outliner」里显示的标签，所以打包后结果不变。`Base Component` 指向的必须是场景组件（Scene Component），否则同样回退到根组件。
 
 ## 输出与事件
 
@@ -84,7 +84,7 @@ Actor 的名字是 `AActor::GetName()` 的结果，不是 Outliner 里显示的�
 
 - 组件是可选的。Actor 没有它时，使用方按同样的规则回退：Actor 名、净化后的 Actor 名、`base_link` 和根组件。
 - 每个机器人加一个组件就够了。
-- 在 Outliner 里改 Actor 的标签不会改变机器人的名字；要改名，填 `Robot Id`。
+- 在「Outliner」里改 Actor 的标签不会改变机器人的名字；要改名，填 `Robot Id`。
 
 ## 相关参考
 

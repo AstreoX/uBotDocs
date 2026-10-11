@@ -41,15 +41,15 @@ notes:
 
 1. **添加组件**
 
-   在 Components 面板点 **Add**，搜索 `uBot 3D LiDAR Sensor`，重命名为 `Lidar3D`，并附着到机器人上。
+   在「Components」面板点「Add」，搜索 `uBot 3D LiDAR Sensor`，重命名为 `Lidar3D`，并附着到机器人上。
 
 2. **设置视场与线数**
 
-   选中组件，在 Details 面板的 `3D LiDAR > Scan` 里设置视场（Field of View，FOV）、通道（channel）数和每个通道的射线数。默认是水平 360°、垂直上下各 15°、16 个通道、每个通道 360 条射线。
+   选中组件，在「Details」面板的「3D LiDAR > Scan」里设置视场（Field of View，FOV）、通道（channel）数和每个通道的射线数。默认是水平 360°、垂直上下各 15°、16 个通道、每个通道 360 条射线。
 
 3. **连蓝图**
 
-   在 Events 区点 `On 3DLidar Frame Ready` 旁的 **+**，照上图连线。
+   在「Events」区点 `On 3DLidar Frame Ready` 旁的「+」，照上图连线。
 
 4. **运行**
 
@@ -87,6 +87,20 @@ notes:
 | `Ignored Actors` | 空 | 额外忽略的 Actor 列表 |
 | `Debug Visualization` | false | 运行时抽样画出一部分射线，命中为绿色，未命中为红色 |
 
+### 编辑器预览
+
+在编辑器视口里选中组件，会画出视场的外壳：填色的量程范围、按距离画的圆弧、按角度画的经纬线，以及距离标注。下面的属性在「Details」面板的「3D LiDAR > Editor Preview」里，只用于编辑器，不影响采样：
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Range Preview Color` | 浅蓝 (0.05, 0.65, 1.0) | 外壳、网格和标注的颜色 |
+| `Range Preview Opacity` | 0.12 | 外壳填色的不透明度，范围 0 到 1；0 表示不填色 |
+| `Distance Grid Interval Meters` | 5 | 距离圆弧的间隔，单位 m，最小 0.1。圆弧最多 8 条，量程很大时间隔会自动加倍 |
+| `Angular Grid Interval Degrees` | 15 | 角度网格线的间隔，单位 °，范围 1 到 90 |
+| `Show Range Labels` | true | 在圆弧上标出距离，格式如 `5 m` |
+
+通用属性（`Auto Start`、`Noise Enabled` 等）见[传感器通用用法](/sensor/basics/)。
+
 ## 输出与事件
 
 - `On 3DLidar Frame Ready`：每次产生有效帧后触发，`Frame` 是这一帧。
@@ -122,7 +136,7 @@ notes:
 
 ## 注意事项
 
-- 没有命中的射线，以及距离小于 `Minimum Range Meters` 的命中，都不产生点。所以点的索引不对应固定的射线方向，要按方向处理时用 `Ring Index`。
+- 没有命中的射线，以及距离小于 `Minimum Range Meters` 的命中，都不产生点。所以点的索引不对应固定的射线方向。`Ring Index` 只表示垂直方向的通道；要按水平方向处理，用 `Point Meters` 的 X、Y 算 `atan2(Y, X)`，向右为正。
 - `Number Of Channels` 乘以 `Horizontal Samples` 超过 `Maximum Rays Per Scan` 时，这次采样的状态是 `Error`，触发 `On Sensor Error`，不产生帧，也不会截断射线数。
 - 最大量程不大于最小量程时，这次采样同样是 `Error` 状态。
 - `Copy All ...（High Cost）` 每次调用都复制整个数组。逐点处理用 `Get Point by Index`，需要全部数据时调用一次并存进变量。

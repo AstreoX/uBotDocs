@@ -91,7 +91,7 @@ Packages
 No problems.
 ```
 
-后面还有一节「Index sources」，列出各索引源的状态。`FROM` 列显示已安装插件是怎么装的：`git v0.1.0`（有本地修改时加 `(modified)`）、`prebuilt UE 5.5` 或 `local folder`。
+后面还有一节 `Index sources`，列出各索引源的状态。`FROM` 列显示已安装插件是怎么装的：`git v0.1.0`（有本地修改时加 `(modified)`）、`prebuilt UE 5.5` 或 `local folder`。
 
 ### 先看计划再执行
 
@@ -183,6 +183,9 @@ ubot recipe ros-sensors --yes
 sensors-only      Sensors Only       available      UBotCore, UBotSensor
 ros-sensors       ROS 2 Sensors      available      UBotCore, UBotSensor, UBotROS
 ros-ground-robot  ROS Ground Robot   not available  UBotCore, UBotSensor, UBotVehicles, UBotROS
+llm-drone         LLM Drone          not available  UBotCore, UBotSensor, UBotAerial, UBotMCP
+smoke-combat      Smoke Combat Demo  not available  UBotCore, UBotSensor, UBotEnvironment, UBotCombat
+custom            Custom             available      UBotCore
 ```
 
 - `recipe` 和桌面程序一样，只安装缺少的插件、启用被禁用的插件，不更新也不禁用别的插件，只接受 `--no-build` 和 `--yes`。

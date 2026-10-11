@@ -22,7 +22,7 @@ sidebar:
 
 - 3D 激光雷达的射线数超过 `Maximum Rays Per Scan` 时，这次扫描报错，不会截断。
 - `Trace Complex` 默认关闭，射线只与简单碰撞求交。打开后每条射线更贵。
-- `Enable Smoke Interference` 默认打开：每次采样都要收集场景里的介质，其中旧标签路径会遍历世界里的所有 Actor，找带 `Smoke Volume Actor Tag` 的烟雾 Actor。不用烟雾时把它关掉。
+- `Enable Smoke Interference` 默认打开：每次采样都要收集场景里的介质，接口路径和旧标签路径各遍历一遍世界里的所有 Actor（旧标签路径找带 `Smoke Volume Actor Tag` 的烟雾 Actor）。不用烟雾时把它关掉。
 - `Debug Visualization` 每次采样画调试线，2D 激光雷达约 32 条，3D 激光雷达最多 128 条。正式运行时关掉。
 - 每秒射线数是采样频率乘以每次的射线数：默认的 2D 激光雷达是 541 × 10 = 5410 条，3D 激光雷达是 5760 × 10 = 57600 条。
 
@@ -37,7 +37,7 @@ sidebar:
 | 图像帧（RGB） | `Copy Pixel Bytes` | `Get BGRAPixel by Coordinates` |
 | 图像帧（深度） | `Copy Depth Values` | `Get Depth Meters by Coordinates` |
 
-数组有多大：一帧 2D 扫描默认 541 个值，点云的点数不会超过 `Maximum Rays Per Scan`（默认 65536），一帧 640 × 480 的图像有 307200 个像素。
+数组有多大：一帧 2D 扫描默认 541 个值；3D 激光雷达的点云不会超过 `Maximum Rays Per Scan`（默认 65536）个点；深度相机的 `Generate Point Cloud` 为每个有效像素生成一个点，640 × 480 最多 307200 个。一帧 640 × 480 的图像有 307200 个像素。
 
 ## 相机读回
 
@@ -66,7 +66,7 @@ sidebar:
 | RGB 相机 | 30 Hz | 每个采样时刻渲染一次场景 |
 | 深度相机 | 30 Hz | 每个采样时刻渲染一次场景 |
 
-- `Update Rate Hz` 的范围是 0.1 到 240 Hz，Details 面板的滑块到 120 Hz。
+- `Update Rate Hz` 的范围是 0.1 到 240 Hz，「Details」面板的滑块到 120 Hz。
 - 每个 world tick 最多采一个样本，所以采样频率不会超过帧率。多出来的采样时刻会被跳过，不会补采。
 - 暂停时不自动采样。
 - 默认值是各传感器的起点；先用默认值，再按需要的数据量调整。

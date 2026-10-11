@@ -25,7 +25,7 @@ import SamplingTimeline from "../../../components/SamplingTimeline.astro";
 
 ## 固定步长、暂停与单步
 
-时钟子系统（`UBot Clock Subsystem`）只在 Game 和 PIE 世界里存在，蓝图类别是 `uBot|Clock`。
+时钟子系统（`UBot Clock Subsystem`）只在 Game 和 PIE 世界里存在，蓝图节点在「uBot > Clock」类别下。
 
 | 节点 | 作用 |
 | --- | --- |
@@ -40,7 +40,7 @@ import SamplingTimeline from "../../../components/SamplingTimeline.astro";
 
 暂停时仿真时间不前进，传感器也不采样。固定步长加单步，就是每次推进固定的 1 / `Step Hz` 秒。
 
-要让每个 Game 或 PIE 世界一开始就用固定步长，不用写蓝图：在 **Project Settings > Plugins > uBot Core** 的 `Clock` 分类里勾选 `Use Fixed Time Step`（默认 false），再设 `Fixed Time Step Hz`（默认 60 Hz）。取消勾选不会关掉已经开着的固定步长。
+要让每个 Game 或 PIE 世界一开始就用固定步长，不用写蓝图：在「Project Settings > Plugins > uBot Core」的「Clock」分类里勾选 `Use Fixed Time Step`（默认 false），再设 `Fixed Time Step Hz`（默认 60 Hz）。取消勾选不会关掉已经开着的固定步长。
 
 ## 采样调度
 

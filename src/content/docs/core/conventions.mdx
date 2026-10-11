@@ -56,16 +56,23 @@ notes:
 ROS 的时间戳（`builtin_interfaces/Time`）由整数秒 `Sec` 和纳秒 `Nanosec` 两部分组成。`Seconds To ROS Time` 把秒拆成这两个字段，`ROS Time To Seconds` 再合回去。
 
 ```blueprint
-caption: 把仿真时间拆成 ROS 时间戳的两个字段
+caption: 每帧把仿真时间拆成 ROS 时间戳，打印其中的 Sec
 nodes:
+  A: AActor.ReceiveTick
   S: { inline: { title: UBot Clock Subsystem, kind: pure, outputs: [{ name: Return Value, type: "object:UUBotClockSubsystem" }] } }
   T: UUBotClockSubsystem.GetSimTimeSeconds
   R: UUBotConventionsLibrary.SecondsToRosTime
+  C: UKismetStringLibrary.Conv_IntToString
+  P: { ref: UKismetSystemLibrary.PrintString, set: { Key: ros_sec } }
 wires:
+  - A.then -> P.execute
   - S.ReturnValue -> T.Target
   - T.ReturnValue -> R.Seconds
+  - R.Sec -> C.InInt
+  - C.ReturnValue -> P.InString
 notes:
-  S: 时钟子系统的用法见“仿真时钟”页。
+  S: 搜索 `Get UBotClockSubsystem` 取到它，用法见“仿真时钟”页。
+  R: "`Nanosec` 是秒的小数部分，单位 ns，这里没有接线。"
 ```
 
 例如 12.5 s 拆成 `Sec` 为 12、`Nanosec` 为 500000000。
@@ -79,8 +86,9 @@ notes:
 | `My Robot 01` | `My_Robot_01` |
 | `4WD Rover #1` | `_4WD_Rover_1` |
 | 空字符串 | `ubot` |
+| `机器人` | `_` |
 
-规则：只保留 `A-Z`、`a-z`、`0-9` 和下划线，其余字符（包括中文）换成下划线；连续的下划线合并为一个；首字符是数字时前面加一个下划线；结果为空时返回 `ubot`。
+规则：只保留 `A-Z`、`a-z`、`0-9` 和下划线，其余字符（包括中文）换成下划线；连续的下划线合并为一个；首字符是数字时前面加一个下划线；只有输入为空时才返回 `ubot`，全是中文这类非 ASCII 字符的输入会变成 `_`。
 
 ## 关键属性
 

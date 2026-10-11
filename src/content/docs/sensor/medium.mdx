@@ -42,11 +42,11 @@ notes:
 
 2. **实现接口**
 
-   打开 Class Settings，在 Interfaces 里点 **Add**，选 `UBot Perception Medium`。
+   打开「Class Settings」，在「Interfaces」里点「Add」，选 `UBot Perception Medium`。
 
 3. **实现 `Get Medium Snapshot`**
 
-   在 My Blueprint 面板的 Interfaces 下双击 `Get Medium Snapshot`，照上图连线。
+   在「My Blueprint」面板的「Interfaces」下双击 `Get Medium Snapshot`，照上图连线。
 
 4. **放进关卡**
 
@@ -118,7 +118,7 @@ RGB 相机另有三个属性，深度相机不使用：
 | --- | --- |
 | 2D 激光雷达 | 射线进入有效密度不低于阈值的单元时，在入口处被截断：按命中处理（`Hit` 为 true），距离是入口距离，强度为 0 |
 | 3D 激光雷达 | 同样在入口处截断。入口距离在量程内时，这束射线在入口距离处产生一个点，强度为 0 |
-| RGB 相机 | 读回像素时，像素射线（最远 `Preview Distance Meters`）遇到介质，像素向介质颜色混合，原来的 alpha 保留。不透明度是有效密度乘以 `Smoke Interference Opacity Scale`，上限为 `Maximum Smoke Interference Opacity` |
+| RGB 相机 | 读回像素时，像素射线（最远 `Preview Distance Meters`）遇到介质，像素向介质颜色混合，原来的 alpha 保留。不透明度是有效密度乘以 `Smoke Interference Opacity Scale`，上限为 `Maximum Smoke Interference Opacity`。不检查射线前面有没有表面挡住，墙后面的介质也会给这个像素染色 |
 | 深度相机 | 读回深度时，射线在到达表面之前进入介质，这个像素的深度改为入口距离。入口距离超出 [`Minimum Depth Meters`, `Maximum Depth Meters`] 时记为 0 |
 
 RGB 相机的颜色：来自 `UBot Perception Medium` 接口的快照用它自己的 `Tint`，其他来源用相机上的 `Smoke Interference Tint`。

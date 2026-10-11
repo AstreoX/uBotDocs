@@ -12,7 +12,7 @@ uBotSensor 给 Actor 装上仿真传感器，在蓝图里读取位姿、里程�
 
 ## 能做什么
 
-每种传感器都是一个组件，在 Components 面板里添加即可。点传感器名进入它的页面：
+每种传感器都是一个组件，在「Components」面板里添加即可。点传感器名进入它的页面：
 
 | 传感器 | 主要输出 | 事件 | 默认频率 |
 | --- | --- | --- | --- |
@@ -30,7 +30,7 @@ uBotSensor 给 Actor 装上仿真传感器，在蓝图里读取位姿、里程�
 
 <PackageStatus name="UBotSensor" />
 
-用 [uBot Manager](/manager/) 安装，依赖会一并装好。安装后传感器组件在 Add 菜单的 `uBot` 分类下，显示名形如 `uBot IMU Sensor`。
+用 [uBot Manager](/manager/) 安装，依赖会一并装好。安装后传感器组件在「Add」菜单的「uBot」分类下，显示名形如 `uBot IMU Sensor`。
 
 插件本身不含 ROS 代码，输出是 UE 原生的结构体和对象，单位是米、秒、弧度。把数据发布到 ROS 用 [uBotROS](/ros/)。
 

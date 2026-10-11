@@ -38,7 +38,7 @@ notes:
 
 1. **添加组件**
 
-   在要被驱动的 Actor 上，点 Components 面板的 **Add**，搜索 `uBot ROS Velocity Command`，重命名为 `CmdVel`。`Auto Start Receiver` 默认开启，`Begin Play` 时开始订阅。
+   在要被驱动的 Actor 上，点「Components」面板的「Add」，搜索 `uBot ROS Velocity Command`，重命名为 `CmdVel`。`Auto Start Receiver` 默认开启，`Begin Play` 时开始订阅。
 
 2. **确定话题**
 
@@ -48,13 +48,13 @@ notes:
 
 3. **确定谁来执行指令**
 
-   `Target Component` 为空时，指令交给 Actor 本身；Actor 本身没有实现 `UBot Velocity Commandable` 时，交给第一个实现它的组件。也可以在 `Target Component` 里指定一个组件。
+   `Target Component` 为空时，Actor 本身实现了 `UBot Velocity Commandable` 就交给 Actor，否则交给第一个实现它的组件。也可以在 `Target Component` 里指定一个组件。
 
    Actor 上找不到目标不是错误：组件照常解码、触发事件并运行超时，指令只在蓝图里处理。
 
 4. **让载具实现接口**
 
-   在载具或无人机的蓝图里，打开 **Class Settings**，在 Interfaces 里添加 [`UBot Velocity Commandable`](/reference/ubotcore/uubotvelocitycommandable/)，然后实现两个函数：
+   在载具或无人机的蓝图里，打开「Class Settings」，在「Interfaces」里添加 [`UBot Velocity Commandable`](/reference/ubotcore/uubotvelocitycommandable/)，然后实现两个函数：
 
    - `Apply Velocity Command`：收到 `Command`，返回 `false` 表示拒绝这条指令。
    - `Stop Motion`：停车。
@@ -66,6 +66,8 @@ notes:
    ```bash
    ros2 topic pub -r 10 /robot1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z: 0.2}}"
    ```
+
+   命令里的 `robot1` 换成你的命名空间。
 
 </Steps>
 
@@ -95,6 +97,10 @@ notes:
 ROS 的 `angular.z = +0.25`（向左转）对应 UE 的 `Z = -0.25`，因为 UE 里 +Z 是向右偏航。结果的 `Source` 是 `ROS`，`Timestamp Seconds` 是收到指令时的仿真时间。
 
 处理顺序是：解码 → 换算 → 限速 → 交给目标的 `Apply Velocity Command` → 触发 `On Velocity Command`。畸形的消息，或含非有限值的消息，会被丢弃并触发 `On Command Error`。
+
+### 订阅的 QoS
+
+组件用 best_effort / volatile / 深度 10 订阅 `cmd_vel`。发布方是 reliable 还是 best_effort 都能匹配，`ros2 topic pub` 默认的 reliable 发布者可以直接用。
 
 ### 节点和事件
 

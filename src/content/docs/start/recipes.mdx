@@ -26,9 +26,9 @@ import RecipeTable from "../../../components/RecipeTable.astro";
 | ROS 地面机器人 | 差速或阿克曼地面车辆，接入 Nav2 和 SLAM | 要用到 [uBotVehicles](/vehicles/) |
 | 大模型无人机 | 多旋翼无人机，由大模型通过 MCP 控制 | 要用到 [uBotAerial](/aerial/) 和 [uBotMCP](/mcp/) |
 | 烟雾作战演示 | 炮塔、弹药等作战内容，加上烟雾对传感器的干扰 | 要用到 [uBotEnvironment](/environment/) 和 [uBotCombat](/combat/) |
-| 自定义 | 从 uBotCore 开始，其余自己挑 | 在 Package 视图里逐个安装，见[安装 uBot](/start/install/) |
+| 自定义 | 从 uBotCore 开始，其余自己挑 | 在「Package」视图里逐个安装，见[安装 uBot](/start/install/) |
 
-所有组合都包含 uBotCore。ROS 2 传感器组合还需要 ROS 2 端的 `ubot_ros_bridge`：它在 ROS 端运行，uBot Manager 的环境要求里会列出它，但不检查。
+所有组合都包含 uBotCore。ROS 2 传感器和 ROS 地面机器人两个组合还需要 ROS 2 端的 `ubot_ros_bridge`：它在 ROS 端运行，uBot Manager 的「环境要求」里会列出它，但不检查。
 
 ## 用 uBot Manager 一次装好一个组合
 
@@ -40,21 +40,21 @@ import RecipeTable from "../../../components/RecipeTable.astro";
 
 2. **选组合**
 
-   点标题栏的 `Recipe`，在 `应用 Recipe` 里选一个组合。Package 列表里，`UBotCore` 固定勾选，可以另外多选或去掉别的 Package。
+   点标题栏的「Recipe」，在「应用 Recipe」里选一个组合。「Package」列表里，`UBotCore` 固定勾选，可以另外多选或去掉别的 Package。
 
 3. **检查环境**
 
-   `环境要求` 会检查 Visual Studio 2022 和 Git。全部使用预编译包的安装用不到它们。
+   「环境要求」会检查 Visual Studio 2022 和 Git。全部使用预编译包的安装用不到它们。
 
 4. **查看并应用**
 
-   点 `查看更改…`，在 `应用更改` 对话框里确认步骤，再点 `应用`。
+   点「查看更改…」，在「应用更改」对话框里确认步骤，再点「应用」。
 
 </Steps>
 
 应用组合只做两件事：安装缺少的 Package，启用已安装但被禁用的。已装的版本不会被更新，别的 Package 也不会被禁用。
 
-在 `应用更改` 里勾选 `保存为 Recipe`，任务成功后，项目里启用的 uBot Package 会存成你自己的组合，下次可以直接选。
+在「应用更改」里勾选「保存为 Recipe」，任务成功后，项目里启用的 uBot Package 会存成你自己的组合，下次可以直接选。
 
 用命令行时，`ubot recipes` 列出组合，`ubot recipe ros-sensors --yes` 应用一个，见[命令行 ubot](/manager/cli/)。
 

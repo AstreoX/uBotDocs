@@ -39,7 +39,7 @@ notes:
 
 2. **添加 Sensor Bridge**
 
-   在 Components 面板点 **Add**，搜索 `uBot ROS Sensor Bridge`，重命名为 `ROSBridge`。组件只搜索所属 Actor 本身和它的组件，不搜索子 Actor。
+   在「Components」面板点「Add」，搜索 `uBot ROS Sensor Bridge`，重命名为 `ROSBridge`。组件只搜索所属 Actor 本身和它的组件，不搜索子 Actor。
 
 3. **命名机器人（可选）**
 
@@ -47,11 +47,11 @@ notes:
 
 4. **连事件**
 
-   选中 `ROSBridge`，在 Details 面板的 Events 区点 `On ROSBridge Ready` 和 `On ROSBridge Error` 旁的 **+**，照上图连线。
+   选中 `ROSBridge`，在「Details」面板的「Events」区点 `On ROSBridge Ready` 和 `On ROSBridge Error` 旁的「+」，照上图连线。
 
 5. **运行并查看**
 
-   先启动桥（见[准备 ROS 2 端](/ros/ros2-setup/)），再点 **Play**。输出日志里出现 `ROS sensor bridge '...' on '...' ready: namespace '/robot1', N sensor(s), M topic(s)`，ROS 2 里用 `ros2 topic list` 查看话题。
+   先启动桥（见[准备 ROS 2 端](/ros/ros2-setup/)），再点「Play」。输出日志里出现 `ROS sensor bridge '...' on '...' ready: namespace '/robot1', N sensor(s), M topic(s)`，ROS 2 里用 `ros2 topic list` 查看话题。
 
 </Steps>
 
@@ -170,7 +170,7 @@ TF 相关的 `Publish Dynamic TF`、`Publish Static Sensor TF`、`Odometry Frame
 - 没有订阅者的话题默认不编码、不发送，所以 `ros2 topic list` 里有话题，不代表 UE 一直在发数据。传感器话题是 best_effort，自己写订阅者或在 RViz 里显示时，把 QoS 设为 best_effort。
 - 话题频率就是传感器的 `Update Rate Hz`，没有额外的限频。图像和点云的编码在游戏线程完成，数据量大时降低分辨率或采样频率，并用 `ros2 topic hz` 和 `ros2 topic bw` 实测。
 - 勾选 `Override` 之后，`Qos` 从 Best Effort / Volatile / 5 开始，改成你需要的值。
-- 相机的 CPU 像素读回只在图像话题有订阅者时才做，读回失败时只记一次 Warning。
+- 相机的 CPU 像素读回只在需要图像时才做：`Skip when No Subscribers` 开启时（默认），桥已连接而图像话题没有订阅者，就不读回；关闭它则每个样本都读回。图像话题是 best_effort，桥没连上时同样不读回。读回失败时只记一次 Warning。
 - 没有对应发布器的传感器会被跳过。为自定义传感器添加发布器见[为自定义传感器添加 ROS 发布器](/develop/ros-publisher/)。
 
 ## 相关参考

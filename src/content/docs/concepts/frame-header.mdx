@@ -32,7 +32,7 @@ sidebar:
 | --- | --- |
 | `Valid` | 正常样本，数据可以直接使用 |
 | `Warming Up` | IMU 和里程计要靠相邻样本的差分算速度，刚启动或刚被重置时历史不够，这几次采样是预热样本 |
-| `Invalid Delta Time` | 与上次采样的间隔为 0 或过长（IMU 和里程计默认超过 0.5 s），历史被清空 |
+| `Invalid Delta Time` | 与上次采样的间隔不合理，历史被清空：IMU 为 0 或超过 `Max Sample Delta Seconds`；里程计小于 `Minimum Valid Delta Seconds`（默认 0.0001 s）或超过 `Maximum Valid Delta Seconds`；两个上限默认都是 0.5 s |
 | `Teleport Detected` | 两次采样间的位移或转角超过阈值（IMU 和里程计默认 5 m 或 120°），视为瞬移，历史被清空 |
 | `Disabled` | `Sensor Enabled` 为 false 时手动调用 `Sample Sensor` 得到的样本 |
 | `Error` | 采样出错，比如激光雷达的扫描范围无效；帧头的默认值也是它，表示还没采样过 |
@@ -68,7 +68,6 @@ nodes:
   V: { var: IMU, class: UUBotImuSensorComponent }
   G: UUBotSensorComponent.GetLatestFrameHeader
   B: { ref: Break:FUBotFrameHeader, hideUnconnected: true }
-  L: { inline: { title: Last Sequence, kind: pure, outputs: [{ name: Last Sequence, type: int64 }] } }
   N: UKismetMathLibrary.NotEqual_Int64Int64
   C: K2Node_IfThenElse
 wires:
@@ -76,12 +75,13 @@ wires:
   - V.IMU -> G.Target
   - G.ReturnValue -> B.UBotFrameHeader
   - B.Sequence -> N.A
-  - L.LastSequence -> N.B
   - N.ReturnValue -> C.Condition
 notes:
-  L: 一个 Integer64 变量，保存上次处理的序号。
-  C: 为 True 时处理样本，然后把 `Last Sequence` 设为这次的 `Sequence`。
+  N: "`B` 接一个 Integer64 变量，保存上次处理的序号（初值 0）。"
+  C: 为 True 时处理样本。
 ```
+
+处理完样本以后，把保存的序号设为这次的 `Sequence`，下一帧才能和新样本比较。
 
 序号的规则：
 

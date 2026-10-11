@@ -28,7 +28,7 @@ sidebar:
 
 ### 0.1.1
 
-- 插件图标，以及编辑器里 uBot 面板的标签页、`Window` 菜单项和状态栏入口，换成 uBot 标志。
+- 插件图标，以及编辑器里 uBot 面板的标签页、「Window」菜单项和状态栏入口，换成 uBot 标志。
 - 包索引的版本条目可以带 `binaries`，写明预编译包的下载地址、校验值和大小。uBot Manager 用它安装预编译包，UE 本身忽略这个字段。
 - 提供 UE 5.5 Win64 的预编译包。
 
@@ -42,7 +42,7 @@ sidebar:
 - 采样调度器：每次轮询最多触发一次，不会在同一帧里重复采样。
 - 四个接口：`UBot Sensor`、`UBot Actuator`、`UBot Velocity Commandable` 和 `UBot Perception Medium`，见[插件之间怎么对接](/concepts/interfaces/)。
 - `uBot Identity` 组件，给机器人命名，见[标识与命名](/concepts/identity/)。
-- Package 管理的基础：包索引（格式 2）、依赖和版本校验、运行时状态（`Saved/uBot/status.json`）、编辑器里的 uBot 面板（`Window > uBot`）、扩展点，以及命令行 `-run=UBotPackage`。安装、更新、启用和卸载由 uBot Manager 完成。
+- Package 管理的基础：包索引（格式 2）、依赖和版本校验、运行时状态（`Saved/uBot/status.json`）、编辑器里的 uBot 面板（「Window > uBot」）、扩展点，以及命令行 `-run=UBotPackage`。安装、更新、启用和卸载由 uBot Manager 完成。
 
 ## uBotSensor
 
@@ -75,7 +75,7 @@ sidebar:
 
 首个版本，取代旧插件 `AgentSensorROSBridge` 等，建立在 uBotCore 和 uBotSensor 之上。
 
-- `uBot ROS Sensor Bridge` 组件：发现 Actor 上的 uBot 传感器并发布到 ROS 2，同时发布静态 TF、动态 TF（`odom → base`）和相机的光学坐标系。
+- `uBot ROS Sensor Bridge` 组件：发现 Actor 上的 uBot 传感器并发布到 ROS 2，同时发布静态 TF、动态 TF（`odom → base_link`）和相机的光学坐标系。
 - `/clock`：发布 uBot 的仿真时间。
 - `uBot ROS Velocity Command` 组件：把 `cmd_vel` 交给实现了 `UBot Velocity Commandable` 的对象，带超时和限速。
 - 随插件附带 ROS 2 桥 `ubot_ros_bridge`，UE 经一条 TCP 连接与它通信。UE 一侧不再依赖 TempoROS 和 rclcpp。

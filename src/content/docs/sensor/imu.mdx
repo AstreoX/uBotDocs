@@ -30,7 +30,7 @@ wires:
   - B.OrientationQuaternion -> C.Q
   - C.ReturnValue -> D.Rotation
 notes:
-  B: 选中节点，在 Details 面板里取消勾选不用的字段，引脚就会隐藏。
+  B: 选中节点，在「Details」面板里取消勾选不用的字段，引脚就会隐藏。
   C: 从 `Orientation Quaternion` 拖出，搜索 `ToRotator (Quat)`。
 ```
 
@@ -40,19 +40,25 @@ notes:
 
 ### 在自己的时机读取
 
-不想用事件时，在 `Event Tick` 或计时器里调用 `Get Latest IMUData`，拿到最近一次样本，后面的换算与上一节相同：
+不想用事件时，在 `Event Tick` 或计时器里调用 `Get Latest IMUData`，拿到最近一次样本。读到的字段怎么用与事件里相同，下面以比力为例：
 
 ```blueprint
-caption: 读取最近一次样本
+caption: 每个 Tick 读取最近一次样本，打印比力
 nodes:
+  T: AActor.ReceiveTick
   V: { var: IMU, class: UUBotImuSensorComponent }
   G: UUBotImuSensorComponent.GetLatestIMUData
-  B: Break:FUBotImuSensorData
+  B: { ref: Break:FUBotImuSensorData, hideUnconnected: true }
+  S: UKismetStringLibrary.Conv_VectorToString
+  P: { ref: UKismetSystemLibrary.PrintString, set: { Key: imu_force } }
 wires:
+  - T.then -> P.execute
   - V.IMU -> G.Target
   - G.ReturnValue -> B.UBotImuSensorData
+  - B.LinearAccelerationMetersPerSecondSquared -> S.InVec
+  - S.ReturnValue -> P.InString
 notes:
-  V: 从 Components 面板把 IMU 组件拖进事件图。
+  V: 从「Components」面板把 IMU 组件拖进事件图。
 ```
 
 - `Get Latest IMUData` 只读缓存，不会触发采样，开销很小。
@@ -63,22 +69,20 @@ notes:
 角速度和比力只在 `Valid` 样本里有值，所以先检查帧头的 `Valid`：
 
 ```blueprint
-caption: 样本有效时打印比力的大小，静止时约为 9.8 m/s²
+caption: 样本有效时打印比力，静止水平放置时约为 (0, 0, 9.8) m/s²
 nodes:
   E: { ref: UUBotImuSensorComponent.OnImuDataUpdated, component: IMU }
   B: { ref: Break:FUBotImuSensorData, hideUnconnected: true }
   H: { ref: Break:FUBotFrameHeader, hideUnconnected: true }
   C: K2Node_IfThenElse
-  L: UKismetMathLibrary.VSize
-  S: UKismetStringLibrary.Conv_DoubleToString
+  S: UKismetStringLibrary.Conv_VectorToString
   P: UKismetSystemLibrary.PrintString
 wires:
   - E.Data -> B.UBotImuSensorData
   - B.Header -> H.UBotFrameHeader
   - E.then -> C.execute
   - H.Valid -> C.Condition
-  - B.LinearAccelerationMetersPerSecondSquared -> L.A
-  - L.ReturnValue -> S.InDouble
+  - B.LinearAccelerationMetersPerSecondSquared -> S.InVec
   - S.ReturnValue -> P.InString
   - C.True -> P.execute
 ```
@@ -91,19 +95,19 @@ wires:
 
 1. **添加组件**
 
-   在 Components 面板点 **Add**，搜索 `uBot IMU Sensor`，重命名为 `IMU`，挂到要测量的刚体上。
+   在「Components」面板点「Add」，搜索 `uBot IMU Sensor`，重命名为 `IMU`，挂到要测量的刚体上。
 
 2. **设置噪声（可选）**
 
-   默认没有噪声。需要时先在 `uBot Sensor` 类别的 `Noise` 子类别里勾选 `Noise Enabled`，再在 `IMU` 类别的 `Noise` 子类别里填写噪声和偏置。
+   默认没有噪声。需要时先在「uBot Sensor」类别的「Noise」子类别里勾选 `Noise Enabled`，再在「IMU」类别的「Noise」子类别里填写噪声和偏置。
 
 3. **设置滤波和限幅（可选）**
 
-   在 `IMU` 类别的 `Filter` 子类别里勾选 `Low Pass Filter Enabled`，在 `Safety` 子类别里勾选 `Clamp Output`。
+   在「IMU」类别的「Filter」子类别里勾选 `Low Pass Filter Enabled`，在「Safety」子类别里勾选 `Clamp Output`。
 
 4. **连蓝图**
 
-   选中组件，在 Details 面板底部 Events 区点 `On Imu Data Updated` 旁的 **+**，照上图连线。
+   选中组件，在「Details」面板底部「Events」区点 `On Imu Data Updated` 旁的「+」，照上图连线。
 
 </Steps>
 
@@ -183,9 +187,9 @@ IMU 靠相邻样本的位置和姿态差分，所以刚开始的样本不能用�
 - 采样间隔不能超过 `Max Sample Delta Seconds`（0.5 s）。`Update Rate Hz` 低于 2 Hz 时每个样本都是 `Invalid Delta Time`；要低频采样就同时调大它。超过 0.5 s 的卡顿帧也会让 IMU 重新预热。
 - 瞬移的判据是相邻两个样本的位移和转角，不是速度。100 Hz 时 5 m 对应 500 m/s；帧率低、样本间隔变大时，同样的速度更容易被判为瞬移，高速载具可以调大阈值。
 - 自动采样运行时不要再手动调用 `Sample IMU`。如果它和自动样本在同一仿真时刻，时间差为 0，会得到 `Invalid Delta Time` 并清空历史。
-- 白噪声用三个均匀随机数相加近似高斯分布，0.1.1 里每个轴的实际标准差约为设定值的 0.7 倍。方差字段报告的是设定值的平方，并且 `Noise Enabled` 关闭时也照样填写。
+- 白噪声和偏置随机游走都用三个均匀随机数相加近似高斯分布，0.1.1 里每个轴的实际标准差约为设定值的 0.7 倍。方差字段报告的是设定值的平方，并且 `Noise Enabled` 关闭时也照样填写。
 - 低通滤波的状态从 0 开始，开启后最初几个有效样本会被拉向 0，静止时的比力要几个样本后才升到 9.8 m/s² 左右。
-- 噪声、滤波、限幅和瞬移阈值在蓝图里只读，要在 Details 面板里设置；运行中只能改 `Set Update Rate Hz` 和调用两个重置节点。
+- 噪声、滤波、限幅和瞬移阈值在蓝图里只读，要在「Details」面板里设置；运行中只能改 `Set Update Rate Hz` 和调用两个重置节点。
 
 ## 相关参考
 

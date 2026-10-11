@@ -14,7 +14,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 ## 快速用法
 
-时钟是一个 World 子系统（Subsystem）。在事件图里右键，搜索 `Get UBotClockSubsystem`（在 World Subsystems 分类下）取到它，再读仿真时间：
+时钟是一个 World 子系统（Subsystem）。在事件图里右键，搜索 `Get UBotClockSubsystem`（在「World Subsystems」分类下）取到它，再读仿真时间。放进图里后，节点的标题显示为类的显示名 `UBot Clock Subsystem`：
 
 ```blueprint
 caption: 每帧把仿真时间打印到屏幕左上角
@@ -30,7 +30,7 @@ wires:
   - T.ReturnValue -> C.InDouble
   - C.ReturnValue -> P.InString
 notes:
-  S: 子系统节点只在 Game 和 PIE 世界里有效，后面几张图里的这个节点都一样。
+  S: 这个节点只在 Game 和 PIE 世界里有效，后面几张图里的同名节点都一样。
 ```
 
 ## 步骤
@@ -83,6 +83,8 @@ notes:
   E: 这是你自己建的自定义事件（Custom Event），由按键或界面按钮调用。
 ```
 
+暂停时按键事件默认不触发。用按键调用 `Step Once` 时，选中按键事件节点，在「Details」面板勾选 `Execute When Paused`；用 Enhanced Input 则勾选输入动作资产的 `Trigger When Paused`。界面按钮（UMG Button）不受暂停影响，可以直接调用。
+
 <Steps>
 
 1. **暂停**
@@ -115,7 +117,7 @@ notes:
 
 | 节点 | 输出 | 说明 |
 | --- | --- | --- |
-| `Get Sim Time Seconds` | Float，单位 s | 当前仿真时间 |
+| `Get Sim Time Seconds` | Float (double)，单位 s | 当前仿真时间 |
 | `Get Sim Frame` | Integer64 | 游戏时间前进过的 world tick 数；暂停时不增加 |
 | `Is Fixed Time Step Enabled` | Boolean | 引擎当前是否启用了固定步长 |
 | `Is Simulation Paused` | Boolean | 世界是否处于暂停 |

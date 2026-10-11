@@ -69,11 +69,11 @@ uBot 的公共接口默认用国际单位制（SI）：米、秒、弧度。名�
 | 时间 | s |
 | 世界变换 | cm，UE 的原样 |
 
-属性的名字里写着单位，比如 `Position Meters`、`Angular Velocity Rad Per Second`、`Linear Acceleration Meters Per Second Squared`。世界变换指点云帧和图像帧里的 `Sensor Transform World`。
+属性的名字里写着单位，比如 `Position Meters`、`Angular Velocity Rad Per Second`、`Linear Acceleration Meters Per Second Squared`。世界变换指点云帧、图像帧和 2D 激光雷达帧里的 `Sensor Transform World`。
 
 数值换成了米，但坐标轴仍然是 UE 的：X 前、Y 右、Z 上。uBotSensor 的输出不做 ROS 转换，转换由 uBotROS 在发布时完成。
 
-IMU 的线加速度是比力（specific force）：静止时读数约为 +9.81 m/s²，方向是世界向上，用传感器坐标系表示。
+IMU 的线加速度是比力（specific force）：静止时读数约为 +9.8 m/s²（World 的重力加速度，默认 −980 cm/s²），方向是世界向上，用传感器坐标系表示。
 
 ## ROS 的坐标系
 

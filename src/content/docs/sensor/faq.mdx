@@ -34,11 +34,11 @@ sidebar:
 
 ### 找不到传感器的节点怎么办？
 
-先确认 uBotSensor 已在工程里启用，传感器组件在 Components 面板 Add 菜单的 `uBot` 分类下。节点可以在[节点索引](/reference/nodes/)里按名称搜索。
+先确认 uBotSensor 已在工程里启用，传感器组件在「Components」面板「Add」菜单的「uBot」分类下。节点可以在[节点索引](/reference/nodes/)里按名称搜索。
 
 ### 为什么在 `Event BeginPlay` 里绑定事件会漏掉第一个样本？
 
-组件的 `BeginPlay` 先于 Actor 的 `Event BeginPlay`，`Auto Start` 的第一个样本在那时已经产生。用 Details 面板 Events 区的 **+** 生成事件节点就不会漏。见[传感器通用用法](/sensor/basics/#注意事项)。
+组件的 `BeginPlay` 先于 Actor 的 `Event BeginPlay`，`Auto Start` 的第一个样本在那时已经产生。用「Details」面板「Events」区的「+」生成事件节点就不会漏。见[传感器通用用法](/sensor/basics/#注意事项)。
 
 ### 为什么在数据事件里 `Get Latest Frame Header` 读到的是上一次的帧头？
 
@@ -46,7 +46,7 @@ sidebar:
 
 ### 为什么蓝图里改不了传感器的属性？
 
-属性在蓝图里只读，要在 Details 面板里设置。运行中能改的只有采样频率（`Set Update Rate Hz`）和模型显示（`Set Sensor Model Visible in Game`）。见[传感器通用用法](/sensor/basics/#关键属性)。
+属性在蓝图里只读，要在「Details」面板里设置。运行中能改的只有采样频率（`Set Update Rate Hz`）和模型显示（`Set Sensor Model Visible in Game`）。见[传感器通用用法](/sensor/basics/#关键属性)。
 
 ### 为什么运行时看不到传感器模型？
 

@@ -105,7 +105,7 @@ Frontmatter:
 ---
 title: IMU 传感器
 description: 一句话说明这一页解决什么问题（搜索结果和链接预览会用到）。
-pageKind: feature           # overview | feature | concept | settings | faq | placeholder (required)
+pageKind: feature           # overview | feature | concept | guide | settings | faq | placeholder (required)
 packages: [UBotSensor]      # optional when the folder's _group.yml sets it; "UBotSensor@^0.1" adds a range
 graph: false                # only for a feature page that is not about Blueprint nodes (install, command line, C++)
 sidebar:
@@ -120,6 +120,7 @@ sidebar:
 | `overview` | needs a table (what the plugin can do, its components) |
 | `feature` | needs at least one `blueprint` graph, unless the frontmatter says `graph: false` |
 | `concept` | warns when there is no diagram, graph or table (`<DependencyGraph />` and the other components count) |
+| `guide` | opens with one sentence and the last `##` section is 下一步; no graph or table needed (a graph is allowed) |
 | `settings`, `faq` | no extra rule |
 | `placeholder` | no `blueprint` graph, no link into the reference, must show `<PackageStatus name="UBotX" />`; warns when that package is released (turn the page into the manual) |
 
@@ -164,13 +165,17 @@ not listed on the reference pages and are exempt from the content rules until th
 
 `docs-templates/` has one example file per page kind. They are outside `src/content`, so they are not
 published; `npm test` checks that each passes `npm run check` and has its sections in this order.
-Copy the one you need, replace the content, delete the comments. Sections and their order are fixed:
+Copy the one you need, replace the content, delete the comments. The sections of a fixed template are a
+minimum: keep them in this order, and extra sections after them are allowed (the settings page of uBot
+Manager ends with an 索引源 section). A tutorial or a tour does not fit a fixed template: it is a
+`guide`, whose sections follow the skeleton of the site instead of a template.
 
 | pageKind | used for | sections, in this order |
 | --- | --- | --- |
 | `overview` (`overview.mdx`) | the first page of a manual | 一句话定位 → 能做什么（表）→ 依赖与安装（`<PackageStatus />`）→ 组件一览（表，链到参考）→ 下一步 |
 | `feature` (`feature.mdx`) | most pages of a manual | 一句话目标 → 快速用法（节点图）→ 步骤 → 关键属性（表，只列常用的）→ 输出与事件 → 注意事项 → 相关参考 |
 | `concept` (`concept.mdx`) | core concepts | 一句话 → 图或表 → 分节说明 → 相关页面 |
+| `guide` (`guide.mdx`) | tutorial and tour pages (start/install, start/quickstart, manager/index) | 一句话 → 自己安排的章节（跟着做的步骤，或一块一块的导览；节点图可有可无）→ 下一步 |
 | `settings` (`settings.mdx`) | the 设置项 page of a manual | 在哪里改 → 设置表（名称、默认值、作用）→ 保存位置 |
 | `faq` (`faq.mdx`) | the last page of a manual | 按主题分组（二级标题），每题（三级标题）1 到 3 句加链接 |
 | `placeholder` (`placeholder.mdx`) | a planned plugin | 状态行和包信息（`<PackageStatus />`，从索引生成）→ 定位 → 计划提供的能力 → 与现有插件的关系 → 发布前可以先怎么做 |
@@ -220,6 +225,11 @@ prose. Follow every rule.
 - Node, pin and property names stay in English exactly as the Blueprint editor shows them, in code
   style: `Get Latest IMUData`, `Update Rate Hz`, `X (Roll)`. On first use of a Chinese technical term,
   give the English term: 横滚（Roll）, 自动启动（`Auto Start`）.
+- Labels you read or click in a window are quoted with 「」, in uBot Manager and in the Unreal Editor:
+  menu paths (「Window > uBot」), buttons (「Play」, 「Add」), tabs, panels and dialogs (在「Details」面板),
+  checkboxes and panel entries (「Loaded Packages」). Code names stay in backticks: nodes, pins and
+  properties (also the ones shown in Details or Project Settings), console commands, files and
+  command-line options. “” is for ordinary prose only (a term, the name of a section of a page).
 - Pages link to the reference instead of copying pin tables. Numbers carry units (100 Hz, 0.5 s,
   9.8 m/s²). Defaults come from the reference data, not from memory.
 - Chinese typography: full-width punctuation（，。：；！？（））, and a space between Chinese and Latin

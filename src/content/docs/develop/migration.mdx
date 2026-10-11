@@ -33,7 +33,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 2. **禁用 AgentSensorCore**
 
-   新旧同时启用时，uBot Manager 和编辑器的 uBot 面板（Problems 分区）都会报告冲突。快速修复是禁用旧插件，也可以忽略。
+   新旧同时启用时，uBot Manager 和编辑器的 uBot 面板（「Problems」分区）都会报告冲突。快速修复是禁用旧插件，也可以忽略。
 
 3. **重启编辑器**
 
@@ -53,7 +53,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 </Steps>
 
-蓝图里的显示名也变了：组件由 `Agent IMU Sensor` 变为 `uBot IMU Sensor`（其余同理），类别 `Agent Sensor` 变为 `uBot Sensor`，函数类别加前缀 `uBot Sensor|`，插件分类由 Simulation 变为 uBot。
+蓝图里的显示名也变了：组件由 `Agent IMU Sensor` 变为 `uBot IMU Sensor`（其余同理），类别「Agent Sensor」变为「uBot Sensor」，函数类别加前缀「uBot Sensor」，插件分类由「Simulation」变为「uBot」。
 
 ### C++ 里的改名
 
@@ -93,7 +93,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 2. **安装 uBotROS，禁用旧插件**
 
-   uBotROS 依赖 uBotCore 和 uBotSensor。目前的索引只登记了 `AgentSensorCore` 的替代关系，所以 `AgentSensorROSBridge`、`AgentVehicleROSBridge` 和 `AgentDroneROSBridge` 要自己在 `Edit > Plugins` 里禁用。
+   uBotROS 依赖 uBotCore 和 uBotSensor。目前的索引只登记了 `AgentSensorCore` 的替代关系，所以 `AgentSensorROSBridge`、`AgentVehicleROSBridge` 和 `AgentDroneROSBridge` 要自己在「Edit > Plugins」里禁用。
 
 3. **重启编辑器并重新保存资产**
 
@@ -101,11 +101,11 @@ import { Steps } from "@astrojs/starlight/components";
 
 4. **检查命名空间**
 
-   旧属性 `RobotNamespace` 默认是 `robot`，新属性 `RobotNamespaceOverride` 默认为空，意思是改用 uBot 身份（Identity）的命名空间（namespace）。想保持旧的话题名，就显式填写 `RobotNamespaceOverride`，或者在机器人上加 **uBot Identity** 并设置 `Namespace`，见 [Identity 组件](/core/identity/)。
+   旧属性 `RobotNamespace` 默认是 `robot`，新属性 `RobotNamespaceOverride` 默认为空，意思是改用 uBot 身份（Identity）的命名空间（namespace）。想保持旧的话题名，就显式填写 `RobotNamespaceOverride`，或者在机器人上加 `uBot Identity` 并设置 `Namespace`，见 [Identity 组件](/core/identity/)。
 
 5. **替换速度指令组件**
 
-   `Agent ROS Vehicle Command` 和 `Agent ROS Drone Command` 没有重定向：删掉旧组件，添加 **uBot ROS Velocity Command**，并让车辆或无人机实现 `IUBotVelocityCommandable`，见[在 C++ 中使用传感器与接口](/develop/cpp/)和[接收 cmd_vel](/ros/cmd-vel/)。旧组件里的比例速度控制器、油门、刹车、转向映射和失效制动不在 uBotROS 里，要在目标里自己实现。
+   `Agent ROS Vehicle Command` 和 `Agent ROS Drone Command` 没有重定向：删掉旧组件，添加 `uBot ROS Velocity Command`，并让车辆或无人机实现 `IUBotVelocityCommandable`，见[在 C++ 中使用传感器与接口](/develop/cpp/)和[接收 cmd_vel](/ros/cmd-vel/)。旧组件里的比例速度控制器、油门、刹车、转向映射和失效制动不在 uBotROS 里，要在目标里自己实现。
 
 6. **检查 ROS 侧的消费者**
 
@@ -126,7 +126,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 位置和四元数的映射与旧版相同，默认话题路径、逻辑键、校验规则和蓝图 API 保持不变。
 
-如果装过早期版本的 uBotROS，还要搬一次设置：早期版本把设置写在工程的 `Config/DefaultEngine.ini`，现在只读取 `Config/DefaultUBotROS.ini`。把 `[/Script/UBotROS.UBotROSSettings]` 整段剪切过去，或在 Project Settings 里重新设置一遍。
+如果装过早期版本的 uBotROS，还要搬一次设置：早期版本把设置写在工程的 `Config/DefaultEngine.ini`，现在只读取 `Config/DefaultUBotROS.ini`。把 `[/Script/UBotROS.UBotROSSettings]` 整段剪切过去，或在「Project Settings」里重新设置一遍。
 
 ## CoreRedirects
 

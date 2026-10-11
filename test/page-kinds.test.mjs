@@ -27,12 +27,26 @@ function withPlanned(name) {
 test("every page needs a pageKind from the list; the home page and 404 are exempt", () => {
   const none = check("concepts/a.mdx", page("这一页说明一件事。\n\n| a |\n| - |\n", front("")));
   assert.match(msgs(none, "error"), new RegExp(`pageKind is required \\(${PAGE_KINDS.join(" \\| ")}\\)`));
-  const bad = check("concepts/a.mdx", page("这一页说明一件事。\n\n| a |\n| - |\n", front("guide")));
-  assert.match(msgs(bad, "error"), /^4: frontmatter: pageKind "guide" is not one of overview \| feature/);
+  const bad = check("concepts/a.mdx", page("这一页说明一件事。\n\n| a |\n| - |\n", front("tutorial")));
+  assert.match(msgs(bad, "error"), /^4: frontmatter: pageKind "tutorial" is not one of overview \| feature/);
   for (const kind of PAGE_KINDS) assert.doesNotMatch(msgs(check("concepts/a.mdx", page("这一页说明一件事。\n\n| a |\n| - |\n", front(kind))), "error"), /pageKind/, kind);
   assert.equal(msgs(check("index.mdx", page("正文。", "title: 首页\ntemplate: splash")), "error"), "", "the splash page has no kind");
   assert.equal(msgs(check("404.md", page("找不到这一页。", "title: 页面不存在\ndescription: 找不到")), "error"), "", "404 has no kind");
-  assert.deepEqual(PAGE_KINDS, ["overview", "feature", "concept", "settings", "faq", "placeholder"]);
+  assert.deepEqual(PAGE_KINDS, ["overview", "feature", "concept", "guide", "settings", "faq", "placeholder"]);
+});
+
+test("guide pages (tutorials and tours) choose their sections, need no graph or table, and end with 下一步", () => {
+  const guide = (body) => check("start/a.mdx", page(`这一页说明一件事。\n\n${body}`, front("guide")));
+  const sections = "## 准备\n\n先装好插件。\n\n## 运行\n\n点 Play。\n";
+  const last = "\n## 下一步\n\n- [简介](/start/introduction/)：读一读。\n";
+  assert.equal(msgs(guide(sections + last), "error"), "", "no graph, no table, no fixed sections but the last");
+  assert.equal(msgs(guide(sections + last), "warning"), "");
+  assert.equal(msgs(guide(`${sections}\n## 下一步\n\n${GRAPH}`), "error"), "", "a graph is allowed");
+  assert.match(msgs(guide(sections), "error"), /guide pages end with a "## 下一步" section/);
+  assert.match(msgs(guide(last + "\n## 附录\n\n- 链接。\n"), "error"), /^\d+: guide pages end with a "## 下一步" section/m, "下一步 has to be the last section");
+  assert.match(msgs(check("start/a.mdx", page("这一页说明一件事。", front("guide"))), "error"), /guide pages end with/);
+  assert.equal(msgs(guide(`${last}\n${FENCE}md\n## 附录\n${FENCE}\n`), "error"), "", "a heading inside a code block is not a section");
+  assert.equal(msgs(check("start/a.mdx", page(STUB, front("guide"))), "error"), "", "a stub is checked for what it is, not for what it will contain");
 });
 
 test("feature pages need a blueprint graph, unless the page sets graph: false", () => {
@@ -143,6 +157,8 @@ test("each template has the sections of its page kind in the fixed order", () =>
   // 一句话 -> 图或表 -> 分节说明: the first prose line is a sentence and a table comes before the first section
   const body = template("concept");
   assert.ok(body.indexOf("| --- |") < body.indexOf("\n## "), "the table comes before the first section");
+  const guide = headings(template("guide"), 2);
+  assert.ok(guide.length >= 3 && guide.at(-1) === "下一步", `guide: sections of its own, then 下一步 (${guide.join(", ")})`);
   const faq = template("faq");
   assert.ok(headings(faq, 2).length >= 1 && headings(faq, 3).length >= 2, "groups (##) of questions (###)");
   // the opening sentence comes first on every kind but the placeholder (which opens with the status

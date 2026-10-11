@@ -12,12 +12,12 @@ sidebar:
 
 | 种类 | 菜单 | 范围 |
 | --- | --- | --- |
-| 项目设置 `uBot Core` | **Edit > Project Settings > Plugins > uBot Core**（编辑 > 项目设置 > 插件 > uBot Core） | 整个工程，所有人共用 |
-| 编辑器偏好 `uBot` | **Edit > Editor Preferences > Plugins > uBot**（编辑 > 编辑器偏好设置 > 插件 > uBot） | 每个用户、每个工程各一份 |
+| 项目设置「uBot Core」 | 「Edit > Project Settings > Plugins > uBot Core」（编辑 > 项目设置 > 插件 > uBot Core） | 整个工程，所有人共用 |
+| 编辑器偏好「uBot」 | 「Edit > Editor Preferences > Plugins > uBot」（编辑 > 编辑器偏好设置 > 插件 > uBot） | 每个用户、每个工程各一份 |
 
 ## 设置表
 
-### 项目设置 uBot Core：Clock 分类
+### 项目设置「uBot Core」：「Clock」分类
 
 | 名称 | 默认值 | 作用 |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ sidebar:
 
 固定步长的用法见[仿真时钟](/core/clock/)。
 
-### 项目设置 uBot Core：Packages 分类
+### 项目设置「uBot Core」：「Packages」分类
 
 | 名称 | 默认值 | 作用 |
 | --- | --- | --- |
@@ -37,11 +37,11 @@ sidebar:
 
 `Package Install Directory` 和 `Git Executable` 只影响命令行，见 [Package 查询与编辑器面板](/core/packages/)；uBot Manager 用自己的[设置](/manager/settings/)。主索引是 uBot Manager 写入的 `Saved/uBot/index.json`，没有它时用 uBotCore 自带的 `Index/index.json`，额外的索引文件在主索引之后按顺序加载。
 
-### 编辑器偏好 uBot
+### 编辑器偏好「uBot」
 
 | 名称 | 默认值 | 作用 |
 | --- | --- | --- |
-| `Manager Executable` | 空 | uBot 面板的 **Open uBot Manager** 启动的 `ubot-manager.exe`；相对路径从工程目录算起 |
+| `Manager Executable` | 空 | uBot 面板的「Open uBot Manager」启动的 `ubot-manager.exe`；相对路径从工程目录算起 |
 
 `Manager Executable` 留空或文件不存在时，依次用 uBot Manager 注册的路径（注册表 `HKCU\Software\AstreoX\uBot Manager` 的 `Executable` 值）和 `%LOCALAPPDATA%\uBot Manager\ubot-manager.exe`。都找不到时，面板弹出带下载链接的通知。
 
@@ -49,8 +49,8 @@ sidebar:
 
 | 设置 | 文件 | 段 |
 | --- | --- | --- |
-| 项目设置 `uBot Core` | `Config/DefaultEngine.ini` | `[/Script/UBotCore.UBotCoreSettings]` |
-| 编辑器偏好 `uBot` | `Saved/Config/WindowsEditor/EditorPerProjectUserSettings.ini` | `[/Script/UBotCoreEditor.UBotEditorSettings]` |
+| 项目设置「uBot Core」 | `Config/DefaultEngine.ini` | `[/Script/UBotCore.UBotCoreSettings]` |
+| 编辑器偏好「uBot」 | `Saved/Config/WindowsEditor/EditorPerProjectUserSettings.ini` | `[/Script/UBotCoreEditor.UBotEditorSettings]` |
 
 项目设置随工程提交。编辑器偏好在 `Saved/` 下，不要提交。也可以直接改 ini：
 

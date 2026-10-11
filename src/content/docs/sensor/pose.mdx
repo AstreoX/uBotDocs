@@ -32,7 +32,7 @@ wires:
   - S.ReturnValue -> P.InString
   - C.True -> P.execute
 notes:
-  B: 选中节点，在 Details 面板里取消勾选不用的字段，引脚就会隐藏。
+  B: 选中节点，在「Details」面板里取消勾选不用的字段，引脚就会隐藏。
   C: 没有速度时 `Has Velocity` 为 false，速度字段是 0。
 ```
 
@@ -44,11 +44,11 @@ notes:
 
 1. **添加组件**
 
-   在 Components 面板点 **Add**，搜索 `uBot Pose Sensor`，把它挂到要测量的部件下。输出的就是这个组件自己的位姿。
+   在「Components」面板点「Add」，搜索 `uBot Pose Sensor`，把它挂到要测量的部件下。输出的就是这个组件自己的位姿。
 
 2. **选择参考系**
 
-   在 Details 面板的 `Pose Sensor` 类别里设置 `Reference Frame`。选 `Custom Component` 时，再在 `Custom Reference Component` 里选一个组件。
+   在「Details」面板的「Pose Sensor」类别里设置 `Reference Frame`。选 `Custom Component` 时，再在 `Custom Reference Component` 里选一个组件。
 
 3. **设置参考系名**
 
@@ -56,7 +56,7 @@ notes:
 
 4. **连蓝图**
 
-   选中组件，在 Details 面板底部 Events 区点 `On Pose Data Updated` 旁的 **+**，照上图连线。
+   选中组件，在「Details」面板底部「Events」区点 `On Pose Data Updated` 旁的「+」，照上图连线。
 
 </Steps>
 
@@ -99,6 +99,8 @@ notes:
 - `Get Latest Pose Data`：返回最近一次的数据，不会触发采样。
 - `Sample Pose`：立即采样一次，样本为 `Valid` 时返回 true。
 
+### 状态码
+
 位姿传感器的状态码：
 
 | `Status` | 什么时候 |
@@ -115,7 +117,7 @@ notes:
 - `Noise Enabled` 对位姿传感器无效，输出始终是真值。
 - 参考组件的缩放不是 1 时，相对位置也会被缩放。尽量选没有缩放的组件作参考。
 - 数据保持 UE 的轴向，位置从厘米换算成米。需要 ROS 约定时，用 `UE To ROS Vector`、`UE To ROS Rotation` 和 `UE To ROS Angular Velocity`，见[坐标系与单位](/concepts/coordinates-and-units/)。
-- 所有属性在蓝图里只读，要在 Details 面板里设置。
+- 所有属性在蓝图里只读，要在「Details」面板里设置。
 
 ## 相关参考
 

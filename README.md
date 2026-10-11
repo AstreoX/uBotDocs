@@ -28,7 +28,7 @@ npm run build      # 构建到 dist/，同时生成搜索索引并校验站内�
 
 侧边栏的顺序是：开始、核心概念、每个插件一项（已发布的在前，规划中的带“规划中”标记）、uBot Manager、开发者、参考、附录。每个插件有自己的文件夹（`core/`、`sensor/`、`ros/`、`vehicles/` ……，文件夹名是包名去掉 `UBot` 前缀后的小写）：已发布的插件放手册，规划中的插件只有一个占位页，发布后在同一个文件夹里扩写，网址不变。插件之间的关系用简介页的依赖图表示，文档里不讲分层。
 
-每个页面在 frontmatter 里写 `pageKind`：`overview`（手册概述）、`feature`（功能页，要有蓝图图）、`concept`（概念页）、`settings`（设置页）、`faq`（常见问题）、`placeholder`（占位页）。每种页面的章节和顺序在 `docs-templates/` 里各有一个示例文件，复制过去改就行，不会被发布。
+每个页面在 frontmatter 里写 `pageKind`：`overview`（手册概述）、`feature`（功能页，要有蓝图图）、`concept`（概念页）、`guide`（教程或导览页，章节自己安排，最后一节是“下一步”）、`settings`（设置页）、`faq`（常见问题）、`placeholder`（占位页）。每种页面的章节和顺序在 `docs-templates/` 里各有一个示例文件，复制过去改就行，不会被发布。
 
 骨架里的页面先建成“桩页面”：只有 frontmatter 和 `{/* STUB */}` 标记，加一段要写的章节清单。写完一页就删掉标记和清单；`npm run check` 会列出还没写的页面。
 

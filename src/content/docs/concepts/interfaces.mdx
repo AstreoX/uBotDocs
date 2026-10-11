@@ -25,7 +25,7 @@ import { Steps } from "@astrojs/starlight/components";
 - `UBot Velocity Commandable`：`Apply Velocity Command`、`Stop Motion`。
 - `UBot Perception Medium`：`Get Medium Snapshot`。
 
-四个接口都可以由 C++ 组件或蓝图 Actor 实现。谁实现、谁使用：
+`UBot Sensor`、`UBot Actuator` 和 `UBot Velocity Commandable` 可以由 Actor 或组件实现；`UBot Perception Medium` 只能由 Actor 实现，传感器只收集实现了它的 Actor。谁实现、谁使用：
 
 | 接口 | 谁实现 | 谁使用 |
 | --- | --- | --- |
@@ -46,7 +46,7 @@ uBotROS 只负责把 ROS 的 `cmd_vel` 翻译成 uBot 的速度指令（`UBot Ve
 | 2 | 限速后调用目标的 `Apply Velocity Command`；目标返回 false 表示拒绝 |
 | 3 | 超过 `Command Timeout Seconds`（默认 0.5 s）没有新指令，调用一次目标的 `Stop Motion` |
 
-目标由 `Target Component` 指定；留空时用 Actor 本身，否则用 Actor 上第一个实现了接口的组件。
+目标由 `Target Component` 指定；留空时，Actor 实现了接口就用 Actor 本身，否则用 Actor 上第一个实现了接口的组件。
 
 收到的指令已经是 UE 的约定：机体系，X 前、Y 右、Z 上，线速度 m/s，角速度 rad/s，+Z 是向右偏航。ROS 里的符号差异由 uBotROS 换算好，见[坐标系与单位](/concepts/coordinates-and-units/)。
 
@@ -68,11 +68,11 @@ uBotROS 只负责把 ROS 的 `cmd_vel` 翻译成 uBot 的速度指令（`UBot Ve
 
 1. **添加接口**
 
-   打开 `BP_Rover`，点工具栏的 **Class Settings**，在 Details 面板的 Interfaces 区点 **Add**，选择 `UBot Velocity Commandable`。
+   打开 `BP_Rover`，点工具栏的「Class Settings」，在「Details」面板的「Interfaces」区点「Add」，选择 `UBot Velocity Commandable`。
 
 2. **打开函数**
 
-   在 My Blueprint 面板的 Interfaces 下，双击 `Apply Velocity Command`，打开它的函数图。没有输出的函数，比如 `Stop Motion`，作为事件实现：在事件图里右键，搜索 `Event Stop Motion`。
+   在「My Blueprint」面板的「Interfaces」下，双击 `Apply Velocity Command`，打开它的函数图。没有输出的函数，比如 `Stop Motion`，作为事件实现：在事件图里右键，搜索 `Event Stop Motion`。
 
 3. **照图实现**
 
