@@ -1,0 +1,1155 @@
+{
+  "format": 1,
+  "plugin": "Engine",
+  "version": "5.5.4",
+  "engine": "5.5",
+  "repository": "",
+  "generator": "UBotDocExport 1",
+  "culture": "en",
+  "modules": [],
+  "classes": [],
+  "nodes": [
+    {
+      "id": "AActor.ReceiveBeginPlay",
+      "kind": "event",
+      "title": "Event BeginPlay",
+      "titleZh": "事件开始运行",
+      "subtitle": "",
+      "owner": "AActor",
+      "member": "ReceiveBeginPlay",
+      "category": "",
+      "tooltip": "Event when play begins for this actor.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "AActor.ReceiveTick",
+      "kind": "event",
+      "title": "Event Tick",
+      "titleZh": "事件Tick",
+      "subtitle": "",
+      "owner": "AActor",
+      "member": "ReceiveTick",
+      "category": "",
+      "tooltip": "Event called every frame, if ticking is enabled",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "DeltaSeconds",
+          "name": "Delta Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "K2Node_ExecutionSequence",
+      "kind": "node",
+      "title": "Sequence",
+      "titleZh": "序列",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Flow Control",
+      "tooltip": "Executes a series of pins in order",
+      "keywords": "sequence",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then_0",
+          "name": "Then 0",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "then_1",
+          "name": "Then 1",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "K2Node_IfThenElse",
+      "kind": "node",
+      "title": "Branch",
+      "titleZh": "分支",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Flow Control",
+      "tooltip": "Branch Statement\nIf Condition is true, execution goes to True, otherwise it goes to False",
+      "keywords": "if bool branch",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Condition",
+          "name": "Condition",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "true",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "True",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "else",
+          "name": "False",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Macro:ForLoop",
+      "kind": "node",
+      "title": "For Loop",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities| Flow Control",
+      "tooltip": "Executes LoopBody for each Index from StartIndex to StopIndex, inclusive",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "FirstIndex",
+          "name": "First Index",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "LastIndex",
+          "name": "Last Index",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "LoopBody",
+          "name": "Loop Body",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Index",
+          "name": "Index",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Completed",
+          "name": "Completed",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.BreakRotator",
+      "kind": "pure",
+      "title": "Break Rotator",
+      "titleZh": "拆分旋转体",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "BreakRotator",
+      "category": "Math|Rotator",
+      "tooltip": "Breaks apart a rotator into {Roll, Pitch, Yaw} angles in degrees",
+      "keywords": "rotation rotate rotator breakrotator",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "InRot",
+          "name": "Rotation",
+          "type": {
+            "category": "rotator",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Roll",
+          "name": "X (Roll)",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Pitch",
+          "name": "Y (Pitch)",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Yaw",
+          "name": "Z (Yaw)",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.BreakVector",
+      "kind": "pure",
+      "title": "Break Vector",
+      "titleZh": "拆分向量",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "BreakVector",
+      "category": "Math|Vector",
+      "tooltip": "Breaks a vector apart into X, Y, Z",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "InVec",
+          "name": "In Vec",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "X",
+          "name": "X",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Y",
+          "name": "Y",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Z",
+          "name": "Z",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.Quat_Rotator",
+      "kind": "pure",
+      "title": "ToRotator (Quat)",
+      "titleZh": "到旋转体（四元数）",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "Quat_Rotator",
+      "category": "Math|Conversions",
+      "tooltip": "Converts to Rotator representation of this Quaternion.",
+      "keywords": "cast convert",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "•",
+      "inputs": [
+        {
+          "id": "Q",
+          "name": "Q",
+          "type": {
+            "category": "struct",
+            "subtype": "FQuat",
+            "subtypeDisplay": "Quat",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "rotator",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.Subtract_IntInt",
+      "kind": "pure",
+      "title": "int - int",
+      "titleZh": "整数-整数",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "Subtract_IntInt",
+      "category": "Math|Integer",
+      "tooltip": "Subtraction (A - B)",
+      "keywords": "- subtract minus",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "-",
+      "inputs": [
+        {
+          "id": "A",
+          "name": "A",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Right click this pin to convert its type."
+        },
+        {
+          "id": "B",
+          "name": "B",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Right click this pin to convert its type."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Subtraction (A - B)\n\nRight click this pin to convert its type."
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.VSize",
+      "kind": "pure",
+      "title": "Vector Length",
+      "titleZh": "向量长度",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "VSize",
+      "category": "Math|Vector",
+      "tooltip": "Returns the length of the vector",
+      "keywords": "magnitude",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "A",
+          "name": "A",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetStringLibrary.Conv_DoubleToString",
+      "kind": "pure",
+      "title": "To String (Float)",
+      "titleZh": "转换为字符串（浮点）",
+      "subtitle": "",
+      "owner": "UKismetStringLibrary",
+      "member": "Conv_DoubleToString",
+      "category": "Utilities|String",
+      "tooltip": "Converts a double value to a string",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "•",
+      "inputs": [
+        {
+          "id": "InDouble",
+          "name": "In Double",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetStringLibrary.Conv_Int64ToString",
+      "kind": "pure",
+      "title": "To String (Integer64)",
+      "titleZh": "转换为字符串（Integer64）",
+      "subtitle": "",
+      "owner": "UKismetStringLibrary",
+      "member": "Conv_Int64ToString",
+      "category": "Utilities|String",
+      "tooltip": "Converts an 64-bit integer value to a string",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "•",
+      "inputs": [
+        {
+          "id": "InInt",
+          "name": "In Int",
+          "type": {
+            "category": "int64",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetStringLibrary.Conv_RotatorToString",
+      "kind": "pure",
+      "title": "To String (Rotator)",
+      "titleZh": "转换为字符串（旋转体）",
+      "subtitle": "",
+      "owner": "UKismetStringLibrary",
+      "member": "Conv_RotatorToString",
+      "category": "Utilities|String",
+      "tooltip": "Converts a rotator value to a string, in the form 'P= Y= R='",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "•",
+      "inputs": [
+        {
+          "id": "InRot",
+          "name": "In Rot",
+          "type": {
+            "category": "rotator",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetSystemLibrary.Delay",
+      "kind": "call",
+      "title": "Delay",
+      "titleZh": "延迟",
+      "subtitle": "",
+      "owner": "UKismetSystemLibrary",
+      "member": "Delay",
+      "category": "Utilities|FlowControl",
+      "tooltip": "Perform a latent action with a delay (specified in seconds).  Calling again while it is counting down will be ignored.",
+      "keywords": "sleep",
+      "flags": {
+        "static": true,
+        "latent": true,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Duration",
+          "name": "Duration",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.2",
+          "advanced": false,
+          "tooltip": "length of delay (in seconds)."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "Completed",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetSystemLibrary.PrintString",
+      "kind": "call",
+      "title": "Print String",
+      "titleZh": "打印字符串",
+      "subtitle": "",
+      "owner": "UKismetSystemLibrary",
+      "member": "PrintString",
+      "category": "Development",
+      "tooltip": "Prints a string to the log, and optionally, to the screen\nIf Print To Log is true, it will be visible in the Output Log window.  Otherwise it will be logged only as 'Verbose', so it generally won't show up.",
+      "keywords": "log print",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": true,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "InString",
+          "name": "In String",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Hello",
+          "advanced": false,
+          "tooltip": "The string to log out"
+        },
+        {
+          "id": "bPrintToScreen",
+          "name": "Print to Screen",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "true",
+          "advanced": true,
+          "tooltip": "Whether or not to print the output to the screen"
+        },
+        {
+          "id": "bPrintToLog",
+          "name": "Print to Log",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "true",
+          "advanced": true,
+          "tooltip": "Whether or not to print the output to the log"
+        },
+        {
+          "id": "TextColor",
+          "name": "Text Color",
+          "type": {
+            "category": "struct",
+            "subtype": "FLinearColor",
+            "subtypeDisplay": "Linear Color",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(R=0.000000,G=0.660000,B=1.000000,A=1.000000)",
+          "advanced": true,
+          "tooltip": "The color of the text to display"
+        },
+        {
+          "id": "Duration",
+          "name": "Duration",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "2.000000",
+          "advanced": true,
+          "tooltip": "The display duration (if Print to Screen is True). Using negative number will result in loading the duration time from the config."
+        },
+        {
+          "id": "Key",
+          "name": "Key",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": true
+          },
+          "default": "None",
+          "advanced": true,
+          "tooltip": "If a non-empty key is provided, the message will replace any existing on-screen messages with the same key."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    }
+  ],
+  "structs": [],
+  "enums": []
+}

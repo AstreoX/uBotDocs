@@ -1,0 +1,11 @@
+---
+// Starlight's <head> plus the client scripts (bundled and hashed by Astro): Blueprint graphs, and the
+// keyboard access and scroll hint for tables and diagrams that scroll sideways.
+import Default from "@astrojs/starlight/components/Head.astro";
+---
+
+<Default><slot /></Default>
+<script>
+  import "../scripts/blueprint.js";
+  import "../scripts/scrollables.js";
+</script>

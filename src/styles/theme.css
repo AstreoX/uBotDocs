@@ -1,0 +1,288 @@
+/* Site theme: the uBot Manager palette (neutral greys, blue accent) on top of Starlight.
+   Fonts are the reader's system fonts with CJK fallbacks; nothing is loaded from a CDN. */
+
+:root {
+  --sl-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC",
+    "Noto Sans SC", "WenQuanYi Micro Hei", Arial, sans-serif;
+  --sl-font-mono: ui-monospace, "Cascadia Mono", "JetBrains Mono", SFMono-Regular, Menlo, Consolas,
+    "Liberation Mono", "Microsoft YaHei", monospace;
+
+  /* dark (Starlight's default scheme) */
+  --sl-color-accent-low: #25324d;
+  --sl-color-accent: #548af7;
+  --sl-color-accent-high: #b8cffc;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #eceef2;
+  --sl-color-gray-2: #ced0d6;
+  --sl-color-gray-3: #9da0a8;
+  --sl-color-gray-4: #6f737a;
+  --sl-color-gray-5: #43454a;
+  --sl-color-gray-6: #2b2d30;
+  --sl-color-black: #1e1f22;
+  --sl-line-height: 1.8;
+  --sl-content-width: 52rem;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #dbe6fd;
+  /* 5.5:1 on white and 4.7:1 on the code background; the Manager's #3574f0 is only 4.3:1 on white */
+  --sl-color-accent: #2a62d9;
+  --sl-color-accent-high: #1f4fb8;
+  --sl-color-white: #15171c;
+  --sl-color-gray-1: #23252b;
+  --sl-color-gray-2: #3b3e46;
+  --sl-color-gray-3: #5b5f6a;
+  --sl-color-gray-4: #8a8f9b;
+  --sl-color-gray-5: #c9ccd6;
+  --sl-color-gray-6: #eceef2;
+  --sl-color-gray-7: #f7f8fa;
+  --sl-color-black: #ffffff;
+}
+
+/* Chinese text reads better slightly larger than Latin body copy. */
+:root:lang(zh-CN) {
+  --sl-text-body: 1rem;
+}
+
+.sl-markdown-content :is(h2, h3) {
+  letter-spacing: 0.01em;
+}
+
+.sl-markdown-content code:not(pre code) {
+  overflow-wrap: anywhere;
+}
+
+/* Tables: compact, horizontally scrollable inside their own box on phones. */
+.sl-markdown-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  font-size: var(--sl-text-sm);
+}
+.sl-markdown-content :is(th, td) {
+  padding: 0.45rem 0.75rem;
+  vertical-align: top;
+}
+/* A narrow screen scrolls the table sideways; it must not break identifiers ("Sequenc|e") or short
+   Chinese headers ("方|向") to squeeze them into the column. */
+.sl-markdown-content table code {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+.sl-markdown-content th,
+.sl-markdown-content .ref-dir {
+  white-space: nowrap;
+}
+.sl-markdown-content .scroll-hint {
+  margin: 0.2rem 0 0;
+  text-align: end;
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+}
+.scroll-hint[hidden] {
+  display: none;
+}
+.sl-markdown-content :is(table, [data-scrollable]):focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+
+/* Home page hero logo */
+.hero img {
+  max-height: 7rem;
+  width: auto;
+}
+
+
+/* Generated reference pages */
+.ref-meta {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  margin: 0 0 1.25rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-2);
+}
+.sl-markdown-content .ref-meta :is(dt, dd) {
+  margin: 0;
+}
+.ref-meta dt {
+  color: var(--sl-color-gray-3);
+  font-weight: 400;
+}
+.ref-meta dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ref-en {
+  color: var(--sl-color-gray-2);
+}
+.ref-badge {
+  display: inline-block;
+  font-size: var(--sl-text-2xs);
+  line-height: 1.5;
+  padding: 0 0.4rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--sl-color-gray-5);
+  color: var(--sl-color-gray-3);
+  vertical-align: 0.1em;
+  margin-inline-start: 0.35rem;
+  white-space: nowrap;
+}
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sl-text-sm);
+}
+.ref-table td .ref-sub {
+  display: block;
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-xs);
+}
+.ref-kind {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  margin-inline-end: 0.4rem;
+  vertical-align: -0.05em;
+}
+.ref-filter {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin: 1rem 0;
+}
+.ref-filter input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-black);
+  color: var(--sl-color-white);
+}
+.ref-filter input:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 1px;
+}
+.ref-filter output {
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.sl-markdown-content .ref-legend {
+  margin-bottom: 0.5rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}
+.ref-empty td {
+  padding: 1.25rem 0.75rem;
+  text-align: center;
+  color: var(--sl-color-gray-3);
+}
+.ref-meta-line {
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+}
+.ref-meta-line code {
+  font-size: var(--sl-text-2xs);
+  /* the line is gray-3; on the dark inline-code background that is only 3.7:1 */
+  color: var(--sl-color-gray-2);
+}
+.sl-markdown-content .ref-table code {
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+.ref-table td:first-child {
+  min-width: 9rem;
+}
+.ref-props td:nth-child(4) {
+  min-width: 11rem;
+}
+.sl-markdown-content .ref-from {
+  margin-bottom: 0.4rem;
+  font-size: var(--sl-text-sm);
+}
+.ref-inherited {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.5rem 0.9rem;
+  margin: 0 0 1.25rem;
+  font-size: var(--sl-text-sm);
+}
+.sl-markdown-content .ref-inherited :is(dt, dd) {
+  margin: 0;
+}
+.ref-inherited dt {
+  color: var(--sl-color-gray-3);
+  font-weight: 400;
+  line-height: 1.9;
+}
+.sl-markdown-content .ref-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sl-markdown-content .ref-chips li {
+  margin: 0;
+}
+.ref-chips a {
+  text-decoration: none;
+}
+.ref-chips a:hover code {
+  border-color: var(--sl-color-accent);
+}
+.sl-markdown-content .ref-chips code {
+  display: inline-block;
+  white-space: nowrap;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.3rem;
+  padding: 0.05rem 0.4rem;
+}
+/* Node index: room for the node title next to the long ids */
+.ref-table#node-index td:first-child {
+  min-width: 12.5rem;
+}
+.ref-table#node-index td:nth-child(2) {
+  min-width: 9rem;
+}
+
+/* Node index on a wide screen: titles and owners get their width first; long ids wrap after a dot in what is left. */
+@media (min-width: 50rem) {
+  .ref-table#node-index th:nth-child(1) {
+    width: 33%;
+  }
+  .ref-table#node-index th:nth-child(2) {
+    width: 25%;
+  }
+  .sl-markdown-content .ref-table#node-index code {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+}
+
+/* Phone: a table's last (description) column keeps a readable width; the table scrolls instead of
+   squeezing it to a few characters per line. */
+@media (max-width: 50rem) {
+  .sl-markdown-content table:not(.ref-table) td:last-child {
+    min-width: 9rem;
+  }
+}
+.sl-markdown-content .ref-legend {
+  text-wrap: pretty;
+}
+
+/* Small gray lines under a name (id, category, access): code in them must stay readable on the
+   dark inline-code background (gray-3 on it is only 3.7:1). */
+.sl-markdown-content .ref-sub code,
+.sl-markdown-content .ref-meta-line code {
+  color: var(--sl-color-gray-2);
+}

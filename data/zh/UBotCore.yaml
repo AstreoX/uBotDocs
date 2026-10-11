@@ -1,0 +1,59 @@
+# Chinese summaries for UBotCore (see CLAUDE.md, "Chinese summaries").
+# Key: id from data/api/UBotCore.json (class, node, Class.Property, Struct.Field, Enum.Value).
+# sourceHash: `npm run zh -- hash <id>`; skeletons for missing entries: `npm run zh -- todo UBotCore`.
+
+FUBotFrameHeader:
+  summary: 所有 uBot 传感器帧共用的帧头。
+  sourceHash: "df200008a274"
+
+FUBotFrameHeader.Sequence:
+  summary: 帧序号，每次采样加 1。
+  sourceHash: "e3b0c44298fc"
+
+FUBotFrameHeader.TimestampSeconds:
+  summary: 采样时刻的 uBot 仿真时间，单位秒。它就是 World 的游戏时间，会随暂停停止、随时间膨胀变快或变慢。
+  sourceHash: "d5a344c3f61a"
+
+FUBotFrameHeader.bValid:
+  summary: 本帧数据是否可用；只有 Status 为 Valid 时为 true。
+  sourceHash: "e3b0c44298fc"
+
+FUBotFrameHeader.Status:
+  summary: 本次采样的结果，取值见 UBot Sample Status。
+  sourceHash: "e3b0c44298fc"
+
+Break:FUBotFrameHeader:
+  summary: 把帧头拆成 Sensor Id、Frame Id、Sequence、Timestamp Seconds、Valid 和 Status。
+  sourceHash: "0be725a9f8e3"
+
+EUBotSampleStatus:
+  summary: 单次采样的结果。
+  sourceHash: "9280258fd388"
+
+EUBotSampleStatus.Valid:
+  summary: 样本有效，数据可以直接使用。
+  sourceHash: "e3b0c44298fc"
+
+EUBotSampleStatus.WarmingUp:
+  summary: 预热中。靠差分计算的传感器（如 IMU）在启动或重置后的头几次采样。
+  sourceHash: "e3b0c44298fc"
+
+EUBotSampleStatus.InvalidDeltaTime:
+  summary: 与上次采样的时间间隔为 0 或超过上限，历史被清空，重新预热。
+  sourceHash: "e3b0c44298fc"
+
+EUBotSampleStatus.TeleportDetected:
+  summary: 两次采样之间的位移或转角超过阈值，判为瞬移，历史被清空。
+  sourceHash: "e3b0c44298fc"
+
+EUBotSampleStatus.Disabled:
+  summary: Sensor Enabled 为 false 时的采样。
+  sourceHash: "e3b0c44298fc"
+
+EUBotSampleStatus.Error:
+  summary: 还没有采样过（帧头的默认值），或采样出错。
+  sourceHash: "e3b0c44298fc"
+
+UUBotClockSubsystem.GetSimTimeSeconds:
+  summary: 当前 World 的 uBot 仿真时间（秒）。所有 uBot 时间戳都用这个时间。
+  sourceHash: "9d98974e9ecf"

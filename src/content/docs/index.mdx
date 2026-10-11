@@ -1,0 +1,42 @@
+---
+title: uBot 文档
+description: uBot 是一组 Unreal Engine 5.5 插件，提供仿真传感器、仿真时钟和 ROS 2 桥接，蓝图里直接可用。
+template: splash
+hero:
+  title: uBot 文档
+  tagline: 在 Unreal Engine 5.5 里搭建机器人仿真：传感器、仿真时钟和 ROS 2 桥接，蓝图里直接可用。
+  image:
+    light: ../../assets/ubot-mark-dark.svg
+    dark: ../../assets/ubot-mark-light.svg
+    alt: uBot
+  actions:
+    - text: 开始使用
+      link: /start/introduction/
+      icon: right-arrow
+    - text: 节点索引
+      link: /reference/nodes/
+      variant: minimal
+---
+
+## 文档里的蓝图
+
+示例都画成蓝图编辑器里的样子，点任意节点可以看说明和引脚。
+
+```blueprint
+caption: 每次采样时把 IMU 姿态换算成角度
+nodes:
+  A: { ref: UUBotImuSensorComponent.OnImuDataUpdated, component: IMU }
+  B: { ref: Break:FUBotImuSensorData, hideUnconnected: true }
+  C: UKismetMathLibrary.Quat_Rotator
+  D: UKismetMathLibrary.BreakRotator
+wires:
+  - A.Data -> B.UBotImuSensorData
+  - B.OrientationQuaternion -> C.Q
+  - C.ReturnValue -> D.Rotation
+```
+
+## 从这里开始
+
+- [安装 uBot Manager](/start/install/)：给工程装上插件。
+- [读取 IMU 姿态角](/guides/sensors/imu-orientation/)：上图的完整写法。
+- [参考](/reference/)：每个类、节点和属性；按名称找节点用[节点索引](/reference/nodes/)。

@@ -1,0 +1,32 @@
+---
+title: 简介
+description: uBot 是什么，由哪几个插件组成，这份文档怎么读。
+sidebar:
+  order: 1
+---
+
+uBot 是一组 Unreal Engine 5.5 插件，用来在 UE 里搭建机器人仿真：给 Actor 装上传感器，在蓝图里读数据，需要时发布到 ROS 2。
+
+## 三个插件
+
+| 插件 | 提供什么 | 依赖 |
+| --- | --- | --- |
+| `UBotCore` | 帧头（Frame Header）和状态码、仿真时钟（Clock）、UE 与 ROS 的坐标换算 | 只依赖引擎 |
+| `UBotSensor` | 位姿（Pose）、IMU、里程计（Odometry）、2D/3D 激光雷达（LiDAR）、RGB 和深度相机（Depth Camera） | `UBotCore` |
+| `UBotROS` | 把传感器、TF 和 `/clock` 发布到 ROS 2，接收速度指令 | `UBotCore`、`UBotSensor` |
+
+只在蓝图里用传感器时，装 `UBotCore` 和 `UBotSensor` 就够了。三个插件都用 [uBot Manager](/start/install/) 安装。
+
+## 这份文档的结构
+
+- **开始**：安装，并跑通第一个传感器。
+- **指南**：一页解决一个任务，每页都有可以照着连的蓝图。
+- **概念**：采样、帧头这类需要先理解的机制。
+- **参考**：每个类、节点和属性，由插件的反射数据生成，名称与蓝图编辑器一致。
+
+蓝图图里的节点可以点击：卡片里有说明、引脚类型和参考链接。
+
+## 运行要求
+
+- Unreal Engine 5.5，Win64。
+- 安装工具 uBot Manager 只支持 Windows 10 和 11。

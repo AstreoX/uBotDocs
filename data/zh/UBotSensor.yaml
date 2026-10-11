@@ -1,0 +1,95 @@
+# Chinese summaries for UBotSensor (see CLAUDE.md, "Chinese summaries").
+# Key: id from data/api/UBotSensor.json (class, node, Class.Property, Struct.Field).
+# sourceHash: `npm run zh -- hash <id>`; skeletons for missing entries: `npm run zh -- todo UBotSensor`.
+
+UUBotSensorComponent:
+  summary: 所有 uBot 传感器组件的基类。组件本身就是传感器坐标系；启动后按 Update Rate Hz 在 uBot 仿真时间上定时采样，每帧最多采样一次。
+  sourceHash: "85312f0b2f95"
+
+UUBotSensorComponent.StartSensor:
+  summary: 启动传感器：立即采样一次，之后按 Update Rate Hz 定时采样。Sensor Enabled 为 false 时返回 false。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.StopSensor:
+  summary: 停止定时采样。手动调用 Sample Sensor 仍然可以采样。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.SampleSensor:
+  summary: 立即采样一次，不要求传感器已经启动。本次样本为 Valid 时返回 true。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.SetUpdateRateHz:
+  summary: 修改采样频率，限制在 0.1–240 Hz。运行中的传感器不会重启，下一次采样时刻保持不变。
+  sourceHash: "41dc92fb30fb"
+
+UUBotSensorComponent.GetLatestFrameHeader:
+  summary: 返回最近一次采样的帧头。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.GetDroppedSampleCount:
+  summary: 因为一帧跨过了多个采样时刻而跳过的采样次数。Start Sensor 时清零。
+  sourceHash: "f85e1ad02e9f"
+
+UUBotSensorComponent.OnSensorSampled:
+  summary: 每次采样后触发，Header 是本次的帧头。每种传感器都有这个事件。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.UpdateRateHz:
+  summary: 自动采样频率，单位 Hz。运行中修改请用 Set Update Rate Hz。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.bAutoStart:
+  summary: 为 true 时在 BeginPlay 自动启动传感器。
+  sourceHash: "e3b0c44298fc"
+
+UUBotSensorComponent.bSensorEnabled:
+  summary: 为 false 时无法启动；手动采样只得到 Disabled 帧头。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent:
+  summary: 模拟 IMU。按固定频率输出组件本地坐标系下的角速度（rad/s）和比力（m/s²），以及世界坐标系下的姿态四元数；可选噪声、偏置、低通滤波和限幅。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.GetLatestIMUData:
+  summary: 返回最近一次采样的 IMU 数据副本，不会触发新的采样。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.OnImuDataUpdated:
+  summary: 每次 IMU 采样后触发，包括无效样本。Data 是本次的完整数据。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.SampleIMU:
+  summary: 立即采样一次 IMU，本次样本为 Valid 时返回 true。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.ResetIMUBias:
+  summary: 把当前偏置恢复为 Details 中设置的 Accelerometer Bias 和 Gyroscope Bias，丢弃随机游走累积的漂移。
+  sourceHash: "e3b0c44298fc"
+
+UUBotImuSensorComponent.ResetIMUHistory:
+  summary: 清空差分用的历史状态。之后的两次采样是 Warming Up，第三次恢复 Valid。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData:
+  summary: 一次 IMU 采样：帧头、世界姿态、本地角速度和比力，以及三组方差。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.Header:
+  summary: 帧头，含 Valid 和 Status。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.OrientationQuaternion:
+  summary: 组件在 UE 世界坐标系下的旋转，不加噪声；无效样本也有值。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.AngularVelocityRadPerSecond:
+  summary: 传感器本地坐标系（X 前、Y 右、Z 上）下的角速度，单位 rad/s；非 Valid 样本为 0。
+  sourceHash: "e3b0c44298fc"
+
+FUBotImuSensorData.LinearAccelerationMetersPerSecondSquared:
+  summary: 本地坐标系下的比力（运动加速度减去重力），单位 m/s²；静止水平时约为 (0, 0, 9.8)。
+  sourceHash: "e3b0c44298fc"
+
+Break:FUBotImuSensorData:
+  summary: 把 UBot Imu Sensor Data 拆成帧头、姿态、角速度、比力和三组方差。
+  sourceHash: "30460fda8aae"

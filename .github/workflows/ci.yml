@@ -1,0 +1,55 @@
+# Every pull request and every push to main: unit tests, content checks and a full build.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Check out (without submodules; the build reads data/api only)
+        uses: actions/checkout@v7
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up Node from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Content checks
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+
+      - name: Upload the built site
+        uses: actions/upload-artifact@v7
+        with:
+          name: site
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error

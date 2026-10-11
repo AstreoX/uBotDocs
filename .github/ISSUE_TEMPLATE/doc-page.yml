@@ -1,0 +1,68 @@
+name: 文档页面
+description: 新写或重写一个文档页面（一个 issue 对应一个页面、一个 PR）
+title: "[文档] "
+labels: ["docs"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        一个 issue 只写一个页面。写作规则、蓝图代码块语法和检查命令见仓库根目录的 `CLAUDE.md`。
+  - type: input
+    id: path
+    attributes:
+      label: 页面路径
+      description: 相对 `src/content/docs/` 的文件路径。指南放在 `guides/<主题>/`，概念放在 `concepts/`。
+      placeholder: guides/sensors/imu-angular-velocity.mdx
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 页面类型
+      options:
+        - 指南（解决一个具体任务，至少一张蓝图图）
+        - 概念（解释一个机制，至少一个图表或表格）
+        - 开始（安装、入门）
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: 读者的问题
+      description: 这一页回答读者的哪个问题？页面的第一句话就从这里来。
+      placeholder: 怎样只在有效样本时读取 IMU 的角速度和比力？
+    validations:
+      required: true
+  - type: textarea
+    id: nodes
+    attributes:
+      label: 相关的节点和类
+      description: 节点 id 或类名，一行一个。用 `npm run find -- <关键词>` 查 id。
+      placeholder: |
+        UUBotImuSensorComponent.OnImuDataUpdated
+        Break:FUBotImuSensorData
+        K2Node_IfThenElse
+  - type: textarea
+    id: sources
+    attributes:
+      label: 源码文件
+      description: 写作依据的源码，路径相对插件仓库（在 `vendor/` 下）。
+      placeholder: |
+        vendor/uBotSensor/Source/UBotSensor/Private/UBotImuSensorComponent.cpp
+        vendor/uBotCore/Source/UBotCore/Public/UBotTypes.h
+  - type: textarea
+    id: notes
+    attributes:
+      label: 要点
+      description: 必须写到的事实、常见误区、要链接的页面。没有可以不填。
+  - type: checkboxes
+    id: acceptance
+    attributes:
+      label: 验收标准
+      options:
+        - label: "`npm test`、`npm run check`、`npm run build` 全部通过，且这一页没有新的检查警告"
+        - label: 指南页至少有一张 `blueprint` 蓝图图；概念页至少有一个图表、蓝图或表格
+        - label: 第一句话说明这一页解决什么问题；每段不超过 3 句，优先用步骤、表格和蓝图
+        - label: 节点、引脚、属性名与蓝图编辑器一致（英文、代码样式）；数字带单位，默认值取自参考数据
+        - label: 中文排版：全角标点，中文与英文、数字之间有空格
+        - label: 需要的类或节点中文说明写进 `data/zh/<插件>.yaml`，没有修改生成的参考页面

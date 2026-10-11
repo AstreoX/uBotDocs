@@ -1,0 +1,3530 @@
+{
+  "format": 1,
+  "plugin": "UBotROS",
+  "version": "0.1.1",
+  "engine": "5.5",
+  "repository": "https://github.com/AstreoX/uBotROS",
+  "generator": "UBotDocExport 1",
+  "culture": "en",
+  "modules": [
+    {
+      "name": "UBotROS",
+      "type": "Runtime"
+    }
+  ],
+  "classes": [
+    {
+      "id": "UUBotROSBridgeSubsystem",
+      "displayName": "UBot ROSBridge Subsystem",
+      "kind": "subsystem",
+      "parent": "UTickableWorldSubsystem",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSBridgeSubsystem.h",
+      "category": "",
+      "tooltip": "One TCP connection per game/PIE world to the ROS-side ubot_ros_bridge node (wire protocol v1,\ndocs/PROTOCOL.md). Socket I/O runs on a background thread; the game thread never blocks on the\nsocket. Received messages are dispatched to subscription callbacks on the game thread during Tick.\n\nOutgoing queue policy: a best_effort publisher keeps only its newest pending message (older ones\nare counted as dropped) and drops data while no session is active; reliable messages are queued in\norder, also while the bridge is reconnecting, up to MaxQueuedBytes (then the oldest pending\nbest_effort data is evicted first, then new reliable data is rejected with a warning). While the\nbridge is Disabled nothing is queued. Advertisements and subscriptions persist across reconnects\nand are re-sent (with the same ids) after every HELLO.\n\nAll methods are game thread only.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": false,
+        "blueprintable": false,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [],
+      "nodes": [
+        "UUBotROSBridgeSubsystem.Connect",
+        "UUBotROSBridgeSubsystem.ConnectTo",
+        "UUBotROSBridgeSubsystem.Disconnect",
+        "UUBotROSBridgeSubsystem.GetBridgeEndpoint",
+        "UUBotROSBridgeSubsystem.GetBridgeStatus",
+        "UUBotROSBridgeSubsystem.GetLastBridgeError",
+        "UUBotROSBridgeSubsystem.IsBridgeConnected",
+        "UUBotROSBridgeSubsystem.OnBridgeConnected",
+        "UUBotROSBridgeSubsystem.OnBridgeDisconnected"
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent",
+      "displayName": "uBot ROS Sensor Bridge",
+      "kind": "component",
+      "parent": "UActorComponent",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSSensorBridgeComponent.h",
+      "category": "uBot",
+      "tooltip": "Publishes every uBot sensor of its owner actor to ROS 2 through the uBot ROS bridge subsystem\n(successor of the legacy AgentROSSensorSuitePublisher; same Blueprint API, events, status values\nand validation rules).\n\nDiscovery: UBot::Sensors::FindSensors(Owner) (the owner itself and its components; child actors are\nnot searched). For each sensor the supporting IUBotROSSensorPublisherFactory with the highest priority\ncreates a publisher; sensors no factory supports are skipped.\n\nIdentity: namespace = RobotNamespaceOverride (\"/\" = root namespace), else UBot::Identity::ResolveNamespace(Owner); base frame\n= BaseFrameOverride, else UBot::Identity::ResolveBaseFrameId(Owner); base component = BaseLinkComponent,\nelse UBot::Identity::ResolveBaseComponent(Owner). With bPrefixFramesWithNamespace every frame the\nbridge publishes (except the world frame of world-referenced poses) becomes \"<namespace>/<frame>\".\n\nTopics: \"/<namespace>/<default path>\" (pose, odom, imu/data, scan, lidar/points,\ncamera/color/image_raw + camera_info, camera/depth/image_raw + camera_info; \"<SensorId>/...\" when several\nsensors share a type) unless TopicOverrides has an enabled entry for the logical key (pose, odom, imu,\nscan, lidar, rgb_camera, rgb_camera.camera_info, depth_camera, depth_camera.camera_info; for several\nsensors of a type the sanitized SensorId and \"<SensorId>.camera_info\"). Overrides without a leading '/'\nget one. Invalid topics, topics assigned twice, empty sensor ids or frame ids, duplicate sensor ids\nwithin a type and duplicate sensor frame ids put the component into the Error state.\n\nTF: static base -> sensor (from IUBotSensor::GetSensorFrameComponent relative to the base component)\nand sensor -> \"<frame>_optical\" for optical publishers through the subsystem's /tf_static aggregation;\ndynamic odom -> base from the first odometry sensor whose tracked component is the base component and\nwhose frames match OdometryFrame / the base frame. The odometry sensor gets no static transform (its\nFrameId is the odometry frame, which is the parent of the base frame), and neither does any other\nsensor whose frame equals the odometry frame.\n\nThe component becomes Ready once its publishers are set up; it does not wait for the bridge\nconnection (data is dropped or queued per QoS meanwhile) and logs one Warning per disconnected period.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": true,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "BaseFrameOverride",
+          "displayName": "Base Frame Override",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "uBot ROS|Identity",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Empty -> base frame of the owner's uBot identity (default \"base_link\").",
+          "meta": {}
+        },
+        {
+          "id": "BaseLinkComponent",
+          "displayName": "Base Link Component",
+          "type": {
+            "category": "struct",
+            "subtype": "FComponentReference",
+            "subtypeDisplay": "Component Reference",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "()",
+          "category": "uBot ROS|Identity",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Empty or unresolved -> base component of the owner's uBot identity (default: root component).",
+          "meta": {}
+        },
+        {
+          "id": "OdometryFrame",
+          "displayName": "Odometry Frame",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "odom",
+          "category": "uBot ROS|TF",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "",
+          "meta": {}
+        },
+        {
+          "id": "RobotNamespaceOverride",
+          "displayName": "Robot Namespace Override",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "uBot ROS|Identity",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Blank -> namespace of the owner's uBot identity (UBot::Identity::ResolveNamespace); \"/\" alone -> root\nnamespace (topics like \"/imu/data\"). '/' separates nested namespaces; every segment is sanitized.",
+          "meta": {}
+        },
+        {
+          "id": "SensorDataQosOverride",
+          "displayName": "Sensor Data Qos Override",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQosOverride",
+            "subtypeDisplay": "UBot ROSQos Override",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(Qos=(Depth=5))",
+          "category": "uBot ROS|QoS",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Overrides the sensor data QoS (default best_effort / volatile / 5).",
+          "meta": {}
+        },
+        {
+          "id": "StateQosOverride",
+          "displayName": "State Qos Override",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQosOverride",
+            "subtypeDisplay": "UBot ROSQos Override",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(Qos=(Depth=5))",
+          "category": "uBot ROS|QoS",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Overrides the state QoS of pose and odometry (default reliable / volatile / 10).",
+          "meta": {}
+        },
+        {
+          "id": "TopicOverrides",
+          "displayName": "Topic Overrides",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "map",
+            "valueType": {
+              "category": "struct",
+              "subtype": "FUBotROSTopicOverride",
+              "subtypeDisplay": "UBot ROSTopic Override",
+              "container": "none",
+              "valueType": null,
+              "byRef": false,
+              "const": false
+            },
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "uBot ROS|Topics",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Optional overrides keyed by logical topic name: pose, odom, imu, scan, lidar, rgb_camera, rgb_camera.camera_info, depth_camera, depth_camera.camera_info; for several sensors of one type the sanitized SensorId and <SensorId>.camera_info.",
+          "meta": {}
+        },
+        {
+          "id": "bAutoInitialize",
+          "displayName": "Auto Initialize",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "uBot ROS|Lifecycle",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "",
+          "meta": {}
+        },
+        {
+          "id": "bPrefixFramesWithNamespace",
+          "displayName": "Prefix Frames with Namespace",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "False",
+          "category": "uBot ROS|Identity",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Publish frames as \"<namespace>/<frame>\" (multi-robot TF trees).",
+          "meta": {}
+        },
+        {
+          "id": "bPublishDynamicTF",
+          "displayName": "Publish Dynamic TF",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "uBot ROS|TF",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "",
+          "meta": {}
+        },
+        {
+          "id": "bPublishInvalidSamples",
+          "displayName": "Publish Invalid Samples",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "False",
+          "category": "uBot ROS|Publishing",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "",
+          "meta": {}
+        },
+        {
+          "id": "bPublishStaticSensorTF",
+          "displayName": "Publish Static Sensor TF",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "uBot ROS|TF",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "",
+          "meta": {}
+        },
+        {
+          "id": "bSkipWhenNoSubscribers",
+          "displayName": "Skip when No Subscribers",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "uBot ROS|Publishing",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Skip encoding (and camera readback) while the bridge reports no subscriber for a topic.",
+          "meta": {}
+        }
+      ],
+      "nodes": [
+        "UUBotROSSensorBridgeComponent.GetActivePublisherTopics",
+        "UUBotROSSensorBridgeComponent.GetDiscoveredSensorCount",
+        "UUBotROSSensorBridgeComponent.GetROSBridgeError",
+        "UUBotROSSensorBridgeComponent.GetROSBridgeStatus",
+        "UUBotROSSensorBridgeComponent.GetResolvedBaseFrameId",
+        "UUBotROSSensorBridgeComponent.GetResolvedNamespace",
+        "UUBotROSSensorBridgeComponent.IsROSBridgeReady",
+        "UUBotROSSensorBridgeComponent.OnROSBridgeError",
+        "UUBotROSSensorBridgeComponent.OnROSBridgeReady",
+        "UUBotROSSensorBridgeComponent.OnROSPublishersRefreshed",
+        "UUBotROSSensorBridgeComponent.RefreshSensorPublishers",
+        "UUBotROSSensorBridgeComponent.RestartROSBridge",
+        "UUBotROSSensorBridgeComponent.StopROSBridge"
+      ]
+    },
+    {
+      "id": "UUBotROSSettings",
+      "displayName": "uBot ROS",
+      "kind": "settings",
+      "parent": "UDeveloperSettings",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSSettings.h",
+      "category": "",
+      "tooltip": "Project settings for uBot ROS (Project Settings > Plugins > uBot ROS), stored in the project's\nConfig/DefaultUBotROS.ini, section [/Script/UBotROS.UBotROSSettings], where uBot Manager edits\nBridgeHost and BridgePort too. Read when a world's bridge subsystem connects; changes apply on the\nnext Connect().",
+      "flags": {
+        "abstract": false,
+        "blueprintType": false,
+        "blueprintable": false,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "BridgeHost",
+          "displayName": "Bridge Host",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "127.0.0.1",
+          "category": "Bridge",
+          "access": "none",
+          "editable": "anywhere",
+          "tooltip": "Host of the ubot_ros_bridge node (name or IP address). IPv4 results are preferred.",
+          "meta": {}
+        },
+        {
+          "id": "BridgePort",
+          "displayName": "Bridge Port",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "8268",
+          "category": "Bridge",
+          "access": "none",
+          "editable": "anywhere",
+          "tooltip": "TCP port of the ubot_ros_bridge node.",
+          "meta": {
+            "ClampMin": "1",
+            "ClampMax": "65535",
+            "UIMin": "1",
+            "UIMax": "65535"
+          }
+        },
+        {
+          "id": "ClockTopic",
+          "displayName": "Clock Topic",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "/clock",
+          "category": "Clock",
+          "access": "none",
+          "editable": "anywhere",
+          "tooltip": "Absolute topic of the clock publisher.",
+          "meta": {
+            "EditCondition": "bPublishClock"
+          }
+        },
+        {
+          "id": "MaxPayloadBytes",
+          "displayName": "Max Payload Bytes",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "67108864",
+          "category": "Limits",
+          "access": "none",
+          "editable": "anywhere",
+          "tooltip": "Largest frame payload accepted from the bridge or sent to it (protocol default 64 MiB).",
+          "meta": {
+            "ClampMin": "1024"
+          }
+        },
+        {
+          "id": "MaxQueuedBytes",
+          "displayName": "Max Queued Bytes",
+          "type": {
+            "category": "int64",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "268435456",
+          "category": "Limits",
+          "access": "none",
+          "editable": "anywhere",
+          "tooltip": "Budget for frames waiting to be sent (and for received messages waiting for dispatch). When\nexceeded, the oldest pending best_effort messages are dropped first, then new reliable\nmessages are rejected with a warning. A value below MaxPayloadBytes + 12 (one maximum frame) is\nraised to that when connecting (with a warning): otherwise large messages could never fit.",
+          "meta": {
+            "ClampMin": "65536"
+          }
+        },
+        {
+          "id": "ReconnectIntervalSeconds",
+          "displayName": "Reconnect Interval Seconds",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "2.000000",
+          "category": "Bridge",
+          "access": "none",
+          "editable": "anywhere",
+          "tooltip": "Delay between connection attempts while the bridge is unreachable or after the connection is lost.",
+          "meta": {
+            "ClampMin": "0.05",
+            "Units": "s"
+          }
+        },
+        {
+          "id": "bAutoConnect",
+          "displayName": "Auto Connect",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Bridge",
+          "access": "none",
+          "editable": "anywhere",
+          "tooltip": "Connect automatically when a game or PIE world begins play.",
+          "meta": {}
+        },
+        {
+          "id": "bPublishClock",
+          "displayName": "Publish Clock",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Clock",
+          "access": "none",
+          "editable": "anywhere",
+          "tooltip": "Publish rosgraph_msgs/msg/Clock with the uBot sim time every world tick while connected.",
+          "meta": {}
+        }
+      ],
+      "nodes": []
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent",
+      "displayName": "uBot ROS Velocity Command",
+      "kind": "component",
+      "parent": "UActorComponent",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSVelocityCommandComponent.h",
+      "category": "uBot",
+      "tooltip": "Receives geometry_msgs/msg/Twist velocity commands from ROS 2 through the uBot ROS bridge and forwards\nthem to an IUBotVelocityCommandable target. Contains no control logic.\n\n- Topic: /<namespace>/cmd_vel (best_effort / volatile / depth 10). The namespace comes from UBot::Identity\n  unless RobotNamespaceOverride is set; CommandTopicOverride replaces the whole topic.\n- Conversion: ROS body frame -> UE body axes through UBot::ROSConvert::MakeVelocityCommand (linear (x, -y, z),\n  angular (-x, y, -z), Source \"ROS\", timestamp = uBot sim time at reception), then the optional speed limits.\n- Target: TargetComponent when set, else UBot::Actuation::FindVelocityCommandable(owner). Without a target the\n  component still decodes commands, fires its events and runs the timeout, so Blueprints can consume them.\n- Timeout: when no command arrived for CommandTimeoutSeconds of sim time (checked in TickComponent, which only\n  runs while a command is active), the target receives StopMotion exactly once and OnCommandTimeout fires.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": false,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "CommandTimeoutSeconds",
+          "displayName": "Command Timeout Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.500000",
+          "category": "uBot|ROS|Velocity Command|Safety",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Sim seconds without a command before the target is stopped. 0 disables the timeout.",
+          "meta": {
+            "ClampMin": "0.0",
+            "Units": "s"
+          }
+        },
+        {
+          "id": "CommandTopicOverride",
+          "displayName": "Command Topic Override",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "uBot|ROS|Velocity Command|Topic",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Non-empty -> used instead of /<namespace>/cmd_vel. A missing leading '/' is added.",
+          "meta": {}
+        },
+        {
+          "id": "MaxAngularSpeedRadiansPerSecond",
+          "displayName": "Max Angular Speed Radians Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "category": "uBot|ROS|Velocity Command|Limits",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Upper bound of the angular speed (vector norm, axis preserved). 0 = unlimited.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "MaxLinearSpeedMetersPerSecond",
+          "displayName": "Max Linear Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "category": "uBot|ROS|Velocity Command|Limits",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Upper bound of the linear speed (vector norm, direction preserved). 0 = unlimited.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "RobotNamespaceOverride",
+          "displayName": "Robot Namespace Override",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "uBot|ROS|Velocity Command|Identity",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Empty -> the namespace resolved by UBot::Identity (identity component, else the sanitized actor name).\nLeading/trailing '/' are ignored and every segment is sanitized; a value made only of '/' selects the\nroot namespace (topic /cmd_vel).",
+          "meta": {}
+        },
+        {
+          "id": "TargetComponent",
+          "displayName": "Target Component",
+          "type": {
+            "category": "struct",
+            "subtype": "FComponentReference",
+            "subtypeDisplay": "Component Reference",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "()",
+          "category": "uBot|ROS|Velocity Command|Target",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Component that receives the commands; it must implement IUBotVelocityCommandable. Unset -> the owner actor\nor its first implementing component. With only \"Referenced Actor\" set, that actor is searched the same way.",
+          "meta": {}
+        },
+        {
+          "id": "bAutoStartReceiver",
+          "displayName": "Auto Start Receiver",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "uBot|ROS|Velocity Command",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Subscribe in BeginPlay. When false, call RestartCommandReceiver to start receiving.",
+          "meta": {}
+        }
+      ],
+      "nodes": [
+        "UUBotROSVelocityCommandComponent.GetCommandError",
+        "UUBotROSVelocityCommandComponent.GetCommandTarget",
+        "UUBotROSVelocityCommandComponent.GetLastCommand",
+        "UUBotROSVelocityCommandComponent.GetResolvedCommandTopic",
+        "UUBotROSVelocityCommandComponent.IsCommandActive",
+        "UUBotROSVelocityCommandComponent.IsCommandReceiverReady",
+        "UUBotROSVelocityCommandComponent.OnCommandError",
+        "UUBotROSVelocityCommandComponent.OnCommandTimeout",
+        "UUBotROSVelocityCommandComponent.OnVelocityCommand",
+        "UUBotROSVelocityCommandComponent.RestartCommandReceiver",
+        "UUBotROSVelocityCommandComponent.SetTargetComponent",
+        "UUBotROSVelocityCommandComponent.StopCommandReceiver"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "Break:FUBotROSQos",
+      "kind": "break",
+      "title": "Break UBot ROSQos",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot ROSQos' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotROSQos",
+          "name": "UBot ROSQos",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQos",
+            "subtypeDisplay": "UBot ROSQos",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Reliability",
+          "name": "Reliability",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotROSReliability",
+            "subtypeDisplay": "EUBot ROSReliability",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Durability",
+          "name": "Durability",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotROSDurability",
+            "subtypeDisplay": "EUBot ROSDurability",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Depth",
+          "name": "Depth",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "KEEP_LAST history depth."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotROSQosOverride",
+      "kind": "break",
+      "title": "Break UBot ROSQos Override",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot ROSQos Override' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotROSQosOverride",
+          "name": "UBot ROSQos Override",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQosOverride",
+            "subtypeDisplay": "UBot ROSQos Override",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "bOverride",
+          "name": "Override",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Qos",
+          "name": "Qos",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQos",
+            "subtypeDisplay": "UBot ROSQos",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotROSTopicOverride",
+      "kind": "break",
+      "title": "Break UBot ROSTopic Override",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot ROSTopic Override' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotROSTopicOverride",
+          "name": "UBot ROSTopic Override",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSTopicOverride",
+            "subtypeDisplay": "UBot ROSTopic Override",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "bOverride",
+          "name": "Override",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Topic",
+          "name": "Topic",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Topic used instead of the default when bOverride is set; the owning component resolves it."
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotROSQos",
+      "kind": "make",
+      "title": "Make UBot ROSQos",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot ROSQos' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Reliability",
+          "name": "Reliability",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotROSReliability",
+            "subtypeDisplay": "EUBot ROSReliability",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "BestEffort",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Durability",
+          "name": "Durability",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotROSDurability",
+            "subtypeDisplay": "EUBot ROSDurability",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Volatile",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Depth",
+          "name": "Depth",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "5",
+          "advanced": false,
+          "tooltip": "KEEP_LAST history depth."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotROSQos",
+          "name": "UBot ROSQos",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQos",
+            "subtypeDisplay": "UBot ROSQos",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotROSQosOverride",
+      "kind": "make",
+      "title": "Make UBot ROSQos Override",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot ROSQos Override' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "bOverride",
+          "name": "Override",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "False",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Qos",
+          "name": "Qos",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQos",
+            "subtypeDisplay": "UBot ROSQos",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(Reliability=BestEffort,Durability=Volatile,Depth=5)",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotROSQosOverride",
+          "name": "UBot ROSQos Override",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQosOverride",
+            "subtypeDisplay": "UBot ROSQos Override",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotROSTopicOverride",
+      "kind": "make",
+      "title": "Make UBot ROSTopic Override",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot ROSTopic Override' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "bOverride",
+          "name": "Override",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "False",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Topic",
+          "name": "Topic",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Topic used instead of the default when bOverride is set; the owning component resolves it."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotROSTopicOverride",
+          "name": "UBot ROSTopic Override",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSTopicOverride",
+            "subtypeDisplay": "UBot ROSTopic Override",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.Connect",
+      "kind": "call",
+      "title": "Connect",
+      "subtitle": "Target is UBot ROSBridge Subsystem",
+      "subtitleZh": "目标是UBot ROSBridge Subsystem",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "Connect",
+      "category": "uBot|ROS",
+      "tooltip": "Connects to BridgeHost:BridgePort from the project settings (no-op if already connecting there).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSBridgeSubsystem",
+            "subtypeDisplay": "UBot ROSBridge Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.ConnectTo",
+      "kind": "call",
+      "title": "Connect To",
+      "subtitle": "Target is UBot ROSBridge Subsystem",
+      "subtitleZh": "目标是UBot ROSBridge Subsystem",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "ConnectTo",
+      "category": "uBot|ROS",
+      "tooltip": "Connects to an explicit endpoint, overriding the project settings for this world.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSBridgeSubsystem",
+            "subtypeDisplay": "UBot ROSBridge Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Host",
+          "name": "Host",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Port",
+          "name": "Port",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.Disconnect",
+      "kind": "call",
+      "title": "Disconnect",
+      "subtitle": "Target is UBot ROSBridge Subsystem",
+      "subtitleZh": "目标是UBot ROSBridge Subsystem",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "Disconnect",
+      "category": "uBot|ROS",
+      "tooltip": "Closes the connection and stops reconnecting; pending outgoing data is discarded.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSBridgeSubsystem",
+            "subtypeDisplay": "UBot ROSBridge Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.GetBridgeEndpoint",
+      "kind": "pure",
+      "title": "Get Bridge Endpoint",
+      "subtitle": "Target is UBot ROSBridge Subsystem",
+      "subtitleZh": "目标是UBot ROSBridge Subsystem",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "GetBridgeEndpoint",
+      "category": "uBot|ROS",
+      "tooltip": "\"host:port\" this subsystem connects (or last connected) to; empty when never connected. After\nConnectTo() rejected an invalid endpoint it is the rejected one, with \"(no host)\" for an empty host.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSBridgeSubsystem",
+            "subtypeDisplay": "UBot ROSBridge Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.GetBridgeStatus",
+      "kind": "pure",
+      "title": "Get Bridge Status",
+      "subtitle": "Target is UBot ROSBridge Subsystem",
+      "subtitleZh": "目标是UBot ROSBridge Subsystem",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "GetBridgeStatus",
+      "category": "uBot|ROS",
+      "tooltip": "Disabled: not connecting (Disconnect() called, or auto-connect off and Connect() not called).\nConnecting: first attempt in progress / waiting for HELLO_ACK. Connected: handshake done.\nError: the last attempt failed or the connection was lost; retrying every ReconnectIntervalSeconds.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSBridgeSubsystem",
+            "subtypeDisplay": "UBot ROSBridge Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotROSBridgeStatus",
+            "subtypeDisplay": "EUBot ROSBridge Status",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.GetLastBridgeError",
+      "kind": "pure",
+      "title": "Get Last Bridge Error",
+      "subtitle": "Target is UBot ROSBridge Subsystem",
+      "subtitleZh": "目标是UBot ROSBridge Subsystem",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "GetLastBridgeError",
+      "category": "uBot|ROS",
+      "tooltip": "Reason of the last failed attempt, lost connection or protocol error; empty when none.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSBridgeSubsystem",
+            "subtypeDisplay": "UBot ROSBridge Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.IsBridgeConnected",
+      "kind": "pure",
+      "title": "Is Bridge Connected",
+      "subtitle": "Target is UBot ROSBridge Subsystem",
+      "subtitleZh": "目标是UBot ROSBridge Subsystem",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "IsBridgeConnected",
+      "category": "uBot|ROS",
+      "tooltip": "True once the bridge has answered HELLO with a compatible HELLO_ACK.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSBridgeSubsystem",
+            "subtypeDisplay": "UBot ROSBridge Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.OnBridgeConnected",
+      "kind": "event",
+      "title": "On Bridge Connected",
+      "subtitle": "",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "OnBridgeConnected",
+      "category": "uBot|ROS",
+      "tooltip": "Fired when the handshake with the bridge completes (after every reconnect).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSBridgeSubsystem.OnBridgeDisconnected",
+      "kind": "event",
+      "title": "On Bridge Disconnected",
+      "subtitle": "",
+      "owner": "UUBotROSBridgeSubsystem",
+      "member": "OnBridgeDisconnected",
+      "category": "uBot|ROS",
+      "tooltip": "Fired when an established connection ends (lost, protocol error or Disconnect()).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Reason",
+          "name": "Reason",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.GetActivePublisherTopics",
+      "kind": "pure",
+      "title": "Get Active Publisher Topics",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "GetActivePublisherTopics",
+      "category": "uBot ROS",
+      "tooltip": "Every advertised topic, sorted.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.GetDiscoveredSensorCount",
+      "kind": "pure",
+      "title": "Get Discovered Sensor Count",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "GetDiscoveredSensorCount",
+      "category": "uBot ROS",
+      "tooltip": "Sensors that have a publisher.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.GetROSBridgeError",
+      "kind": "pure",
+      "title": "Get ROSBridge Error",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "GetROSBridgeError",
+      "category": "uBot ROS",
+      "tooltip": "",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.GetROSBridgeStatus",
+      "kind": "pure",
+      "title": "Get ROSBridge Status",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "GetROSBridgeStatus",
+      "category": "uBot ROS",
+      "tooltip": "",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotROSSensorBridgeStatus",
+            "subtypeDisplay": "EUBot ROSSensor Bridge Status",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.GetResolvedBaseFrameId",
+      "kind": "pure",
+      "title": "Get Resolved Base Frame Id",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "GetResolvedBaseFrameId",
+      "category": "uBot ROS",
+      "tooltip": "Base frame as published (prefixed when bPrefixFramesWithNamespace).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.GetResolvedNamespace",
+      "kind": "pure",
+      "title": "Get Resolved Namespace",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "GetResolvedNamespace",
+      "category": "uBot ROS",
+      "tooltip": "Namespace used for default topics (sanitized, no leading slash); empty for the root namespace.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.IsROSBridgeReady",
+      "kind": "pure",
+      "title": "Is ROSBridge Ready",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "IsROSBridgeReady",
+      "category": "uBot ROS",
+      "tooltip": "",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.OnROSBridgeError",
+      "kind": "event",
+      "title": "On ROSBridge Error",
+      "subtitle": "",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "OnROSBridgeError",
+      "category": "uBot ROS",
+      "tooltip": "",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ErrorMessage",
+          "name": "Error Message",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.OnROSBridgeReady",
+      "kind": "event",
+      "title": "On ROSBridge Ready",
+      "subtitle": "",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "OnROSBridgeReady",
+      "category": "uBot ROS",
+      "tooltip": "",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.OnROSPublishersRefreshed",
+      "kind": "event",
+      "title": "On ROSPublishers Refreshed",
+      "subtitle": "",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "OnROSPublishersRefreshed",
+      "category": "uBot ROS",
+      "tooltip": "",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "PublisherCount",
+          "name": "Publisher Count",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.RefreshSensorPublishers",
+      "kind": "call",
+      "title": "Refresh Sensor Publishers",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "RefreshSensorPublishers",
+      "category": "uBot ROS",
+      "tooltip": "Re-discovers the owner's sensors and recreates every publisher; initializes the bridge when it is not running.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.RestartROSBridge",
+      "kind": "call",
+      "title": "Restart ROSBridge",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "RestartROSBridge",
+      "category": "uBot ROS",
+      "tooltip": "",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSSensorBridgeComponent.StopROSBridge",
+      "kind": "call",
+      "title": "Stop ROSBridge",
+      "subtitle": "Target is uBot ROS Sensor Bridge",
+      "subtitleZh": "目标是uBot ROS Sensor Bridge",
+      "owner": "UUBotROSSensorBridgeComponent",
+      "member": "StopROSBridge",
+      "category": "uBot ROS",
+      "tooltip": "",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSSensorBridgeComponent",
+            "subtypeDisplay": "uBot ROS Sensor Bridge",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.GetCommandError",
+      "kind": "pure",
+      "title": "Get Command Error",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "GetCommandError",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "The most recent error message (empty when none since the last start).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.GetCommandTarget",
+      "kind": "pure",
+      "title": "Get Command Target",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "GetCommandTarget",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "The object commands are dispatched to, or nullptr (events only).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "object",
+            "subtype": "UObject",
+            "subtypeDisplay": "Object",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.GetLastCommand",
+      "kind": "pure",
+      "title": "Get Last Command",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "GetLastCommand",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "The most recent valid command after clamping (zero before the first one).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotVelocityCommand",
+            "subtypeDisplay": "UBot Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.GetResolvedCommandTopic",
+      "kind": "pure",
+      "title": "Get Resolved Command Topic",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "GetResolvedCommandTopic",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "The subscribed topic while the receiver runs, else the topic the next start would use.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.IsCommandActive",
+      "kind": "pure",
+      "title": "Is Command Active",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "IsCommandActive",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "True from a valid command until its timeout (always true after a command when the timeout is disabled).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.IsCommandReceiverReady",
+      "kind": "pure",
+      "title": "Is Command Receiver Ready",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "IsCommandReceiverReady",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "True while subscribed to the bridge (independent of the bridge connection state).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.OnCommandError",
+      "kind": "event",
+      "title": "On Command Error",
+      "subtitle": "",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "OnCommandError",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "Setup failures, malformed or non-finite messages, an unusable configured target, rejected commands.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ErrorMessage",
+          "name": "Error Message",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.OnCommandTimeout",
+      "kind": "event",
+      "title": "On Command Timeout",
+      "subtitle": "",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "OnCommandTimeout",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "Fires once per timeout, after StopMotion was sent to the target (if any).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.OnVelocityCommand",
+      "kind": "event",
+      "title": "On Velocity Command",
+      "subtitle": "",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "OnVelocityCommand",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "Fires for every valid command after conversion and clamping, whether or not a target exists.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Command",
+          "name": "Command",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotVelocityCommand",
+            "subtypeDisplay": "UBot Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.RestartCommandReceiver",
+      "kind": "call",
+      "title": "Restart Command Receiver",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "RestartCommandReceiver",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "Unsubscribes and subscribes again with the current settings. The command timeout keeps running.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.SetTargetComponent",
+      "kind": "call",
+      "title": "Set Target Component",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "SetTargetComponent",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "Replaces TargetComponent by a direct reference; nullptr restores the automatic lookup on the owner.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "NewTarget",
+          "name": "New Target",
+          "type": {
+            "category": "object",
+            "subtype": "UActorComponent",
+            "subtypeDisplay": "Actor Component",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSVelocityCommandComponent.StopCommandReceiver",
+      "kind": "call",
+      "title": "Stop Command Receiver",
+      "subtitle": "Target is uBot ROS Velocity Command",
+      "subtitleZh": "目标是uBot ROS Velocity Command",
+      "owner": "UUBotROSVelocityCommandComponent",
+      "member": "StopCommandReceiver",
+      "category": "uBot|ROS|Velocity Command",
+      "tooltip": "Unsubscribes. An active command still times out normally.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSVelocityCommandComponent",
+            "subtypeDisplay": "uBot ROS Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    }
+  ],
+  "structs": [
+    {
+      "id": "FUBotROSQos",
+      "displayName": "UBot ROSQos",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSTypes.h",
+      "tooltip": "ROS 2 QoS profile as sent to the bridge (history is always KEEP_LAST with Depth).",
+      "fields": [
+        {
+          "id": "Depth",
+          "displayName": "Depth",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "KEEP_LAST history depth.",
+          "access": "readWrite"
+        },
+        {
+          "id": "Durability",
+          "displayName": "Durability",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotROSDurability",
+            "subtypeDisplay": "EUBot ROSDurability",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "",
+          "access": "readWrite"
+        },
+        {
+          "id": "Reliability",
+          "displayName": "Reliability",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotROSReliability",
+            "subtypeDisplay": "EUBot ROSReliability",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotROSQos",
+      "break": "Break:FUBotROSQos"
+    },
+    {
+      "id": "FUBotROSQosOverride",
+      "displayName": "UBot ROSQos Override",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSTypes.h",
+      "tooltip": "Optional replacement of a default QoS profile.\n\nSuccessor of the legacy FAgentROSQOSOverride {bOverride, Reliability, QueueSize} (struct redirect in\nConfig/DefaultUBotROS.ini). The legacy Reliability and QueueSize values load into the two load-only\nmembers below (UHT reflects them as Reliability / QueueSize, so the old tags match by name) and are\nmoved into Qos by PostSerialize, so existing assets keep their overrides.",
+      "fields": [
+        {
+          "id": "Qos",
+          "displayName": "Qos",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotROSQos",
+            "subtypeDisplay": "UBot ROSQos",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "",
+          "access": "readWrite"
+        },
+        {
+          "id": "bOverride",
+          "displayName": "Override",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotROSQosOverride",
+      "break": "Break:FUBotROSQosOverride"
+    },
+    {
+      "id": "FUBotROSTopicOverride",
+      "displayName": "UBot ROSTopic Override",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSTypes.h",
+      "tooltip": "Optional replacement of a default topic. Same fields as the legacy FAgentROSTopicOverride.",
+      "fields": [
+        {
+          "id": "Topic",
+          "displayName": "Topic",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Topic used instead of the default when bOverride is set; the owning component resolves it.",
+          "access": "readWrite"
+        },
+        {
+          "id": "bOverride",
+          "displayName": "Override",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotROSTopicOverride",
+      "break": "Break:FUBotROSTopicOverride"
+    }
+  ],
+  "enums": [
+    {
+      "id": "EUBotROSBridgeStatus",
+      "displayName": "EUBot ROSBridge Status",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSTypes.h",
+      "tooltip": "State of the TCP connection between a world and ubot_ros_bridge.",
+      "values": [
+        {
+          "id": "Connected",
+          "displayName": "Connected",
+          "value": 2,
+          "tooltip": ""
+        },
+        {
+          "id": "Connecting",
+          "displayName": "Connecting",
+          "value": 1,
+          "tooltip": ""
+        },
+        {
+          "id": "Disabled",
+          "displayName": "Disabled",
+          "value": 0,
+          "tooltip": ""
+        },
+        {
+          "id": "Error",
+          "displayName": "Error",
+          "value": 3,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "EUBotROSDurability",
+      "displayName": "EUBot ROSDurability",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSTypes.h",
+      "tooltip": "ROS 2 QoS durability policy. TransientLocal is used for latched topics such as /tf_static.",
+      "values": [
+        {
+          "id": "TransientLocal",
+          "displayName": "Transient Local",
+          "value": 1,
+          "tooltip": ""
+        },
+        {
+          "id": "Volatile",
+          "displayName": "Volatile",
+          "value": 0,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "EUBotROSReliability",
+      "displayName": "EUBot ROSReliability",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSTypes.h",
+      "tooltip": "ROS 2 QoS reliability policy.",
+      "values": [
+        {
+          "id": "BestEffort",
+          "displayName": "Best Effort",
+          "value": 0,
+          "tooltip": ""
+        },
+        {
+          "id": "Reliable",
+          "displayName": "Reliable",
+          "value": 1,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "EUBotROSSensorBridgeStatus",
+      "displayName": "EUBot ROSSensor Bridge Status",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSTypes.h",
+      "tooltip": "Lifecycle of a sensor bridge component. Values match the legacy EAgentROSBridgeStatus one to one so\nthat an enum CoreRedirect needs no value redirects.",
+      "values": [
+        {
+          "id": "Error",
+          "displayName": "Error",
+          "value": 3,
+          "tooltip": ""
+        },
+        {
+          "id": "Initializing",
+          "displayName": "Initializing",
+          "value": 1,
+          "tooltip": ""
+        },
+        {
+          "id": "Ready",
+          "displayName": "Ready",
+          "value": 2,
+          "tooltip": ""
+        },
+        {
+          "id": "Stopped",
+          "displayName": "Stopped",
+          "value": 4,
+          "tooltip": ""
+        },
+        {
+          "id": "Uninitialized",
+          "displayName": "Uninitialized",
+          "value": 0,
+          "tooltip": ""
+        }
+      ]
+    }
+  ]
+}

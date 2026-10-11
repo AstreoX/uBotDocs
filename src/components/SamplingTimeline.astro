@@ -1,0 +1,120 @@
+---
+// Timeline of the uBot sample scheduler at 50 Hz: due times on a 20 ms grid, frames of uneven length,
+// at most one sample per frame, and a skipped due time inside a long frame.
+const x = (ms: number) => 40 + ms * 4;
+const due = [20, 40, 60, 80, 100, 120];
+const frames = [0, 16, 33, 50, 66, 116, 133];
+const sampled = new Map([
+  [0, null],
+  [33, 20],
+  [50, 40],
+  [66, 60],
+  [116, 80],
+  [133, 120],
+]);
+---
+
+<figure class="timeline not-content">
+  <div class="scroll" data-scrollable="采样时间线图">
+    <svg viewBox="0 0 640 214" role="img" aria-labelledby="tl-title tl-desc">
+      <title id="tl-title">采样时刻与帧</title>
+      <desc id="tl-desc">50 Hz 时每 20 毫秒一个采样时刻。每帧最多采样一次：16 毫秒的帧里没有到期的时刻，不采样；66 到 116 毫秒的长帧跨过 80 和 100 两个时刻，只采样一次，100 毫秒那次计为跳过。</desc>
+      <text class="label" x="40" y="18">采样时刻：每 20 ms 一个（Update Rate Hz = 50）</text>
+      {due.map((t) => (
+        <g>
+          <text class="tick" x={x(t)} y="38" text-anchor="middle">{t}</text>
+          <line class={t === 100 ? "grid skipped" : "grid"} x1={x(t)} y1="44" x2={x(t)} y2="70" />
+        </g>
+      ))}
+      <path class="cross" d={`M${x(100) - 6} 51 l12 12 M${x(100) + 6} 51 l-12 12`} />
+      {[...sampled].filter(([, d]) => d !== null).map(([f, d]) => (
+        <path class="link" d={`M${x(d as number)} 70 C${x(d as number)} 104 ${x(f)} 94 ${x(f)} 124`} />
+      ))}
+      <rect class="long" x={x(66)} y="118" width={x(116) - x(66)} height="24" rx="3" />
+      <line class="axis" x1="30" y1="130" x2="620" y2="130" />
+      {frames.map((f) => (
+        <g>
+          <line class="frame" x1={x(f)} y1="120" x2={x(f)} y2="140" />
+          <text class="tick" x={x(f)} y="156" text-anchor="middle">{f}</text>
+          {sampled.has(f) ? <circle class="sample" cx={x(f)} cy="130" r="6" /> : <circle class="idle" cx={x(f)} cy="130" r="4" />}
+        </g>
+      ))}
+      <path class="bracket" d={`M${x(66)} 166 v6 H${x(116)} v-6`} />
+      <text class="label" x={x(91)} y="190" text-anchor="middle">一帧 50 ms</text>
+      <text class="label" x="40" y="210">帧（ms）　● 采样　○ 这一帧没有到期的时刻　✕ 跳过的时刻（Dropped Sample Count 加 1）</text>
+    </svg>
+  </div>
+</figure>
+
+<style>
+  .timeline {
+    margin: 1.25rem 0;
+  }
+  .scroll {
+    overflow-x: auto;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.6rem;
+    background: var(--sl-color-gray-6);
+    padding: 0.75rem 0.5rem 0.25rem;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    min-width: 540px;
+    max-width: 680px;
+    height: auto;
+    font-family: var(--__sl-font);
+  }
+  .label {
+    font-size: 12px;
+    fill: var(--sl-color-gray-2);
+  }
+  .tick {
+    font-size: 11px;
+    fill: var(--sl-color-gray-3);
+  }
+  .grid {
+    stroke: var(--sl-color-gray-3);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+  .grid.skipped {
+    stroke: var(--sl-color-red);
+  }
+  .cross {
+    stroke: var(--sl-color-red);
+    stroke-width: 2;
+    fill: none;
+  }
+  .link {
+    fill: none;
+    stroke: var(--sl-color-accent);
+    stroke-width: 1.4;
+    opacity: 0.6;
+  }
+  .bracket {
+    fill: none;
+    stroke: var(--sl-color-gray-3);
+    stroke-width: 1.5;
+  }
+  .axis {
+    stroke: var(--sl-color-gray-4);
+    stroke-width: 1.5;
+  }
+  .frame {
+    stroke: var(--sl-color-gray-3);
+    stroke-width: 1.5;
+  }
+  .long {
+    fill: var(--sl-color-accent-low);
+    opacity: 0.8;
+  }
+  .sample {
+    fill: var(--sl-color-accent);
+  }
+  .idle {
+    fill: var(--sl-color-gray-6);
+    stroke: var(--sl-color-gray-3);
+    stroke-width: 1.5;
+  }
+</style>

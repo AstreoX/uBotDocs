@@ -1,0 +1,30 @@
+{
+  "name": "ubot-docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "uBot 插件文档站（Astro Starlight）",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "gen": "node scripts/gen-reference.mjs",
+    "predev": "npm run gen",
+    "dev": "node scripts/astro.mjs dev",
+    "prebuild": "npm run gen",
+    "build": "node scripts/astro.mjs build",
+    "preview": "node scripts/astro.mjs preview",
+    "check": "node scripts/check.mjs",
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "find": "node scripts/find-node.mjs",
+    "zh": "node scripts/zh.mjs",
+    "sync-api": "node scripts/sync-api.mjs"
+  },
+  "dependencies": {
+    "@astrojs/markdown-satteri": "0.4.3",
+    "@astrojs/starlight": "0.42.6",
+    "astro": "7.3.8",
+    "starlight-links-validator": "0.27.0",
+    "yaml": "2.9.1"
+  }
+}

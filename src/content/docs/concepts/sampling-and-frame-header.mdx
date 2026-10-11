@@ -1,0 +1,58 @@
+---
+title: 采样与帧头
+description: uBot 传感器什么时候采样，帧头里有什么，怎样判断一帧数据能不能用。
+sidebar:
+  order: 10
+---
+
+import SamplingTimeline from "../../../components/SamplingTimeline.astro";
+
+这一页解释 uBot 传感器什么时候采样，以及怎样用帧头（Frame Header）判断一帧数据能不能用。
+
+## 采样时刻
+
+传感器启动时立即采样一次，之后按 `Update Rate Hz` 在仿真时间上排出固定的采样时刻。每帧最多采样一次：一帧跨过多个时刻时只采一次，其余的计入 [`Get Dropped Sample Count`](/reference/ubotsensor/uubotsensorcomponent/#GetDroppedSampleCount)。
+
+<SamplingTimeline />
+
+所以帧率低于 `Update Rate Hz` 时，实际采样频率等于帧率。时间戳取实际采样那一帧的仿真时间，也就是 World 的游戏时间：暂停时不走，跟随时间膨胀。
+
+## 帧头
+
+每次采样都会生成一个帧头（[`UBot Frame Header`](/reference/ubotcore/structs/fubotframeheader/)），随数据一起出现在事件和 `Get Latest …` 节点里。
+
+| 字段 | 类型 | 含义 |
+| --- | --- | --- |
+| `Sensor Id` | String | 传感器 id；留空时用组件名 |
+| `Frame Id` | String | 坐标系名；留空时等于 `Sensor Id` |
+| `Sequence` | Integer64 | 帧序号，每次采样加 1 |
+| `Timestamp Seconds` | Float (double) | 采样时的仿真时间，单位秒 |
+| `Valid` | Boolean | 只有 `Status` 为 `Valid` 时为 true |
+| `Status` | EUBot Sample Status | 本次采样的结果，见下表 |
+
+## 状态码
+
+状态码（`Status`）的类型是 [`EUBot Sample Status`](/reference/ubotcore/enums/eubotsamplestatus/)：
+
+| `Status` | 什么时候出现 |
+| --- | --- |
+| `Valid` | 正常样本 |
+| `Warming Up` | IMU 等靠差分计算的传感器，启动或重置后的前两次采样 |
+| `Invalid Delta Time` | 与上次采样的间隔为 0，或超过 `Max Sample Delta Seconds` |
+| `Teleport Detected` | 两次采样间的位移或转角超过阈值，视为瞬移 |
+| `Disabled` | `Sensor Enabled` 为 false 时的采样 |
+| `Error` | 还没采样过（帧头的默认值），或采样出错 |
+
+不是 `Valid` 的样本也会触发事件。用到速度、加速度这类差分结果之前，先检查 `Valid`：
+
+```blueprint
+caption: 只在有效样本时继续
+nodes:
+  A: { ref: UUBotSensorComponent.OnSensorSampled, component: IMU }
+  B: { ref: Break:FUBotFrameHeader, hideUnconnected: true }
+  C: K2Node_IfThenElse
+wires:
+  - A.then -> C.execute
+  - A.Header -> B.UBotFrameHeader
+  - B.bValid -> C.Condition
+```

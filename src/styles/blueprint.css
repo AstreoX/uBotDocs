@@ -1,0 +1,741 @@
+/* Blueprint graphs drawn like the UE 5.5 Blueprint editor. The canvas is always the dark UE grid,
+   in both site themes. Wide graphs scroll inside their own box; the page never scrolls sideways. */
+
+.bp-figure {
+  --bp-canvas: #1d1e21;
+  --bp-grid: rgba(255, 255, 255, 0.035);
+  --bp-grid-strong: rgba(255, 255, 255, 0.075);
+  --bp-node-bg: rgba(24, 25, 27, 0.94);
+  --bp-node-border: #060607;
+  --bp-text: #d8d9db;
+  --bp-muted: #9a9ca1;
+  --bp-select: #f5a623;
+  --bp-font: "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  position: relative;
+  margin: 1.5rem 0;
+  max-width: 100%;
+  min-width: 0;
+}
+.sl-markdown-content .bp-figure:first-child {
+  margin-top: 0;
+}
+
+.bp-canvas {
+  position: relative;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  padding: 16px 16px 18px;
+  border-radius: 10px;
+  border: 1px solid #0b0c0e;
+  background-color: var(--bp-canvas);
+  background-image:
+    linear-gradient(var(--bp-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px),
+    linear-gradient(var(--bp-grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bp-grid-strong) 1px, transparent 1px);
+  background-size: 16px 16px, 16px 16px, 128px 128px, 128px 128px;
+  background-position: -1px -1px;
+  scrollbar-color: #4a4d53 transparent;
+}
+/* text alternative for the wires: for screen readers only */
+.bp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.bp-canvas:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+
+.bp-fit {
+  width: max-content;
+}
+.bp-stage {
+  position: relative;
+  display: grid;
+  column-gap: 32px;
+  row-gap: 22px;
+  align-items: start;
+  width: max-content;
+  transform-origin: 0 0;
+}
+.bp-wires {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 0;
+}
+.bp-cell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* ------------------------------------------------------------ node */
+
+.bp-node {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  min-width: 140px;
+  border-radius: 8px;
+  border: 1px solid var(--bp-node-border);
+  background: var(--bp-node-bg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  color: var(--bp-text);
+  font-family: var(--bp-font);
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: start;
+  white-space: nowrap;
+}
+button.bp-node {
+  cursor: pointer;
+  transition: box-shadow 0.12s ease;
+}
+button.bp-node:hover {
+  box-shadow: 0 0 0 2px var(--bp-select), 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+button.bp-node:focus-visible {
+  box-shadow: 0 0 0 2px var(--bp-select), 0 0 0 5px rgba(245, 166, 35, 0.35);
+}
+button.bp-node.is-selected {
+  box-shadow: 0 0 0 2px var(--bp-select), 0 0 16px rgba(245, 166, 35, 0.45);
+}
+
+.bp-hd {
+  display: block;
+  padding: 5px 10px 6px 8px;
+  border-radius: 7px 7px 0 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(90deg, var(--kc) 0%, color-mix(in srgb, var(--kc) 62%, #0d0d0e) 72%, color-mix(in srgb, var(--kc) 30%, #0d0d0e) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.55);
+}
+.bp-ht {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bp-title {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #fff;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+.bp-ic {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  color: rgba(255, 255, 255, 0.92);
+}
+.bp-latent {
+  width: 12px;
+  height: 12px;
+  margin-inline-start: auto;
+  color: #fff;
+  flex: none;
+}
+.bp-hdpin {
+  margin-inline-start: auto;
+  padding-inline-start: 12px;
+  display: inline-flex;
+}
+.bp-hdpin .bp-pin {
+  min-height: 0;
+}
+.bp-latent + .bp-hdpin {
+  margin-inline-start: 6px;
+}
+.bp-sub {
+  display: block;
+  margin: 1px 0 0 18px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.bp-bd {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 6px 8px 7px;
+}
+.bp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.bp-out {
+  align-items: flex-end;
+}
+.bp-pin {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 21px;
+}
+.bp-po {
+  justify-content: flex-end;
+}
+.bp-pl {
+  color: var(--bp-text);
+}
+.bp-g {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  overflow: visible;
+}
+.bp-gx {
+  width: 12px;
+  height: 13px;
+}
+
+/* default value widgets on unconnected inputs */
+.bp-val {
+  display: inline-block;
+  min-width: 18px;
+  margin-inline-start: 2px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #0f1012;
+  border: 1px solid #3a3c40;
+  color: #e6e6e6;
+  font-size: 11px;
+  line-height: 15px;
+}
+.bp-text {
+  min-width: 46px;
+}
+.bp-check {
+  width: 13px;
+  height: 13px;
+  min-width: 0;
+  padding: 0;
+  border-radius: 2px;
+  position: relative;
+}
+.bp-check.on::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 7px;
+  border: solid #e6e6e6;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.bp-swatch {
+  width: 26px;
+  height: 13px;
+  min-width: 0;
+  padding: 0;
+}
+
+.bp-adv {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  line-height: 13px;
+  color: var(--bp-muted);
+  padding: 0 0 3px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.bp-dev {
+  display: block;
+  text-align: center;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #e9c46a;
+  padding: 2px 6px 3px;
+  border-radius: 0 0 7px 7px;
+  background: repeating-linear-gradient(135deg, rgba(233, 196, 106, 0.16) 0 6px, rgba(233, 196, 106, 0.05) 6px 12px);
+}
+
+/* compact nodes (conversions, operators) */
+.bp-node.bp-compact {
+  min-width: 0;
+  border-radius: 14px;
+}
+.bp-compact .bp-bd {
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+}
+.bp-ctitle {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 0 2px;
+}
+.bp-cap {
+  display: block;
+  font-family: var(--bp-font);
+  font-size: 11px;
+  color: var(--bp-muted);
+  white-space: nowrap;
+}
+
+/* variable getters */
+.bp-node.bp-var {
+  min-width: 0;
+  border-radius: 12px;
+  border-top: 2px solid var(--vc);
+}
+.bp-var .bp-bd {
+  padding: 5px 9px 5px 12px;
+}
+.bp-var .bp-pl {
+  font-weight: 600;
+}
+
+.bp-inline {
+  border-style: dashed;
+  border-color: #8a6d2a;
+}
+.bp-deprecated .bp-title {
+  text-decoration: line-through;
+}
+
+.bp-note-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bp-select);
+  color: #1b1405;
+  font: 700 11px/1 var(--bp-font);
+  flex: none;
+}
+.bp-node > .bp-note-badge {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  box-shadow: 0 0 0 2px var(--bp-canvas);
+}
+
+/* ------------------------------------------------------------ figure chrome */
+
+.bp-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.bp-caption {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-3);
+}
+.bp-hint {
+  flex: none;
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+  line-height: 1.9;
+}
+.bp-hint[hidden] {
+  display: none;
+}
+.bp-expand {
+  all: unset;
+  box-sizing: border-box;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--sl-color-gray-5);
+  color: var(--sl-color-gray-2);
+  font-size: var(--sl-text-xs);
+  line-height: 1.6;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bp-expand svg {
+  width: 12px;
+  height: 12px;
+}
+.bp-expand:hover,
+.bp-expand:focus-visible {
+  color: var(--sl-color-white);
+  border-color: var(--sl-color-accent);
+}
+.bp-expand:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 1px;
+}
+.bp-notes {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-gray-2);
+}
+.bp-notes li {
+  display: flex;
+  gap: 0.55rem;
+  align-items: baseline;
+}
+.bp-notes .bp-note-badge {
+  transform: translateY(3px);
+}
+
+/* full-screen view. The script puts the figure into the browser top layer (popover="manual"), which
+   paints above Starlight's header and sidebar; the z-index below is only the fallback for browsers
+   without the Popover API. The popover reset (width, border, color) is for the same reason. */
+.bp-figure.is-expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  padding: 4rem 1rem 1rem;
+  background: #0e0f11;
+  color: #c9cbd0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+.bp-figure.is-expanded::backdrop {
+  background: transparent;
+}
+.bp-figure.is-expanded .bp-canvas {
+  flex: none;
+  max-height: calc(100vh - 8rem);
+  max-height: calc(100dvh - 8rem);
+  overflow: auto;
+}
+/* The bar stays on top while the graph scrolls; the exit button is always in the same place. */
+.bp-figure.is-expanded .bp-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  flex-wrap: nowrap;
+  align-items: center;
+  background: #0e0f11;
+  border-bottom: 1px solid #25272b;
+}
+.bp-figure.is-expanded .bp-caption {
+  flex: 1;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.bp-figure.is-expanded .bp-expand {
+  padding: 0.3rem 0.8rem;
+}
+.bp-figure.is-expanded .bp-caption,
+.bp-figure.is-expanded .bp-notes {
+  color: #c9cbd0;
+}
+.bp-figure.is-expanded .bp-expand {
+  color: #e6e6e6;
+  border-color: #55585e;
+  background: #1d1e21;
+}
+html.bp-lock {
+  overflow: hidden;
+}
+/* No top layer: Starlight isolates .main-pane, which would trap the figure's z-index below the header. */
+@supports not selector(:popover-open) {
+  html.bp-lock .main-pane {
+    isolation: auto;
+  }
+}
+
+/* single nodes on reference pages */
+.bp-single {
+  margin: 0.75rem 0 1rem;
+}
+.bp-single .bp-canvas {
+  display: inline-block;
+  max-width: 100%;
+  padding: 18px 20px;
+  vertical-align: top;
+}
+
+/* ------------------------------------------------------------ card popover */
+
+.bp-cards[hidden] {
+  display: none !important;
+}
+.bp-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  width: auto;
+  height: auto;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+.bp-scrim[hidden] {
+  display: none;
+}
+.bp-pop {
+  position: absolute;
+  z-index: 120;
+  /* popover reset: the card is positioned by the script (left/top) or as a bottom sheet */
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  height: auto;
+  width: min(25rem, calc(100vw - 2rem));
+  max-height: min(70vh, 34rem);
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-black);
+  color: var(--sl-color-gray-1);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  font-size: var(--sl-text-sm);
+  line-height: 1.65;
+  animation: bp-pop-in 0.12s ease-out;
+}
+.bp-pop[hidden] {
+  display: none;
+}
+.bp-pop.is-fixed {
+  position: fixed;
+}
+.bp-pop.is-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  width: 100%;
+  max-height: 72vh;
+  border-radius: 14px 14px 0 0;
+  border-bottom: none;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: bp-sheet-in 0.18s ease-out;
+}
+.bp-pop.no-motion {
+  animation: none;
+}
+@keyframes bp-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+@keyframes bp-sheet-in {
+  from {
+    transform: translateY(24px);
+    opacity: 0.4;
+  }
+}
+.bp-pop-x {
+  all: unset;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--sl-color-gray-3);
+  cursor: pointer;
+}
+.bp-pop-x:hover,
+.bp-pop-x:focus-visible {
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
+}
+.bp-pop-x:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+}
+
+.bp-card {
+  padding: 0.9rem 1rem 0.8rem;
+}
+.bp-card p {
+  margin: 0;
+}
+.bp-card-hd {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding-right: 2rem;
+  margin-bottom: 0.55rem;
+}
+.bp-kind {
+  flex: none;
+  margin-top: 0.2rem;
+  padding: 0 0.45rem;
+  border-radius: 0.3rem;
+  color: #fff;
+  font-size: var(--sl-text-2xs);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.bp-card-title {
+  font-weight: 700;
+  font-size: var(--sl-text-base);
+  line-height: 1.4;
+  color: var(--sl-color-white);
+}
+.bp-card-sub {
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+}
+.bp-card-sum {
+  color: var(--sl-color-gray-1);
+}
+.bp-card-h {
+  margin-top: 0.7rem !important;
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+}
+.bp-card-pins {
+  list-style: none;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+.bp-card-pins li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.45rem;
+}
+.bp-card-pins .bp-g {
+  width: 11px;
+  height: 11px;
+}
+.bp-card-pins .bp-gx path {
+  fill: var(--sl-color-gray-3);
+  stroke: var(--sl-color-gray-3);
+}
+.bp-card-pn {
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+.bp-card-pins code,
+.bp-card-foot code {
+  font-size: var(--sl-text-2xs);
+  padding: 0 0.3rem;
+  border-radius: 0.25rem;
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-gray-2);
+}
+.bp-tn {
+  font-size: var(--sl-text-2xs);
+  color: var(--sl-color-gray-3);
+}
+.bp-card-none {
+  color: var(--sl-color-gray-3);
+}
+.bp-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.7rem;
+  margin-top: 0.8rem !important;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--sl-color-gray-5);
+}
+.bp-card-foot a {
+  font-weight: 600;
+}
+.bp-card-foot code {
+  overflow-wrap: anywhere;
+}
+.bp-card-warn {
+  color: var(--sl-color-orange-high);
+}
+
+/* light theme: give the dark canvas a soft frame on white pages */
+:root[data-theme="light"] .bp-canvas {
+  box-shadow: 0 1px 2px rgba(15, 20, 30, 0.12);
+}
+
+/* ------------------------------------------------------------ errors (dev server) */
+
+.bp-error {
+  border: 1px solid var(--sl-color-red);
+  background: var(--sl-color-red-low);
+  color: var(--sl-color-red-high);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  font-size: var(--sl-text-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.bp-node {
+    transition: none;
+  }
+  .bp-pop,
+  .bp-pop.is-sheet {
+    animation: none;
+  }
+}
+
+.bp-caption code,
+.bp-notes code,
+.bp-card-sum code {
+  font-family: var(--__sl-font-mono);
+  font-size: 0.9em;
+  padding: 0 0.3rem;
+  border-radius: 0.25rem;
+  background: var(--sl-color-gray-6);
+  color: var(--sl-color-gray-1);
+}
+.bp-figure.is-expanded .bp-notes code {
+  background: #2b2d30;
+  color: #e6e6e6;
+}
+
+@media (max-width: 50rem) {
+  .bp-bar {
+    flex-wrap: wrap;
+    row-gap: 0.35rem;
+  }
+  .bp-caption {
+    flex-basis: 100%;
+  }
+  .bp-hint {
+    flex: 1;
+  }
+}

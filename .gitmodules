@@ -1,0 +1,12 @@
+[submodule "vendor/uBotCore"]
+	path = vendor/uBotCore
+	url = https://github.com/AstreoX/uBotCore.git
+	shallow = true
+[submodule "vendor/uBotSensor"]
+	path = vendor/uBotSensor
+	url = https://github.com/AstreoX/uBotSensor.git
+	shallow = true
+[submodule "vendor/uBotROS"]
+	path = vendor/uBotROS
+	url = https://github.com/AstreoX/uBotROS.git
+	shallow = true

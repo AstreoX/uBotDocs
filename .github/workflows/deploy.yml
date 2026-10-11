@@ -1,0 +1,144 @@
+# Builds main and deploys it to the documentation server over SSH (see deploy/README.md).
+#
+# Upload: rsync into <DEPLOY_PATH>/releases/<commit sha>/. Activation: `ssh ... activate <sha>`, which
+# the server-side gate (deploy/ubot-docs-gate.sh) turns into an atomic switch of <DEPLOY_PATH>/current
+# and keeps the newest 5 releases. Without the secrets below the job skips with a notice.
+# Rollback: run this workflow by hand with `release` set to an earlier commit sha that is still on
+# the server; nothing is built then.
+#
+# Secrets: DEPLOY_HOST, DEPLOY_PORT (optional, default 22), DEPLOY_USER, DEPLOY_PATH,
+#          DEPLOY_SSH_KEY (private key), DEPLOY_KNOWN_HOSTS (pinned host key line(s)).
+# Variable: SITE_URL (public URL of the site, e.g. https://docs.example.com). Required for a build:
+#          without it the pages would carry canonical links and a sitemap on ubot-docs.example.invalid.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Rollback: full commit sha of a release still on the server (leave empty to build and deploy main)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      ASTRO_TELEMETRY_DISABLED: "1"
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+    steps:
+      - name: Check configuration
+        id: config
+        env:
+          HAS_KEY: ${{ secrets.DEPLOY_SSH_KEY != '' }}
+          HAS_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS != '' }}
+          ROLLBACK: ${{ inputs.release }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          missing=""
+          [ -n "$DEPLOY_HOST" ] || missing="$missing DEPLOY_HOST"
+          [ -n "$DEPLOY_USER" ] || missing="$missing DEPLOY_USER"
+          [ -n "$DEPLOY_PATH" ] || missing="$missing DEPLOY_PATH"
+          [ "$HAS_KEY" = "true" ] || missing="$missing DEPLOY_SSH_KEY"
+          [ "$HAS_KNOWN_HOSTS" = "true" ] || missing="$missing DEPLOY_KNOWN_HOSTS"
+          if [ -n "$missing" ]; then
+            echo "::notice title=Deploy skipped::Deployment secrets are not configured:$missing. See deploy/README.md."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -n "$ROLLBACK" ]; then
+            if ! printf '%s' "$ROLLBACK" | grep -Eq '^[0-9a-f]{40}$'; then
+              echo "::error title=Invalid release::release must be a full 40-character commit sha"
+              exit 1
+            fi
+            echo "release=$ROLLBACK" >> "$GITHUB_OUTPUT"
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+              echo "::notice title=Deploy skipped::Only main is deployed (this run is for $GITHUB_REF_NAME)."
+              echo "enabled=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if ! printf '%s' "$SITE_URL" | grep -Eq '^https?://[^/[:space:]]+(/[^[:space:]]*)?$'; then
+              echo "::error title=SITE_URL missing::Set the repository variable SITE_URL (for example https://docs.example.com). Without it the build would publish canonical links and a sitemap on ubot-docs.example.invalid. See deploy/README.md."
+              exit 1
+            fi
+            echo "release=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+
+      - name: Check out
+        if: steps.config.outputs.enabled == 'true' && steps.config.outputs.build == 'true'
+        uses: actions/checkout@v7
+        with:
+          submodules: false
+          persist-credentials: false
+
+      - name: Set up Node from .nvmrc
+        if: steps.config.outputs.enabled == 'true' && steps.config.outputs.build == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install, test, check, build
+        if: steps.config.outputs.enabled == 'true' && steps.config.outputs.build == 'true'
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          npm ci
+          npm test
+          npm run check
+          npm run build
+
+      - name: Configure SSH (pinned host key)
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Upload release
+        if: steps.config.outputs.enabled == 'true' && steps.config.outputs.build == 'true'
+        env:
+          RELEASE: ${{ steps.config.outputs.release }}
+        run: |
+          port="${DEPLOY_PORT:-22}"
+          ssh_cmd="ssh -i $HOME/.ssh/deploy_key -p $port -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts -o BatchMode=yes"
+          rsync -rlt --delete --chmod=D755,F644 -e "$ssh_cmd" \
+            dist/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/releases/$RELEASE/"
+
+      - name: Activate release
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          RELEASE: ${{ steps.config.outputs.release }}
+        run: |
+          port="${DEPLOY_PORT:-22}"
+          ssh -i "$HOME/.ssh/deploy_key" -p "$port" -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" -o BatchMode=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" "activate $RELEASE"
+          echo "::notice title=Deployed::release $RELEASE is live"
+
+      - name: Remove the key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

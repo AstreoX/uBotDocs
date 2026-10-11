@@ -1,0 +1,58 @@
+---
+title: 第一个传感器
+description: 给 Actor 加一个 uBot IMU Sensor，运行后在屏幕上看到它的采样序号。
+sidebar:
+  order: 3
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+这一页给一个 Actor 装上 IMU，运行后在屏幕左上角看到采样序号不断增加，确认插件已经正常工作。
+
+开始前先按[安装 uBot Manager](/start/install/)装好 `UBotCore` 和 `UBotSensor`。
+
+## 搭一个最小的例子
+
+<Steps>
+
+1. **新建 Actor 蓝图**
+
+   在 Content Browser 里右键，选 **Blueprint Class → Actor**，命名为 `BP_ImuProbe`。
+
+2. **添加 IMU 组件**
+
+   打开 `BP_ImuProbe`，在 Components 面板点 **Add**，搜索 `uBot IMU Sensor`，把新组件重命名为 `IMU`。组件默认在开始运行时自动启动（`Auto Start`），采样频率 100 Hz（`Update Rate Hz`）。
+
+3. **连蓝图**
+
+   选中 IMU 组件，在 Details 面板最下面的 Events 区点 `On Sensor Sampled` 旁的 **+**，然后照下图连线。
+
+4. **运行**
+
+   把 `BP_ImuProbe` 拖进关卡，点 **Play**。屏幕左上角的数字不断增加。每帧最多加 1，所以帧率低于 100 FPS 时，每秒的增量等于帧率。
+
+</Steps>
+
+```blueprint
+caption: 每次采样时把帧序号打印到屏幕
+nodes:
+  A: { ref: UUBotSensorComponent.OnSensorSampled, component: IMU }
+  B: { ref: Break:FUBotFrameHeader, hideUnconnected: true }
+  C: UKismetStringLibrary.Conv_Int64ToString
+  D: { ref: UKismetSystemLibrary.PrintString, set: { Key: imu } }
+wires:
+  - A.then -> D.execute
+  - A.Header -> B.UBotFrameHeader
+  - B.Sequence -> C.InInt
+  - C.ReturnValue -> D.InString
+notes:
+  C: 把 `Sequence` 直接连到 `In String`，编辑器会自动插入这个转换节点。
+  D: 展开 `Print String` 的高级引脚，给 `Key` 填一个固定值，同一行文字会原地刷新。
+```
+
+`On Sensor Sampled` 是所有 uBot 传感器共有的事件，`Header` 是这一次采样的[帧头](/concepts/sampling-and-frame-header/)。
+
+## 下一步
+
+- [读取 IMU 姿态角](/guides/sensors/imu-orientation/)：把姿态换算成 Roll、Pitch、Yaw。
+- [采样与帧头](/concepts/sampling-and-frame-header/)：采样时刻、`Sequence` 和状态码。

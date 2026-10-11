@@ -1,0 +1,68 @@
+---
+title: 安装 uBot Manager
+description: 用 uBot Manager 把 UBotCore、UBotSensor 和 UBotROS 装进 UE 5.5 工程。
+sidebar:
+  order: 2
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+这一页把 uBot 插件装进你的 UE 5.5 工程：先装 uBot Manager，再用它安装插件。
+
+uBot Manager 是 Windows 桌面程序，负责下载插件、处理依赖、修改 `.uproject`，需要时编译工程。
+
+## 安装步骤
+
+<Steps>
+
+1. **下载 uBot Manager**
+
+   打开 [uBot Manager 的 Releases 页面](https://github.com/AstreoX/uBotManager/releases)，下载最新版本的 `uBot Manager_<版本>_x64-setup.exe` 并运行。它按当前用户安装，不需要管理员权限。
+
+   安装包没有代码签名，SmartScreen 会提示“未知发布者”，点 **更多信息 → 仍要运行**。
+
+2. **打开工程**
+
+   启动 uBot Manager，点空白页中间的 `打开…`，选择工程的 `.uproject` 文件。以后它会自动打开上次的工程。
+
+3. **选择要装的插件**
+
+   点标题栏的 `Recipe`，在 `应用 Recipe` 里选一个组合：
+
+   | Recipe | 包含 |
+   | --- | --- |
+   | 仅传感器 | `UBotCore`、`UBotSensor` |
+   | ROS 2 传感器 | `UBotCore`、`UBotSensor`、`UBotROS` |
+
+   然后点 `查看更改…`。也可以在 Package 视图里逐个选中插件点安装。
+
+4. **应用**
+
+   `应用更改` 对话框列出要执行的步骤，确认后点 `应用`。任务结束后，插件位于工程的 `Plugins/uBot/` 下，并已在 `.uproject` 里启用。
+
+5. **在编辑器里确认**
+
+   用 UE 5.5 打开工程，菜单 `Window > uBot` 打开 uBot 面板，`Loaded Packages`（中文界面为“已加载的 Package”）里应该列出刚装的插件。
+
+</Steps>
+
+:::caution[先关闭 UE 编辑器]
+编辑器开着这个工程时，修改 `.uproject` 和编译的步骤会等编辑器关闭后才执行。对话框里的 `关闭编辑器` 可以请求它正常退出。
+:::
+
+## 预编译包还是源码
+
+uBot Manager 优先下载预编译包，条件不满足时改为克隆源码并编译。
+
+| | 预编译包 | 源码 |
+| --- | --- | --- |
+| 什么时候用 | 引擎是 Epic 启动器安装的 UE 5.5，平台 Win64 | 源码构建的引擎，或其他情况 |
+| 需要 git | 不需要 | 需要 |
+| 需要 Visual Studio 2022 | 不需要（打包游戏时需要） | 需要，用来编译 C++ |
+| 安装后 | 直接可用，计划里没有 `编译` 步骤 | 计划里有 `编译` 步骤 |
+
+想强制从源码安装，在 `设置 > 安装` 里取消 `有预编译版本时优先使用`，再重新安装。
+
+## 下一步
+
+装好后，继续看[第一个传感器](/start/first-sensor/)：给 Actor 加一个 IMU，在屏幕上看到它的采样。

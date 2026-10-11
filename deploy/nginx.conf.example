@@ -1,0 +1,84 @@
+# nginx site for the uBot docs (the full configuration: HTTP redirect and HTTPS).
+# Install it AFTER the certificate exists: the 443 block below points at the certificate files, so
+# `nginx -t` fails without them. deploy/README.md, step 4, starts with a port-80-only config to
+# obtain the certificate. Then copy this file to /etc/nginx/sites-available/ubot-docs, replace
+# docs.example.com and /srv/ubot-docs, and run `nginx -t && systemctl reload nginx`.
+# The site is static: every page is <path>/index.html, hashed assets live in /_astro/.
+# Works with nginx 1.18 or newer. nginx 1.25.1+ prints a deprecation notice for `listen ... http2`;
+# to silence it, drop "http2" from the two listen lines and add a line `http2 on;` instead.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name docs.example.com;
+
+    # HTTP-01 challenges for certbot (--webroot -w /var/www/acme) or acme.sh (--webroot /var/www/acme)
+    location /.well-known/acme-challenge/ {
+        root /var/www/acme;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name docs.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/docs.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/docs.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+
+    # `current` is a symlink to releases/<sha>; deploys switch it atomically.
+    root /srv/ubot-docs/current;
+    index index.html;
+    charset utf-8;
+    disable_symlinks off;
+
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml application/javascript application/json application/xml image/svg+xml;
+
+    # With the ngx_brotli module installed (e.g. the libnginx-mod-brotli package), also enable:
+    # brotli on;
+    # brotli_comp_level 5;
+    # brotli_types text/plain text/css text/xml application/javascript application/json application/xml image/svg+xml;
+
+    # Hashed build assets never change: cache for a year.
+    location /_astro/ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        add_header X-Content-Type-Options nosniff always;
+        try_files $uri =404;
+    }
+
+    # Search index (Pagefind): fragments are hashed, the entry files are not; revalidate quickly.
+    location /pagefind/ {
+        add_header Cache-Control "public, max-age=300" always;
+        add_header X-Content-Type-Options nosniff always;
+        try_files $uri =404;
+    }
+
+    # Pages: always revalidate so a deploy is visible immediately.
+    location / {
+        add_header Cache-Control "no-cache" always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header Referrer-Policy strict-origin-when-cross-origin always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
+        try_files $uri $uri/index.html $uri.html =404;
+    }
+
+    error_page 404 /404.html;
+    location = /404.html {
+        internal;
+        add_header Cache-Control "no-cache" always;
+    }
+}
