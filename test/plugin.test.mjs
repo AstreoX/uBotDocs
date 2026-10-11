@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url";
 import { bodyLineOffset, blueprintBuildGate } from "../src/plugins/blueprint.mjs";
 
 const FRONTMATTER = "---\ntitle: 测试\ndescription: 说明\n---\n";
-const BODY = "这一页说明一件事。\n\n```blueprint\nnodes:\n  A: X\n```";
+const BODY = "说明一件事。\n\n```blueprint\nnodes:\n  A: X\n```";
 
 function withFile(name, text, fn) {
   const dir = mkdtempSync(join(tmpdir(), "ubot-docs-test-"));

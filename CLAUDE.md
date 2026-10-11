@@ -110,7 +110,7 @@ Frontmatter:
 ```yaml
 ---
 title: IMU 传感器
-description: 一句话说明这一页解决什么问题（搜索结果和链接预览会用到）。
+description: 一句话说明这个页面解决什么问题（搜索结果和链接预览会用到）。
 pageKind: feature           # overview | feature | concept | guide | settings | faq | placeholder (required)
 packages: [UBotSensor]      # optional when the folder's _group.yml sets it; "UBotSensor@^0.1" adds a range
 graph: false                # only for a feature page that is not about Blueprint nodes (install, command line, C++)
@@ -219,7 +219,10 @@ overlap and stay inside the canvas, also in 500 random graphs.
 This is the main thing the maintainer asked for: short pages, no walls of text, no card grids full of
 prose. Follow every rule.
 
-- Start each page with one sentence saying what problem it solves.
+- Start each page with one sentence saying what problem it solves, and say it about the subject: "用 `uBot IMU Sensor`
+  读取姿态、角速度和比力，并了解噪声和状态码的作用。" Never about the page ("这一页说明……", "本页……", "本文……"):
+  that is colloquial, and `npm run check` warns about it. Write a full sentence, not a bare noun phrase (a
+  fragment under the title reads like a heading).
 - Paragraphs have at most 3 sentences. Prefer steps (`<Steps>`), tables and blueprint graphs over
   prose. `npm run check` warns about paragraphs longer than about 200 characters or with more than
   3 sentences, about `:::note|tip|caution|danger` boxes with more than 2 sentences, and about

@@ -22,14 +22,26 @@ test("fenced blocks are found with their line numbers", () => {
   assert.equal(p.blocks[1].lang, "md", "a blueprint fence inside a longer fence is content, not a block");
 });
 
+test("a first paragraph that talks about the page is a warning", () => {
+  const rule = /talks about the page/;
+  for (const opening of ["这一页说明一件事。", "本页说明一件事。", "本文说明一件事。", "uBotX 是规划中的插件，这一页说明它打算做什么。"]) {
+    const found = checkPage("src/content/docs/concepts/a.mdx", page(`${opening}\n\n| a |\n| - |\n`), tinyRegistry());
+    assert.match(msgs(found, "warning"), rule, opening);
+  }
+  const fine = checkPage("src/content/docs/concepts/b.mdx", page("说明一件事。\n\n| a |\n| - |\n"), tinyRegistry());
+  assert.doesNotMatch(msgs(fine, "warning"), rule);
+  const later = checkPage("src/content/docs/concepts/c.mdx", page("说明一件事。\n\n见这一页的下一节。\n\n| a |\n| - |\n"), tinyRegistry());
+  assert.doesNotMatch(msgs(later, "warning"), rule, "only the first paragraph is checked");
+});
+
 test("a concept page without a diagram, graph or table is a warning", () => {
-  const ok = checkPage("src/content/docs/concepts/a.mdx", page("这一页说明一件事。"), tinyRegistry());
+  const ok = checkPage("src/content/docs/concepts/a.mdx", page("说明一件事。"), tinyRegistry());
   assert.equal(msgs(ok, "error"), "");
   assert.match(msgs(ok, "warning"), /concept pages should have at least one diagram/);
 });
 
 test("blueprint errors point at page lines", () => {
-  const fs = checkPage("src/content/docs/develop/a.mdx", page("这一页说明一件事。\n\n```blueprint\nnodes:\n  A: UChild.Nope\n```\n"), tinyRegistry());
+  const fs = checkPage("src/content/docs/develop/a.mdx", page("说明一件事。\n\n```blueprint\nnodes:\n  A: UChild.Nope\n```\n"), tinyRegistry());
   const e = fs.filter((f) => f.severity === "error");
   assert.equal(e.length, 1);
   assert.equal(e[0].line, 11);
@@ -38,14 +50,14 @@ test("blueprint errors point at page lines", () => {
 
 test("long paragraphs and style issues are warnings", () => {
   const long = "这是一段很长的说明文字".repeat(25) + "。";
-  const fs = checkPage("src/content/docs/concepts/a.mdx", page(`这一页说明一件事。\n\n${long}\n\n| a | b |\n| - | - |\n| 1 | 2 |\n`), tinyRegistry());
+  const fs = checkPage("src/content/docs/concepts/a.mdx", page(`说明一件事。\n\n${long}\n\n| a | b |\n| - | - |\n| 1 | 2 |\n`), tinyRegistry());
   assert.match(msgs(fs, "warning"), /paragraph is long \(275 characters/);
-  const style = checkPage("src/content/docs/concepts/b.mdx", page("这一页说明UE5的用法,很简单。\n\n| a |\n| - |\n"), tinyRegistry());
+  const style = checkPage("src/content/docs/concepts/b.mdx", page("说明UE5的用法,很简单。\n\n| a |\n| - |\n"), tinyRegistry());
   const w = msgs(style, "warning");
   assert.match(w, /space between Chinese and Latin/);
-  const punct = checkPage("src/content/docs/concepts/c.mdx", page("这一页说明一件事,很简单。\n\n| a |\n| - |\n"), tinyRegistry());
+  const punct = checkPage("src/content/docs/concepts/c.mdx", page("说明一件事,很简单。\n\n| a |\n| - |\n"), tinyRegistry());
   assert.match(msgs(punct, "warning"), /full-width punctuation/);
-  const fine = checkPage("src/content/docs/concepts/d.mdx", page("这一页说明 `Get Value` 节点，单位是 m/s²。\n\n| a |\n| - |\n"), tinyRegistry());
+  const fine = checkPage("src/content/docs/concepts/d.mdx", page("说明 `Get Value` 节点，单位是 m/s²。\n\n| a |\n| - |\n"), tinyRegistry());
   assert.equal(msgs(fine, "warning"), "");
 });
 
@@ -88,7 +100,7 @@ const ROS = "  R: UUBotROSBridgeSubsystem.GetBridgeEndpoint";
 const BRANCH = "  B: K2Node_IfThenElse";
 const FENCE = "```";
 const graph = (...nodes) => `\n\n${FENCE}blueprint\nnodes:\n${nodes.join("\n")}\n${FENCE}\n`;
-const withPackages = (list, body, kind = "feature") => page(`这一页说明一件事。${body}`, `title: 测试\ndescription: 说明\npageKind: ${kind}${list === null ? "" : `\npackages: ${JSON.stringify(list)}`}`);
+const withPackages = (list, body, kind = "feature") => page(`说明一件事。${body}`, `title: 测试\ndescription: 说明\npageKind: ${kind}${list === null ? "" : `\npackages: ${JSON.stringify(list)}`}`);
 function checkWith(rel, text, defaults = new Map(), packages = repoPackages()) {
   const findings = checkPage(rel, text, site().registry, { packages, defaults });
   return { errors: msgs(findings, "error"), warnings: msgs(findings, "warning"), findings };
@@ -208,17 +220,17 @@ function readPage(rel) {
 }
 
 test("paragraphs over three sentences, long callouts and card grids are warnings", () => {
-  const four = checkPage("src/content/docs/concepts/a.mdx", page("这一页说明一件事。\n\n第一句。第二句。第三句。第四句。\n\n| a |\n| - |\n"), tinyRegistry());
+  const four = checkPage("src/content/docs/concepts/a.mdx", page("说明一件事。\n\n第一句。第二句。第三句。第四句。\n\n| a |\n| - |\n"), tinyRegistry());
   assert.match(msgs(four, "warning"), /paragraph has 4 sentences \(at most 3\)/);
-  const three = checkPage("src/content/docs/concepts/b.mdx", page("这一页说明一件事。\n\n第一句。第二句。第三句。\n\n| a |\n| - |\n"), tinyRegistry());
+  const three = checkPage("src/content/docs/concepts/b.mdx", page("说明一件事。\n\n第一句。第二句。第三句。\n\n| a |\n| - |\n"), tinyRegistry());
   assert.equal(msgs(three, "warning"), "");
 
-  const box = checkPage("src/content/docs/concepts/c.mdx", page("这一页说明一件事。\n\n:::caution\n先做这个。再做那个。最后做这个。\n:::\n\n| a |\n| - |\n"), tinyRegistry());
+  const box = checkPage("src/content/docs/concepts/c.mdx", page("说明一件事。\n\n:::caution\n先做这个。再做那个。最后做这个。\n:::\n\n| a |\n| - |\n"), tinyRegistry());
   assert.match(msgs(box, "warning"), /:::caution box has 3 sentences \(at most 2\)/);
-  const shortBox = checkPage("src/content/docs/concepts/d.mdx", page("这一页说明一件事。\n\n:::caution\n先做这个。再做那个。\n:::\n\n| a |\n| - |\n"), tinyRegistry());
+  const shortBox = checkPage("src/content/docs/concepts/d.mdx", page("说明一件事。\n\n:::caution\n先做这个。再做那个。\n:::\n\n| a |\n| - |\n"), tinyRegistry());
   assert.equal(msgs(shortBox, "warning"), "");
 
-  const cards = page("这一页说明一件事。\n\n<CardGrid>\n  <Card title=\"a\">b</Card>\n</CardGrid>\n\n| a |\n| - |\n");
+  const cards = page("说明一件事。\n\n<CardGrid>\n  <Card title=\"a\">b</Card>\n</CardGrid>\n\n| a |\n| - |\n");
   assert.match(msgs(checkPage("src/content/docs/concepts/e.mdx", cards, tinyRegistry()), "warning"), /card grids are for navigation on the home page only/);
   assert.doesNotMatch(msgs(checkPage("src/content/docs/index.mdx", cards, tinyRegistry()), "warning"), /card grids/);
 });
