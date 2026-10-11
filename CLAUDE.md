@@ -74,7 +74,7 @@ lib/engine-nodes.mjs        engine node lists: check, merge
 src/plugins/blueprint.mjs   Markdown plugin: ```blueprint block -> graph HTML
 src/components/             PackageList, RecipeTable, PackageStatus, DependencyGraph (see "Components"),
                             SamplingTimeline, PageTitle (the "需要：…" line under the title and the search's package filter),
-                            Hero (the home page's headline beside a Blueprint graph; replaces Starlight's Hero), HomePlugins (home page only)
+                            Hero (the home page's headline above a full-width Blueprint graph; replaces Starlight's Hero), HomePlugins (home page only)
 src/scripts/blueprint.js    client: wires, node cards, full-screen view, node index filter
 src/scripts/scrollables.js  client: tab stop and scroll hint for tables and diagrams that scroll sideways
 scripts/                    gen-reference, check, sync-index, sync-api, sync-branch, add-package, export-api.ps1 (Windows + UE only), zh, find-node, rebase-links

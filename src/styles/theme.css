@@ -110,7 +110,7 @@
     radial-gradient(56rem 26rem at 12% 3rem, color-mix(in srgb, var(--sl-color-accent) 14%, transparent), transparent 70%),
     repeating-linear-gradient(to right, var(--home-line) 0 1px, transparent 1px 32px),
     repeating-linear-gradient(to bottom, var(--home-line) 0 1px, transparent 1px 32px);
-  background-size: 100% 36rem, auto, 100% 36rem, 100% 36rem;
+  background-size: 100% 46rem, auto, 100% 46rem, 100% 46rem;
   background-repeat: no-repeat;
   background-position: 0 0;
 }
@@ -121,10 +121,6 @@
   border-color: var(--sl-color-gray-5);
   border-radius: 14px;
   box-shadow: 0 24px 48px -28px rgba(15, 20, 40, 0.55);
-}
-.home-hero .bp-stage {
-  /* a little closer than in the manuals, so that the graph is scaled down less in a column of about 40rem */
-  column-gap: 24px;
 }
 .home-hero .bp-bar {
   margin-top: 0.5rem;

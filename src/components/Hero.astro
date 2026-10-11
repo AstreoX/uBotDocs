@@ -1,6 +1,6 @@
 ---
 // The hero of the home page (replaces Starlight's Hero, which only a page with `hero` frontmatter
-// renders): title, tagline and buttons on the left, one Blueprint graph on the right. The graph is
+// renders): title, tagline and buttons, and below them one Blueprint graph at full width. The graph is
 // the thing the manuals are made of, so the first screen shows it. It is compiled here with the
 // same code as a ```blueprint block; an invalid graph fails the build.
 //
@@ -14,14 +14,22 @@ const { data } = Astro.locals.starlightRoute.entry;
 const { title = data.title, tagline, actions = [] } = data.hero || {};
 
 const SOURCE = `
-caption: 每次采样时把 IMU 姿态换算成旋转，点任意节点可以看说明和引脚
+caption: 3D 激光雷达每扫描一帧，打印第 0 个点到传感器的距离；点任意节点可以看说明和引脚
 nodes:
-  A: { ref: UUBotImuSensorComponent.OnImuDataUpdated, component: IMU }
-  B: { ref: Break:FUBotImuSensorData, hideUnconnected: true }
-  C: UKismetMathLibrary.Quat_Rotator
+  A: { ref: UUBot3DLidarSensorComponent.On3DLidarFrameReady, component: Lidar3D }
+  B: { ref: UUBotPointCloudFrame.GetPointByIndex, set: { Index: 0 } }
+  C: K2Node_IfThenElse
+  D: UKismetMathLibrary.VSize
+  E: UKismetStringLibrary.Conv_DoubleToString
+  F: UKismetSystemLibrary.PrintString
 wires:
-  - A.Data -> B.UBotImuSensorData
-  - B.OrientationQuaternion -> C.Q
+  - A.then -> C.execute
+  - A.Frame -> B.Target
+  - B.ReturnValue -> C.Condition
+  - B.PointMeters -> D.A
+  - D.ReturnValue -> E.InDouble
+  - C.then -> F.execute
+  - E.ReturnValue -> F.InString
 `;
 
 const site = loadSite();
@@ -57,7 +65,6 @@ const graphHtml = renderGraph(graph, { graphId: "bp-hero", registry: site.regist
     .home-hero {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
-      align-items: center;
       gap: 2.5rem;
       padding-block: 1.5rem 2rem;
     }
@@ -74,7 +81,7 @@ const graphHtml = renderGraph(graph, { graphId: "bp-hero", registry: site.regist
       color: var(--sl-color-white);
     }
     .tagline {
-      max-width: 34ch;
+      max-width: 52ch;
       font-size: clamp(var(--sl-text-base), calc(0.0625rem + 1.6vw), var(--sl-text-lg));
       line-height: 1.7;
       color: var(--sl-color-gray-2);
@@ -92,9 +99,8 @@ const graphHtml = renderGraph(graph, { graphId: "bp-hero", registry: site.regist
 
     @media (min-width: 60rem) {
       .home-hero {
-        grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
         gap: 2.5rem;
-        padding-block: clamp(2rem, 7vmin, 5rem);
+        padding-block: clamp(1rem, 4vmin, 3rem) 2.5rem;
       }
     }
   }
