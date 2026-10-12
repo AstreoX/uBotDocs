@@ -5,7 +5,7 @@
 //
 //   npm run sync-api                         from vendor/<folder>/docs/api.json (the git submodules)
 //   npm run sync-api -- --from <dir>         from <dir>/<folder>/docs/api.json, e.g. the plugin folder
-//                                            export-api.ps1 wrote to: E:\IDEProjects\UE-EAI-Simulator\Plugins\uBot
+//                                            export-api.ps1 wrote to (default ../Plugins/uBot)
 //   npm run sync-api -- --from-github        download docs/api.json at the latest released version's ref
 //                                            (the tag); when the file does not exist there, from the
 //                                            repository's default branch (reported). No token needed.

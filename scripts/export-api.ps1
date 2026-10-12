@@ -43,8 +43,9 @@
 [CmdletBinding()]
 param(
     [string]$EnginePath = 'D:\Program Files\Epic Games\UE_5.5',
-    [string]$Project = 'E:\IDEProjects\UE-EAI-Simulator\DevHost\UBotDev.uproject',
-    [string]$PluginsDir = 'E:\IDEProjects\UE-EAI-Simulator\Plugins\uBot',
+    # Defaults: the uBot workspace layout, with DevHost and Plugins\uBot next to this repository.
+    [string]$Project = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\DevHost\UBotDev.uproject')),
+    [string]$PluginsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\Plugins\uBot')),
     # Default: every released package in data\index.json.
     [string[]]$Plugins,
     # Folder for the zh-Hans work files and the commandlet logs (default: a new folder in %TEMP%).

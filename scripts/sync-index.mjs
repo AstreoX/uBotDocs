@@ -14,7 +14,8 @@ import { fileURLToPath } from "node:url";
 import { DEFAULT_INDEX_URL, INDEX_FILE, createPackageRegistry, validateIndex } from "../lib/packages.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const DEFAULT_FROM = "E:\\IDEProjects\\UE-EAI-Simulator\\Plugins\\uBot\\uBotCore\\Index\\index.json";
+// The uBot workspace layout: uBotCore checked out at ../Plugins/uBot/uBotCore next to this repository.
+const DEFAULT_FROM = resolve(root, "../Plugins/uBot/uBotCore/Index/index.json");
 
 const args = process.argv.slice(2);
 const valueOf = (flag) => {
