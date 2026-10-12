@@ -43,9 +43,9 @@
 [CmdletBinding()]
 param(
     [string]$EnginePath = 'D:\Program Files\Epic Games\UE_5.5',
-    # Defaults: the uBot workspace layout, with DevHost and Plugins\uBot next to this repository.
-    [string]$Project = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\DevHost\UBotDev.uproject')),
-    [string]$PluginsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\Plugins\uBot')),
+    # Defaults (set below): the uBot workspace layout, with DevHost and Plugins\uBot next to this repository.
+    [string]$Project = '',
+    [string]$PluginsDir = '',
     # Default: every released package in data\index.json.
     [string[]]$Plugins,
     # Folder for the zh-Hans work files and the commandlet logs (default: a new folder in %TEMP%).
@@ -56,6 +56,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+# Windows PowerShell 5.1 leaves $PSScriptRoot empty in parameter defaults, so the defaults are set here.
+if (-not $Project) { $Project = [System.IO.Path]::GetFullPath((Join-Path $repoRoot '..\DevHost\UBotDev.uproject')) }
+if (-not $PluginsDir) { $PluginsDir = [System.IO.Path]::GetFullPath((Join-Path $repoRoot '..\Plugins\uBot')) }
 $editorCmd = Join-Path $EnginePath 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe'
 
 if (-not (Test-Path $editorCmd)) { throw "UnrealEditor-Cmd.exe not found: $editorCmd (use -EnginePath)" }
