@@ -1,6 +1,6 @@
 ---
 title: uBotAerial
-description: uBotAerial（规划中）：多旋翼，速度与姿态控制。
+description: uBotAerial（规划中）：多旋翼无人机，有面向导航的简化飞控和面向飞控研究的刚体动力学。
 pageKind: placeholder
 sidebar:
   order: 20
@@ -8,33 +8,39 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-uBotAerial 是规划中的多旋翼插件，目前尚未发布。
+uBotAerial 是规划中的多旋翼无人机插件，目前尚未发布。
 
 <PackageStatus name="UBotAerial" />
 
 ## 定位
 
-给仿真里的机器人提供多旋翼（multirotor）无人机，支持速度控制和姿态控制。
+给仿真提供现成的四旋翼无人机，按研究需要分三类：
 
-在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+| 无人机 | 适合 | 接收的指令 |
+| --- | --- | --- |
+| `uBot Navigation Drone` | 研究导航、规划，不关心飞控 | 速度、偏航角速度 |
+| `uBot Physics Drone` | 需要真实的动力学，用内置飞控 | 速度、姿态 |
+| `uBot Bare Airframe Drone` | 研究飞控，控制器自己写 | 角速度加推力、单电机 |
+
+后两类共用同一套刚体动力学，由插件按仿真时钟以固定步长计算，结果与帧率无关。在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
 
 ## 计划提供的能力
 
-包索引为它声明了两个能力标签（`provides`）。索引只给标签名，下面的含义是根据名称推断的：
-
-| 能力标签 | 含义（推断） |
+| 能力标签 | 含义 |
 | --- | --- |
-| `Actuation.Velocity` | 速度控制，按速度指令驱动无人机。uBotCore 里已有接口 `UBot Velocity Commandable`，它的 `Apply Velocity Command` 接收机体坐标系下的线速度（m/s）和角速度（rad/s），这个标签是否对应它，尚未确定 |
-| `Body.Multirotor` | 多旋翼机体 |
+| `Actuation.Velocity` | 速度指令：三类无人机都实现 uBotCore 的 `UBot Velocity Commandable` |
+| `Actuation.Attitude` | 姿态指令和角速度指令（物理级、裸机级） |
+| `Actuation.Motor` | 单电机指令（裸机级） |
+| `Body.Multirotor` | 多旋翼机体：质量、惯量和转子布局可以配置 |
+| `Aerial.Wind` | 风：恒定风加阵风，三类无人机都受影响 |
 
-定位里还提到姿态控制。uBotCore 目前只有速度指令的接口，没有姿态指令的接口。
-
-尚未确定：能力标签的确切含义和它们与 `UBot Velocity Commandable` 的对应关系，姿态指令用什么接口、什么形式传入，无人机组件和蓝图类的名称与属性，是否提供现成的 `UBot Velocity Commandable` 实现。
+另外还有键盘和手柄手动飞行，需要引擎插件 Enhanced Input。组件和属性的最终名称与默认值尚未确定。
 
 ## 与现有插件的关系
 
-- uBotCore：它只依赖 uBotCore 0.1.x，不依赖 uBotSensor 和 uBotROS。
-- uBotROS：它的 `uBot ROS Velocity Command` 组件把 ROS 2 的 cmd_vel 交给实现了 `UBot Velocity Commandable` 的对象，所以实现了该接口的无人机就能被 cmd_vel 驱动。uBotROS 只做解码、换算、限速、分发和超时，把速度变成飞行动作的控制由被驱动的无人机自己实现。
+- uBotCore：它只依赖 uBotCore，不依赖 uBotSensor 和 uBotROS。
+- uBotROS：它的 `uBot ROS Velocity Command` 组件把 ROS 2 的 cmd_vel 交给实现了 `UBot Velocity Commandable` 的对象，所以三类无人机都能直接被 cmd_vel 驱动。
+- uBotSensor：传感器加在无人机上即可。导航级默认只倾斜外观，机体保持水平，挂在上面的传感器不会跟着晃。
 - uBotMCP：包索引里的组合「大模型无人机」把它和 uBotSensor、uBotMCP 放在一起，用途是「大模型通过 MCP 控制无人机」，见 [选择组合](/start/recipes/)。uBotMCP 也还在规划中。
 
 ## 发布前可以先怎么做
@@ -42,4 +48,3 @@ uBotAerial 是规划中的多旋翼插件，目前尚未发布。
 - 自己做一个多旋翼 Actor，让它（或其中的组件）实现 `UBot Velocity Commandable`：实现 `Apply Velocity Command` 和 `Stop Motion`。添加接口的做法见 [插件之间怎么对接](/concepts/interfaces/)。
 - 给同一个 Actor 添加 uBotROS 的 `uBot ROS Velocity Command` 组件，ROS 2 的 cmd_vel 就能驱动它，见 [接收 cmd_vel](/ros/cmd-vel/)。
 - 给无人机加上 uBotSensor 的传感器，再用 uBotROS 发布到 ROS 2，见 [发布传感器数据](/ros/publish-sensors/)。
-- uBotAerial 发布后，自己做的无人机要不要改、怎么改，尚未确定。
