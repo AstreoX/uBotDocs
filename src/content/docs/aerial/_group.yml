@@ -1,0 +1,3 @@
+label: uBotAerial
+# Pages in this folder are about UBotAerial unless their frontmatter declares packages: itself.
+packages: [UBotAerial]

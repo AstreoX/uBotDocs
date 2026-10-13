@@ -1,50 +1,57 @@
 ---
-title: uBotAerial
-description: uBotAerial（规划中）：多旋翼无人机，有面向导航的简化飞控和面向飞控研究的刚体动力学。
-pageKind: placeholder
+title: uBotAerial 概述
+description: uBotAerial 提供三类多旋翼无人机、风、手动飞行和试飞关卡：各适合什么研究，包含哪些组件，装它需要什么。
+pageKind: overview
 sidebar:
-  order: 20
+  order: 10
 ---
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-uBotAerial 是规划中的多旋翼无人机插件，目前尚未发布。
+用 uBotAerial 在 UE 里飞多旋翼无人机：导航研究用简化飞控，飞控研究用刚体动力学，自己写的飞控也能接进来。
+
+## 能做什么
+
+三类无人机对应三种研究需要，都是插件内容里的示例蓝图，由插件的组件拼成：
+
+| 能力 | 适合 | 接收的指令 | 页面 |
+| --- | --- | --- | --- |
+| 导航级无人机（`BP_UBotNavigationDrone`） | 导航、规划、感知，不关心飞控 | 速度、偏航角速度 | [用速度指令飞导航无人机](/aerial/simple-flight/) |
+| 物理级无人机（`BP_UBotPhysicsDrone`） | 需要真实的动力学，直接用内置串级飞控 | 速度、姿态、角速度、单电机 | [物理无人机的指令与控制模式](/aerial/dynamics/) |
+| 裸机级无人机（`BP_UBotBareAirframeDrone`） | 研究飞控，控制器自己写 | 角速度、单电机 | [自己写飞控](/aerial/flight-controller/) |
+| 示例无人机与试飞关卡 | 马上飞起来 | | [示例无人机与试飞关卡](/aerial/examples/) |
+| 键盘和手柄手动飞行 | 手动试飞 | | [键盘和手柄手动飞行](/aerial/manual-flight/) |
+| 风 | 恒定风和阵风 | | [风](/aerial/wind/) |
+| 碰撞 | 撞到地面、墙和其他物体 | | [碰撞](/aerial/collision/) |
+| 从 ROS 2 下发速度、姿态和电机指令 | 配合 uBotROS 0.1.2 | | 见 [接收 cmd_vel](/ros/cmd-vel/) |
+
+## 依赖与安装
 
 <PackageStatus name="UBotAerial" />
 
-## 定位
+uBotAerial 依赖 uBotCore 0.1.2 起的版本和引擎插件 Enhanced Input，不依赖 uBotSensor 和 uBotROS。用 [uBot Manager](/manager/) 安装，依赖会一并装好。
 
-给仿真提供四旋翼无人机，按研究需要分三类。插件的 C++ 提供飞控和动力学组件；三类无人机是插件内容里的示例蓝图，由这些组件拼成，可以直接放进关卡，也可以复制后修改。另附一个试飞关卡。
+示例内容在 `/UBotAerial/Examples/` 下的三个示例蓝图和 `/UBotAerial/Maps/L_UBotAerialDemo`，用法见 [示例无人机与试飞关卡](/aerial/examples/)。
 
-| 示例蓝图 | 适合 | 接收的指令 |
+## 组件一览
+
+| 组件 | 作用 | 参考 |
 | --- | --- | --- |
-| `BP_UBotNavigationDrone` | 研究导航、规划，不关心飞控 | 速度、偏航角速度 |
-| `BP_UBotPhysicsDrone` | 需要真实的动力学，用内置飞控 | 速度、姿态 |
-| `BP_UBotBareAirframeDrone` | 研究飞控，控制器自己写 | 角速度加推力、单电机 |
+| `uBot Simple Flight` | 导航级飞行模型：速度按一阶响应逼近指令 | [uBot Simple Flight](/reference/ubotaerial/uubotsimpleflightcomponent/) |
+| `uBot Multirotor Dynamics` | 物理级和裸机级的刚体动力学 | [uBot Multirotor Dynamics](/reference/ubotaerial/uubotmultirotordynamicscomponent/) |
+| `uBot Flight Controller` | 自己写飞控时继承的基类 | [uBot Flight Controller](/reference/ubotaerial/uubotflightcontroller/) |
+| `uBot Cascaded Flight Controller` | 内置的串级飞控 | [uBot Cascaded Flight Controller](/reference/ubotaerial/uubotcascadedflightcontroller/) |
+| `uBot Rotor` | 随电机转速旋转的桨叶 | [uBot Rotor](/reference/ubotaerial/uubotrotorcomponent/) |
+| `uBot Multirotor Manual Input` | 键盘和手柄手动飞行 | [uBot Multirotor Manual Input](/reference/ubotaerial/uubotmultirotormanualinputcomponent/) |
+| `uBot Wind`（Actor） | 在关卡里放置的风源 | [uBot Wind](/reference/ubotaerial/aubotwind/) |
+| `uBot Wind Subsystem` | 汇总所有风源，也可以用蓝图设置风 | [uBot Wind Subsystem](/reference/ubotaerial/uubotwindsubsystem/) |
+| `uBot Multirotor Library` | 蓝图函数库：查找飞行模型、生成机架 | [uBot Multirotor Library](/reference/ubotaerial/uubotmultirotorlibrary/) |
 
-后两类共用同一套刚体动力学，由插件按仿真时钟以固定步长计算，结果与帧率无关。在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+## 模型来源
 
-## 计划提供的能力
+示例无人机的模型是 Fab 上 HARTWEL JUNIOR KISAKA 的 [Animated Drone](https://www.fab.com/listings/c1f5f392-330a-418c-b0b0-e3c89639347f)，授权 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。插件的 `NOTICE` 写明了改动。
 
-| 能力标签 | 含义 |
-| --- | --- |
-| `Actuation.Velocity` | 速度指令：三类无人机的移动组件都实现 uBotCore 的 `UBot Velocity Commandable` |
-| `Actuation.Attitude` | 姿态指令和角速度指令（物理级、裸机级） |
-| `Actuation.Motor` | 单电机指令（裸机级） |
-| `Body.Multirotor` | 多旋翼机体：质量、惯量和转子布局可以配置 |
-| `Aerial.Wind` | 风：恒定风加阵风，三类无人机都受影响 |
+## 下一步
 
-另外还有键盘和手柄手动飞行，需要引擎插件 Enhanced Input。组件和属性的最终名称与默认值尚未确定。
-
-## 与现有插件的关系
-
-- uBotCore：它只依赖 uBotCore，不依赖 uBotSensor 和 uBotROS。
-- uBotROS：它的 `uBot ROS Velocity Command` 组件把 ROS 2 的 cmd_vel 交给实现了 `UBot Velocity Commandable` 的对象，所以三类无人机都能直接被 cmd_vel 驱动。
-- uBotSensor：传感器加在无人机上即可。导航级默认只倾斜外观，机体保持水平，挂在上面的传感器不会跟着晃。
-- uBotMCP：包索引里的组合「大模型无人机」把它和 uBotSensor、uBotMCP 放在一起，用途是「大模型通过 MCP 控制无人机」，见 [选择组合](/start/recipes/)。uBotMCP 也还在规划中。
-
-## 发布前可以先怎么做
-
-- 自己做一个多旋翼 Actor，让它（或其中的组件）实现 `UBot Velocity Commandable`：实现 `Apply Velocity Command` 和 `Stop Motion`。添加接口的做法见 [插件之间怎么对接](/concepts/interfaces/)。
-- 给同一个 Actor 添加 uBotROS 的 `uBot ROS Velocity Command` 组件，ROS 2 的 cmd_vel 就能驱动它，见 [接收 cmd_vel](/ros/cmd-vel/)。
-- 给无人机加上 uBotSensor 的传感器，再用 uBotROS 发布到 ROS 2，见 [发布传感器数据](/ros/publish-sensors/)。
+- [示例无人机与试飞关卡](/aerial/examples/)：打开试飞关卡，马上飞起来。
+- [用速度指令飞导航无人机](/aerial/simple-flight/)：用蓝图给导航无人机发速度指令。
