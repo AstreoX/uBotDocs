@@ -318,6 +318,23 @@ inline node with its id.
   the exported title. A class of a uBot package goes into that package's area file, and
   `scripts/export-api.ps1` checks that the package is enabled in the project.
 
+## Editor screenshots
+
+Screenshots of the UE editor live in `src/assets/<area>/` (`aerial/physics-movement.png`,
+`ros/attitude-command.png`), next to the uBot Manager ones in `src/assets/manager/`. Maintainers take
+them in a local UE 5.5 editor with the English UI. Cloud sessions have no editor and cannot make or change
+them.
+
+- Put a shot under the paragraph or step that sends the reader to that part of the editor:
+  `![<Chinese alt text saying what the shot shows>](../../../assets/aerial/physics-movement.png)` (the path
+  is relative to the page; the build optimizes the image).
+- The text still names what to look at ("Details 面板里 Dynamics 下的 `Command Loss Action`"). A shot never
+  replaces a property name, and the reference is still where the property list lives.
+- Blueprint editor shots show the component tree and the Details panel side by side, without the viewport.
+- Do not crop, edit or re-encode the images. If a page needs a shot that does not exist, or a shot no longer
+  matches the editor, describe it in the PR (asset, what is selected, which panel and properties), and a
+  maintainer adds it.
+
 ## Generated reference and Chinese summaries
 
 `src/content/docs/reference/` is regenerated from `data/` on every `npm run dev`/`build`
