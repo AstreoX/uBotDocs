@@ -1,0 +1,71 @@
+UUBotMultirotorDynamicsComponent:
+  summary: 用于飞控研究的刚体多旋翼：有电机滞后的旋翼、推力与反扭矩、相对空气的阻力和重力，按 uBot 仿真时间以固定步长积分。接受速度（航向系）、姿态、角速度和单电机指令，前三者由飞控换算成电机指令。
+  sourceHash: "01beaa0b9708"
+
+UUBotMultirotorDynamicsComponent.Airframe:
+  summary: 质量、转动惯量、旋翼和阻力。改动在下一次 Reset Flight 时生效。
+  sourceHash: "4902e932eefa"
+
+UUBotMultirotorDynamicsComponent.CommandLossAction:
+  summary: 指令中断时无人机的动作：发送方释放了指令，或指令超过 Command Timeout Seconds 没有更新。
+  sourceHash: "72ae36687aa3"
+
+UUBotMultirotorDynamicsComponent.CommandTimeoutSeconds:
+  summary: 指令超过这么多仿真秒没有更新就算中断，单位 s；0 表示由发送方负责超时（uBot ROS 组件自带超时）。
+  sourceHash: "1356f82560c1"
+
+UUBotMultirotorDynamicsComponent.ControllerRateDivider:
+  summary: 飞控每隔这么多个物理步运行一次，其间保持上一次的电机指令；默认 1，即每步运行。
+  sourceHash: "47a817d0b874"
+
+UUBotMultirotorDynamicsComponent.DynamicsBackendName:
+  summary: 动力学后端的名字，取自扩展点 UBotAerial.DynamicsBackend。实验性；BuiltIn 是插件自带的积分器。
+  sourceHash: "9539c10be757"
+
+UUBotMultirotorDynamicsComponent.FlightController:
+  summary: 处理速度、姿态和角速度指令的飞控。可以换成自己的子类。
+  sourceHash: "3c250e6b6853"
+
+UUBotMultirotorDynamicsComponent.GetActiveControlMode:
+  summary: 最近一条被接受的指令的控制模式；无人机自己悬停时为 Velocity。
+  sourceHash: "ab4273c3b35b"
+
+UUBotMultirotorDynamicsComponent.GetFlightSetpoint:
+  summary: 飞控当前正在飞的设定值。
+  sourceHash: "fef2d536ffe7"
+
+UUBotMultirotorDynamicsComponent.GetHoverMotorCommand:
+  summary: 在当前机架和世界重力下保持水平悬停的归一化电机指令。
+  sourceHash: "d601d27c58fb"
+
+UUBotMultirotorDynamicsComponent.GetLastMotorCommands:
+  summary: 最近一个物理步实际施加的电机指令（归一化，按电机顺序）。会复制整个数组。
+  sourceHash: "b07314a04441"
+
+UUBotMultirotorDynamicsComponent.LandingSpeedMetersPerSecond:
+  summary: 指令中断动作为 Land 时的下降速度，单位 m/s。
+  sourceHash: "500446f4595e"
+
+UUBotMultirotorDynamicsComponent.PhysicsRateHz:
+  summary: 每秒仿真时间的物理步数，单位 Hz。步数越多越精确，开销也越大。
+  sourceHash: "da19aece6c79"
+
+UUBotMultirotorDynamicsComponent.SetFlightController:
+  summary: 替换飞控，并立即重置它。传入空值时回退到内置的级联飞控。
+  sourceHash: "f82d0f0c42e8"
+
+UUBotMultirotorDynamicsComponent.bAcceptAttitudeCommands:
+  summary: 是否接受姿态指令。
+  sourceHash: "817897e538a4"
+
+UUBotMultirotorDynamicsComponent.bAcceptBodyRateCommands:
+  summary: 是否接受角速度指令。
+  sourceHash: "8a947f78ccc2"
+
+UUBotMultirotorDynamicsComponent.bAcceptMotorCommands:
+  summary: 是否接受单电机指令。
+  sourceHash: "a2d7831d5f04"
+
+UUBotMultirotorDynamicsComponent.bAcceptVelocityCommands:
+  summary: 是否接受速度指令。
+  sourceHash: "7edcf57331b7"

@@ -1,0 +1,55 @@
+Break:FUBotFlightSetpoint:
+  summary: 把 `UBot Flight Setpoint` 拆成各个成员字段。
+  sourceHash: "4666b528ee94"
+
+FUBotFlightSetpoint:
+  summary: 飞控在一个物理步里要飞的目标。单位为 SI，坐标为 UE 世界轴。
+  sourceHash: "0024b78713ea"
+
+FUBotFlightSetpoint.BodyRateRadiansPerSecond:
+  summary: 角速度模式：机体坐标系下的目标角速度，单位 rad/s。
+  sourceHash: "854ed4a996c4"
+
+FUBotFlightSetpoint.HoldPositionMeters:
+  summary: 速度模式：要保持的位置，单位 m（世界坐标）。
+  sourceHash: "0b555a62137c"
+
+FUBotFlightSetpoint.Mode:
+  summary: 决定哪些字段生效。电机模式不会到达飞控。
+  sourceHash: "54b44af2007c"
+
+FUBotFlightSetpoint.NormalizedThrust:
+  summary: 总推力占最大推力的比例，范围 0 到 1。
+  sourceHash: "7cd62047fd9b"
+
+FUBotFlightSetpoint.Orientation:
+  summary: 姿态模式：目标姿态（机体到世界）。
+  sourceHash: "80b1b366e431"
+
+FUBotFlightSetpoint.VelocityMetersPerSecond:
+  summary: 速度模式：世界坐标系下的目标速度，单位 m/s。
+  sourceHash: "bcfdf14c3500"
+
+FUBotFlightSetpoint.VerticalVelocityMetersPerSecond:
+  summary: 不用推力的姿态和角速度模式：爬升速度，单位 m/s（向上为正）。
+  sourceHash: "8795407672e3"
+
+FUBotFlightSetpoint.YawRateRadiansPerSecond:
+  summary: 速度模式：偏航角速度，单位 rad/s（正值向右转）。
+  sourceHash: "88f3e4544eae"
+
+FUBotFlightSetpoint.bHoldPosition:
+  summary: 速度模式：水平方向保持 `Hold Position`，垂直速度为 0 时也保持其高度。
+  sourceHash: "5b80522a84f1"
+
+FUBotFlightSetpoint.bUseThrust:
+  summary: 姿态和角速度模式：使用 `Normalized Thrust`，否则按 `Vertical Velocity` 飞。
+  sourceHash: "2717e3af5d70"
+
+FUBotFlightSetpoint.bUseYawRate:
+  summary: 姿态模式：按 `Yaw Rate` 转动朝向，而不是跟随 `Orientation` 的偏航角。
+  sourceHash: "cb12a6f82e96"
+
+Make:FUBotFlightSetpoint:
+  summary: 用各个成员字段组成一个 `UBot Flight Setpoint`。
+  sourceHash: "edf65e0edd4a"

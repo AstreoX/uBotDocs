@@ -1,0 +1,19 @@
+EUBotFlightControlMode:
+  summary: 物理多旋翼飞行时执行哪一类指令。
+  sourceHash: "f26e83a8846c"
+
+EUBotFlightControlMode.Attitude:
+  summary: 姿态加推力或爬升速度。
+  sourceHash: "948a0364890f"
+
+EUBotFlightControlMode.BodyRate:
+  summary: 机体角速度加推力或爬升速度。
+  sourceHash: "8f5fe6e063f1"
+
+EUBotFlightControlMode.Motor:
+  summary: 每个电机一条指令，不经过飞控。
+  sourceHash: "60e3ec053d50"
+
+EUBotFlightControlMode.Velocity:
+  summary: 航向坐标系下的速度加偏航角速度，走完整的内置串级控制。
+  sourceHash: "0e00aa9ddd03"

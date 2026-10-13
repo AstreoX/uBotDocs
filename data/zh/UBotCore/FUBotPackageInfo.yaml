@@ -97,3 +97,7 @@ FUBotPackageInfo.bInstalled:
 FUBotPackageInfo.bPlanned:
   summary: 索引里只有规划版本：已公布，但还不能安装。
   sourceHash: "e87343ea2889"
+
+FUBotPackageInfo.Layer:
+  summary: Package 在描述文件 UBot 块里声明的分类，没有声明时为 Unknown。
+  sourceHash: "e3b0c44298fc"

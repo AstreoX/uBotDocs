@@ -1,0 +1,15 @@
+UUBotMotorCommandable:
+  summary: 接受逐台电机指令的接口，独立于执行器接口。
+  sourceHash: "e3b0c44298fc"
+
+UUBotMotorCommandable.ApplyMotorCommand:
+  summary: 应用一条电机指令。指令被拒绝时（值的个数不对、没有就绪、数值无效等）返回 false。
+  sourceHash: "e1d1951f95f8"
+
+UUBotMotorCommandable.GetMotorCount:
+  summary: 电机数量，也就是电机指令必须有的长度。
+  sourceHash: "7c2818bb9e77"
+
+UUBotMotorCommandable.ReleaseMotorCommand:
+  summary: 发送方已停止发送（比如指令超时）；接收者退回自己的默认行为。
+  sourceHash: "7ba5ea3086df"

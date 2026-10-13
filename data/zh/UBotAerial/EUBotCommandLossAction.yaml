@@ -1,0 +1,15 @@
+EUBotCommandLossAction:
+  summary: 物理多旋翼在指令中断（发送方释放或超时）后的行为。
+  sourceHash: "027d1565d418"
+
+EUBotCommandLossAction.CutMotors:
+  summary: 关闭所有电机，无人机坠落。
+  sourceHash: "7c51d4fac34e"
+
+EUBotCommandLossAction.Hover:
+  summary: 刹车并悬停在原位。
+  sourceHash: "744c36969edc"
+
+EUBotCommandLossAction.Land:
+  summary: 以 `Landing Speed` 原地下降，触地后和碰到其他表面一样被挡住。
+  sourceHash: "8f11ba18f307"

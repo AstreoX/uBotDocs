@@ -1,0 +1,39 @@
+Break:FUBotMultirotorAirframe:
+  summary: 把 UBot Multirotor Airframe 拆成质量、转动惯量、旋翼、三组阻力系数和电机指令映射。
+  sourceHash: "e7d73c74df54"
+
+FUBotMultirotorAirframe:
+  summary: 多旋翼的质量、转动惯量、旋翼和阻力。默认是一架 1.5 kg、轴距 450 mm 的四旋翼 X。
+  sourceHash: "9a40985dc464"
+
+FUBotMultirotorAirframe.AngularDragCoefficients:
+  summary: 绕机体各轴的旋转阻力系数，单位 N·m/(rad/s)。默认 (0.003, 0.003, 0.005)。
+  sourceHash: "88615d49d9c5"
+
+FUBotMultirotorAirframe.InertiaKilogramSquareMeters:
+  summary: 绕机体 X、Y、Z 轴的主转动惯量，单位 kg·m²。默认 (0.029, 0.029, 0.055)。
+  sourceHash: "27f675d3b9c7"
+
+FUBotMultirotorAirframe.LinearDragCoefficients:
+  summary: 沿机体各轴的线性阻力系数，单位 N/(m/s)，速度是相对空气的速度。默认 (0.25, 0.25, 0.30)。
+  sourceHash: "a10092b08389"
+
+FUBotMultirotorAirframe.MassKilograms:
+  summary: 质量，单位 kg。默认 1.5 kg。
+  sourceHash: "94ac8cd35ab8"
+
+FUBotMultirotorAirframe.MotorCommandMapping:
+  summary: 归一化电机指令到旋翼转速的映射方式。
+  sourceHash: "f1211acc2004"
+
+FUBotMultirotorAirframe.QuadraticDragCoefficients:
+  summary: 沿机体各轴的平方阻力系数，单位 N/(m/s)²，速度是相对空气的速度。默认 (0.03, 0.03, 0.05)。
+  sourceHash: "554015c7cf64"
+
+FUBotMultirotorAirframe.Rotors:
+  summary: 旋翼列表，按电机顺序排列，电机指令使用同样的顺序。
+  sourceHash: "03c57155db1a"
+
+Make:FUBotMultirotorAirframe:
+  summary: 用各字段组装一个 UBot Multirotor Airframe。
+  sourceHash: "6aa5703ccaa5"

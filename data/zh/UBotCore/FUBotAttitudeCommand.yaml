@@ -1,0 +1,43 @@
+Break:FUBotAttitudeCommand:
+  summary: 把 UBot Attitude Command 拆成姿态、推力、偏航角速度、时间戳和来源等字段。
+  sourceHash: "4a20ec2effdd"
+
+FUBotAttitudeCommand:
+  summary: 飞行器的姿态请求：目标姿态，加推力或爬升速度。
+  sourceHash: "81bb3aad0e9d"
+
+FUBotAttitudeCommand.NormalizedThrust:
+  summary: 总推力占飞行器最大总推力的比例，范围 0 到 1。
+  sourceHash: "27e6215f7b00"
+
+FUBotAttitudeCommand.Orientation:
+  summary: 期望姿态，机体到世界的四元数，用 UE 的坐标轴。
+  sourceHash: "e1c7dd6eb7b3"
+
+FUBotAttitudeCommand.Source:
+  summary: 来源标签，格式自由，比如 ROS、MCP、Blueprint。
+  sourceHash: "9030c0986c07"
+
+FUBotAttitudeCommand.TimestampSeconds:
+  summary: 发出指令时的仿真时间，单位秒。
+  sourceHash: "c2d8ddc4c0fb"
+
+FUBotAttitudeCommand.VerticalVelocityMetersPerSecond:
+  summary: 不使用推力时的爬升速度，单位 m/s，向上为正；0 表示保持高度。
+  sourceHash: "adc1b4d6987c"
+
+FUBotAttitudeCommand.YawRateRadiansPerSecond:
+  summary: 使用偏航角速度时的偏航速度，单位 rad/s，用 UE 的旋转方向（正值向右偏航）。
+  sourceHash: "eca22ed255f2"
+
+FUBotAttitudeCommand.bUseThrust:
+  summary: 为 true 时使用 Normalized Thrust；否则由接收者自己调节推力，以达到 Vertical Velocity。
+  sourceHash: "c930cdcabd1a"
+
+FUBotAttitudeCommand.bUseYawRate:
+  summary: 为 true 时航向按偏航角速度转动，不再跟随 Orientation 的偏航角。
+  sourceHash: "de120ece1ae0"
+
+Make:FUBotAttitudeCommand:
+  summary: 用姿态、推力、偏航角速度、时间戳和来源等字段构造一个 UBot Attitude Command。
+  sourceHash: "3cf780fd51e1"

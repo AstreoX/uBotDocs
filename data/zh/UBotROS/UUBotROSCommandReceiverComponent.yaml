@@ -1,0 +1,63 @@
+UUBotROSCommandReceiverComponent:
+  summary: 通过 uBot ROS 桥接收 ROS 2 指令，并转给实现了 uBotCore 执行接口的目标的组件基类，不含控制逻辑。话题是 /<namespace>/<子类的末段名>（best_effort / volatile / 10）；命名空间取自 uBot Identity，除非设了 Robot Namespace Override，Command Topic Override 则替换整个话题。目标是 Target Component，未设时用所属 Actor 或它第一个实现该子类接口的组件；没有目标时仍会解码指令、触发事件并计超时。超过 Command Timeout Seconds 仿真秒没有新指令，目标只会被释放一次（退回自己的默认行为，例如悬停），并触发 On Command Timeout；结束游戏时也会释放仍然生效的指令。
+  sourceHash: "909b13bb6787"
+
+UUBotROSCommandReceiverComponent.CommandTimeoutSeconds:
+  summary: 超过这么多仿真秒没有新指令，就释放目标；0 关闭超时。
+  sourceHash: "b48bb8b664d0"
+
+UUBotROSCommandReceiverComponent.CommandTopicOverride:
+  summary: 非空时替代 /<namespace>/<末段名>，缺少前导 / 会补上。
+  sourceHash: "440dc871b5ee"
+
+UUBotROSCommandReceiverComponent.GetCommandError:
+  summary: 最近一条错误的文字；自上次启动以来没有错误时为空。
+  sourceHash: "efe85aee6d9b"
+
+UUBotROSCommandReceiverComponent.GetCommandTarget:
+  summary: 指令交给的对象；没有目标（只触发事件）时为空。
+  sourceHash: "abafa4ea41a4"
+
+UUBotROSCommandReceiverComponent.GetResolvedCommandTopic:
+  summary: 正在订阅的话题；没有订阅时，是下一次启动会用的话题。
+  sourceHash: "218cb5619372"
+
+UUBotROSCommandReceiverComponent.IsCommandActive:
+  summary: 从收到有效指令到超时为 true；超时关闭时，收到过指令后一直为 true。
+  sourceHash: "3e091e986679"
+
+UUBotROSCommandReceiverComponent.IsCommandReceiverReady:
+  summary: 已订阅时为 true，与桥是否连上无关。
+  sourceHash: "771f6ce90bdb"
+
+UUBotROSCommandReceiverComponent.OnCommandError:
+  summary: 订阅失败、消息畸形或无效、目标不可用或拒绝了指令时触发。
+  sourceHash: "84d47453bd2a"
+
+UUBotROSCommandReceiverComponent.OnCommandTimeout:
+  summary: 每次超时触发一次，在目标（如果有）被释放之后。
+  sourceHash: "ced785eedeae"
+
+UUBotROSCommandReceiverComponent.RestartCommandReceiver:
+  summary: 取消订阅后用当前设置重新订阅，超时计时继续。
+  sourceHash: "9816aa565cd2"
+
+UUBotROSCommandReceiverComponent.RobotNamespaceOverride:
+  summary: 留空时用 uBot Identity 解析出的命名空间（没有 Identity 组件则用净化后的 Actor 名）。前后的 / 被忽略，每一段都会被净化；只含 / 表示根命名空间。
+  sourceHash: "8105ae6e8aae"
+
+UUBotROSCommandReceiverComponent.SetTargetComponent:
+  summary: 用一个组件直接替换 Target Component；传空则恢复在所属 Actor 上自动查找。
+  sourceHash: "70268dabf778"
+
+UUBotROSCommandReceiverComponent.StopCommandReceiver:
+  summary: 取消订阅；已经生效的指令仍然按时超时。
+  sourceHash: "edfddb2e08cc"
+
+UUBotROSCommandReceiverComponent.TargetComponent:
+  summary: 接收指令的组件，必须实现该子类对应的接口。留空时用所属 Actor，或它第一个实现该接口的组件；只设了 Referenced Actor 时，在那个 Actor 上同样查找。
+  sourceHash: "05b36c93c605"
+
+UUBotROSCommandReceiverComponent.bAutoStartReceiver:
+  summary: Begin Play 时订阅；关闭后调用 Restart Command Receiver 开始接收。
+  sourceHash: "d6c0079ec0ad"

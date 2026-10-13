@@ -1,0 +1,59 @@
+UUBotMultirotorManualInputComponent:
+  summary: 本地玩家控制（附身）所属多旋翼时，用键盘或手柄驾驶它。输入动作和映射上下文在运行时创建（Enhanced Input），不需要资产；要改按键就设置自己的。控制期间每帧发送一条指令，控制结束时无人机刹车并悬停。
+  sourceHash: "1988bec920eb"
+
+UUBotMultirotorManualInputComponent.CustomMappingContext:
+  summary: 自己的映射上下文，必须映射 `Custom Move Action` 和 `Custom Yaw Action`。为空时使用内置按键。
+  sourceHash: "f629bb284af3"
+
+UUBotMultirotorManualInputComponent.CustomMoveAction:
+  summary: 自己的移动动作（Axis3D：前、右、上），和 `Custom Mapping Context` 一起使用。
+  sourceHash: "f4e52b85b9ad"
+
+UUBotMultirotorManualInputComponent.CustomYawAction:
+  summary: 自己的偏航动作（Axis1D，正值向右转），和 `Custom Mapping Context` 一起使用。
+  sourceHash: "ac45ab19419c"
+
+UUBotMultirotorManualInputComponent.DeadZone:
+  summary: 摇杆死区，占满偏转的比例。
+  sourceHash: "6786c4bef9bd"
+
+UUBotMultirotorManualInputComponent.FlightMode:
+  summary: 摇杆控制的内容。
+  sourceHash: "bf1b86d0c238"
+
+UUBotMultirotorManualInputComponent.GetAxes:
+  summary: 最近一帧经过死区处理后的各个轴。
+  sourceHash: "747ed6db7ae1"
+
+UUBotMultirotorManualInputComponent.IsControlling:
+  summary: 这个组件正在驾驶无人机时为 true。
+  sourceHash: "16b162a008b5"
+
+UUBotMultirotorManualInputComponent.MappingPriority:
+  summary: 映射上下文的优先级。
+  sourceHash: "cfea3bb57faf"
+
+UUBotMultirotorManualInputComponent.MaxBodyRateDegreesPerSecond:
+  summary: 满偏转时的横滚和俯仰角速度（`Rate` 模式），单位 deg/s。
+  sourceHash: "796462d00e98"
+
+UUBotMultirotorManualInputComponent.MaxHorizontalSpeedMetersPerSecond:
+  summary: 满偏转时的水平速度（`Velocity` 模式），单位 m/s。
+  sourceHash: "9bcf7fea011b"
+
+UUBotMultirotorManualInputComponent.MaxTiltDegrees:
+  summary: 满偏转时的倾角（`Angle` 模式），单位度。
+  sourceHash: "7956319b4c0d"
+
+UUBotMultirotorManualInputComponent.MaxVerticalSpeedMetersPerSecond:
+  summary: 满偏转时的爬升或下降速度，单位 m/s。
+  sourceHash: "8d04da2f2b42"
+
+UUBotMultirotorManualInputComponent.MaxYawRateDegreesPerSecond:
+  summary: 满偏转时的偏航角速度，单位 deg/s。
+  sourceHash: "51412a39ffd7"
+
+UUBotMultirotorManualInputComponent.bTakeControlWhenPossessed:
+  summary: 本地玩家附身无人机的 Pawn 时自动接管无人机。
+  sourceHash: "371233fdaa65"

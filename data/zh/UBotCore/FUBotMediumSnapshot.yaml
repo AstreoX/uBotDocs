@@ -1,0 +1,27 @@
+Break:FUBotMediumSnapshot:
+  summary: 把 UBot Medium Snapshot 拆成介质类型、是否有效、颜色和单元列表。
+  sourceHash: "8d4732b1b263"
+
+FUBotMediumSnapshot:
+  summary: 某种介质（烟、雾等）在采样时刻的状态。
+  sourceHash: "f519f211a8f0"
+
+FUBotMediumSnapshot.Cells:
+  summary: 组成这团介质的球形单元。
+  sourceHash: "e3b0c44298fc"
+
+FUBotMediumSnapshot.MediumType:
+  summary: 介质的类型名，默认为 Smoke。
+  sourceHash: "e3b0c44298fc"
+
+FUBotMediumSnapshot.Tint:
+  summary: 介质的显示颜色。
+  sourceHash: "e3b0c44298fc"
+
+FUBotMediumSnapshot.bActive:
+  summary: 为 false 时，求交计算忽略这份快照。
+  sourceHash: "e3b0c44298fc"
+
+Make:FUBotMediumSnapshot:
+  summary: 用介质类型、是否有效、颜色和单元列表构造一个 UBot Medium Snapshot。
+  sourceHash: "243a3fd76697"

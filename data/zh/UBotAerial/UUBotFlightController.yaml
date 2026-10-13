@@ -1,0 +1,15 @@
+UUBotFlightController:
+  summary: 物理多旋翼的飞控。多旋翼每个物理步（或每隔 `Controller Rate Divider` 步）带着真值状态和当前控制模式的目标调用一次 `Compute Motor Commands`，并执行它返回的归一化电机指令。在 C++ 里继承并重写 `_Implementation` 函数即可换成自己的飞控；蓝图子类也能用，但以物理频率（默认 1 kHz）经蓝图虚拟机运行，需要调大 `Controller Rate Divider`。
+  sourceHash: "17d677c41420"
+
+UUBotFlightController.ComputeMotorCommands:
+  summary: 返回这一步的归一化电机指令（0 到 1，按电机顺序每个转子一个）。`Delta Seconds` 是到下次调用的时间，单位 s。
+  sourceHash: "11a6e229ab7d"
+
+UUBotFlightController.ResetController:
+  summary: 清空飞控的记忆（积分项和目标），并接收它要飞的机架。
+  sourceHash: "f620ed89dba9"
+
+UUBotFlightController.SupportsControlMode:
+  summary: 这个飞控是否执行 `Mode` 的目标。电机模式不会到达飞控。
+  sourceHash: "12197ca4c482"

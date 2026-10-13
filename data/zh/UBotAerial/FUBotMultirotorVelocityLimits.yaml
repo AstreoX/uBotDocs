@@ -1,0 +1,27 @@
+Break:FUBotMultirotorVelocityLimits:
+  summary: 把 UBot Multirotor Velocity Limits 拆成最大水平速度、最大上升速度、最大下降速度和最大偏航角速度。
+  sourceHash: "e934269cab47"
+
+FUBotMultirotorVelocityLimits:
+  summary: 多旋翼的速度上限。超过上限的指令会被截断，水平方向保持不变。
+  sourceHash: "e42287853033"
+
+FUBotMultirotorVelocityLimits.MaxClimbSpeedMetersPerSecond:
+  summary: 最大上升速度，单位 m/s。默认 3 m/s。
+  sourceHash: "266c3946bddf"
+
+FUBotMultirotorVelocityLimits.MaxDescentSpeedMetersPerSecond:
+  summary: 最大下降速度，取正数，单位 m/s。默认 2 m/s。
+  sourceHash: "705a75d8bf7a"
+
+FUBotMultirotorVelocityLimits.MaxHorizontalSpeedMetersPerSecond:
+  summary: 最大水平速度（水平速度向量的模），单位 m/s。默认 10 m/s。
+  sourceHash: "8a31d5ea1f5e"
+
+FUBotMultirotorVelocityLimits.MaxYawRateRadiansPerSecond:
+  summary: 最大偏航角速度，单位 rad/s。默认 π/2 rad/s。
+  sourceHash: "75d70e0fca49"
+
+Make:FUBotMultirotorVelocityLimits:
+  summary: 用各字段组装一个 UBot Multirotor Velocity Limits。
+  sourceHash: "7f7625c8e7bf"
