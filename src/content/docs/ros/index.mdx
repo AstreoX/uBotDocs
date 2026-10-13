@@ -87,6 +87,7 @@ UE 是 TCP 客户端，桥是 TCP 服务器：蓝色箭头是 UE 发给 ROS 2 �
 | 把位姿、里程计、IMU、2D / 3D 激光雷达、RGB / 深度相机发布成 ROS 2 话题 | UE → ROS 2 | [发布传感器数据](/ros/publish-sensors/) |
 | 发布 `/tf`、聚合的 `/tf_static` 和 `/clock` | UE → ROS 2 | [TF 与 /clock](/ros/tf-and-clock/) |
 | 接收 `cmd_vel`，换算后交给实现了 `UBot Velocity Commandable` 的对象 | ROS 2 → UE | [接收 cmd_vel](/ros/cmd-vel/) |
+| 接收姿态、角速度和单电机指令，交给无人机（0.1.2 起） | ROS 2 → UE | [从 ROS 2 发飞行指令](/ros/flight-commands/) |
 | 连接桥，断线自动重连并重新注册 | UE ↔ 桥 | [连接与状态](/ros/connection/) |
 | 在 WSL 或 Linux 上运行桥 | — | [准备 ROS 2 端](/ros/ros2-setup/) |
 
@@ -106,6 +107,8 @@ ROS 2 端要另外准备：ROS 2 Humble 和桥节点 `ubot_ros_bridge`。桥的�
 | --- | --- | --- |
 | `uBot ROS Sensor Bridge` | 发现所属 Actor 上的 uBot 传感器，发布到 ROS 2，并发布传感器 TF | [uBot ROS Sensor Bridge](/reference/ubotros/uubotrossensorbridgecomponent/) |
 | `uBot ROS Velocity Command` | 订阅 `cmd_vel`，换算、限速后交给执行器，带超时 | [uBot ROS Velocity Command](/reference/ubotros/uubotrosvelocitycommandcomponent/) |
+| `uBot ROS Attitude Command` | 订阅 `cmd_attitude`，把姿态或角速度指令交给执行器，带超时（0.1.2 起） | [uBot ROS Attitude Command](/reference/ubotros/uubotrosattitudecommandcomponent/) |
+| `uBot ROS Motor Command` | 订阅 `cmd_motors`，把单电机指令交给执行器，带超时（0.1.2 起） | [uBot ROS Motor Command](/reference/ubotros/uubotrosmotorcommandcomponent/) |
 | `UBot ROSBridge Subsystem` | 每个 Game / PIE 世界一条 TCP 连接；`/tf`、`/tf_static` 和 `/clock` 由它发布 | [UBot ROSBridge Subsystem](/reference/ubotros/uubotrosbridgesubsystem/) |
 | `uBot ROS`（项目设置） | 桥的地址、端口，`/clock`，队列限制 | [uBot ROS](/reference/ubotros/uubotrossettings/) |
 | `IUBotROSSensorPublisherFactory` | 扩展点 `UBotROS.SensorPublisher`，为自定义传感器添加发布器；内置 7 个工厂，对应 UBotSensor 的 7 种传感器 | [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/) |
@@ -117,3 +120,4 @@ ROS 2 端要另外准备：ROS 2 Humble 和桥节点 `ubot_ros_bridge`。桥的�
 - [连接与状态](/ros/connection/)：地址、端口、连接状态和断线重连。
 - [发布传感器数据](/ros/publish-sensors/)：给 Actor 加 Sensor Bridge，在 ROS 2 里看到话题。
 - [接收 cmd_vel](/ros/cmd-vel/)：用 ROS 2 的速度指令驱动 Actor。
+- [从 ROS 2 发飞行指令](/ros/flight-commands/)：从 ROS 2 给无人机发姿态、角速度和电机指令。

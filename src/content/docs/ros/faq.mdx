@@ -96,6 +96,10 @@ uBotROS 的常见问题按主题分组，每题给出简短回答和详细说明
 
 UE 里 +Z 是向右偏航，所以 ROS 的 `angular.z = +0.25`（向左转）换算成 UE 的 `Z = -0.25`，目标收到的已经是换算后的 `Command`。在 `Apply Velocity Command` 里按 UE 的约定处理，见[接收 cmd_vel](/ros/cmd-vel/)。
 
+### 姿态 / 电机指令没反应？
+
+先看 `Get Command Error` 或 `On Command Error`：电机值的个数与目标的电机数不一致时指令不会下发。再确认目标接受这种指令，例如裸机级无人机不接受速度和姿态指令，导航无人机没有姿态和电机接口；ROS 2 端还要装 `ros-humble-mavros-msgs` 和 `ros-humble-actuator-msgs`。见[从 ROS 2 发飞行指令](/ros/flight-commands/)。
+
 ## 迁移与版本
 
 ### 旧的 Agent ROS Sensor Suite Publisher 怎么办？
