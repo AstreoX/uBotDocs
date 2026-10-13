@@ -1,6 +1,6 @@
 ---
 title: 插件之间怎么对接
-description: uBot 的插件靠四个接口对接：传感器、执行器、速度指令和感知介质，以及怎样在蓝图里实现它们。
+description: uBot 的插件靠接口对接：传感器、执行器、速度、姿态和电机指令，以及感知介质；谁实现、谁调用，以及怎样在蓝图里实现它们。
 pageKind: concept
 packages: [UBotCore]
 sidebar:
@@ -9,13 +9,15 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-uBot 的插件通过四个接口对接，而不是互相依赖对方的类，这些接口在蓝图里也可以实现。
+uBot 的插件通过接口对接，而不是互相依赖对方的类，这些接口在蓝图里也可以实现。
 
 | 接口 | 描述的是 |
 | --- | --- |
 | `UBot Sensor` | 能产生 uBot 样本的对象 |
 | `UBot Actuator` | 一个执行器（驱动、机械臂、夹爪等），与怎样给它下指令无关 |
 | `UBot Velocity Commandable` | 接受机体系（body frame）速度指令的对象 |
+| `UBot Attitude Commandable` | 接受姿态指令和角速度指令的飞行器（0.1.2 起） |
+| `UBot Motor Commandable` | 接受单个电机指令的飞行器（0.1.2 起） |
 | `UBot Perception Medium` | 影响感知的介质，比如烟、雾 |
 
 每个接口有几个函数，在蓝图里是调用这些节点：
@@ -23,18 +25,22 @@ uBot 的插件通过四个接口对接，而不是互相依赖对方的类，这
 - `UBot Sensor`：`Get Sensor Id`、`Get Sensor Frame Id`、`Get Sensor Type`、`Is Sensor Running`、`Get Latest Sensor Header`、`Get Sensor Frame Component`。
 - `UBot Actuator`：`Get Actuator Id`、`Get Actuator Type`、`Is Actuator Ready`。
 - `UBot Velocity Commandable`：`Apply Velocity Command`、`Stop Motion`。
+- `UBot Attitude Commandable`：`Apply Attitude Command`、`Apply Body Rate Command`、`Release Attitude Command`。
+- `UBot Motor Commandable`：`Apply Motor Command`、`Get Motor Count`、`Release Motor Command`。
 - `UBot Perception Medium`：`Get Medium Snapshot`。
 
-`UBot Sensor`、`UBot Actuator` 和 `UBot Velocity Commandable` 可以由 Actor 或组件实现；`UBot Perception Medium` 只能由 Actor 实现，传感器只收集实现了它的 Actor。谁实现、谁使用：
+`UBot Sensor`、`UBot Actuator` 和三个指令接口可以由 Actor 或组件实现；`UBot Perception Medium` 只能由 Actor 实现，传感器只收集实现了它的 Actor。谁实现、谁使用：
 
 | 接口 | 谁实现 | 谁使用 |
 | --- | --- | --- |
 | `UBot Sensor` | uBotSensor 的全部传感器组件，也可以是你自己的 | uBotROS 的 `uBot ROS Sensor Bridge` 用它找出 Actor 上的传感器并发布 |
 | `UBot Actuator` | 已发布的插件里还没有现成的实现 | 已发布的插件还没有用到它 |
-| `UBot Velocity Commandable` | 你自己的车辆、无人机等，Actor 或组件均可 | uBotROS 的 `uBot ROS Velocity Command` 把 `cmd_vel` 交给它 |
+| `UBot Velocity Commandable` | 你自己的车辆、无人机等，Actor 或组件均可；uBotAerial 的 `uBot Simple Flight` 和 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Velocity Command` 把 `cmd_vel` 交给它；uBotAerial 的 `uBot Multirotor Manual Input` |
+| `UBot Attitude Commandable` | uBotAerial 的 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Attitude Command`；uBotAerial 的 `uBot Multirotor Manual Input`（`Angle`、`Rate` 模式） |
+| `UBot Motor Commandable` | uBotAerial 的 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Motor Command` |
 | `UBot Perception Medium` | 你自己的烟雾、雾等 Actor | uBotSensor 的激光雷达和相机 |
 
-`UBot Velocity Commandable` 是独立的能力接口，实现它不要求同时实现 `UBot Actuator`。
+三个指令接口都是独立的能力接口，实现它们不要求同时实现 `UBot Actuator`。
 
 ## 例子：ROS 的速度指令驱动一个对象
 
@@ -48,7 +54,36 @@ uBotROS 只负责把 ROS 的 `cmd_vel` 翻译成 uBot 的速度指令（`UBot Ve
 
 目标由 `Target Component` 指定；留空时，Actor 实现了接口就用 Actor 本身，否则用 Actor 上第一个实现了接口的组件。
 
-收到的指令已经是 UE 的约定：机体系，X 前、Y 右、Z 上，线速度 m/s，角速度 rad/s，+Z 是向右偏航。ROS 里的符号差异由 uBotROS 换算好，见[坐标系与单位](/concepts/coordinates-and-units/)。
+收到的指令已经是 UE 的约定：机体系，X 前、Y 右、Z 上，线速度 m/s，角速度 rad/s，+Z 是向右偏航。会倾斜的接收者（无人机）按航向坐标系解释速度：X、Y 沿当前航向，Z 朝上。ROS 里的符号差异由 uBotROS 换算好，见[坐标系与单位](/concepts/coordinates-and-units/)。
+
+## 例子：飞行器的姿态、角速度和电机指令
+
+研究飞控时，除了速度，还要给飞行器发更底层的指令。uBotCore 0.1.2 起为此提供两个接口，以及三种指令结构体：
+
+| 指令 | 接口函数 | 内容 |
+| --- | --- | --- |
+| `UBot Attitude Command` | `Apply Attitude Command` | 目标姿态（机体到世界的四元数），可选按偏航角速度转航向 |
+| `UBot Body Rate Command` | `Apply Body Rate Command` | 机体系目标角速度（rad/s） |
+| `UBot Motor Command` | `Apply Motor Command` | 每个电机一个值，`Normalized`（0 到 1）或 `AngularVelocity`（rad/s） |
+
+姿态和角速度指令的推力有两种给法：`Use Thrust` 为 true 时用 `Normalized Thrust`（最大总推力的比例，0 到 1），否则由接收者按 `Vertical Velocity Meters Per Second` 控制升降，0 表示保持高度。
+
+发送方不再发送时，调用 `Release Attitude Command` 或 `Release Motor Command`，由飞行器自己兜底，比如悬停。`Apply …` 返回 false 表示拒绝，例如电机值的个数与 `Get Motor Count` 不符。
+
+在蓝图里用同名节点调用；C++ 里用 `UBot::Actuation::FindAttitudeCommandable` 和 `FindMotorCommandable` 在 Actor 上找到实现者。用 uBotAerial 的无人机时，实现者是 `uBot Multirotor Dynamics`，见 [物理无人机的指令与控制模式](/aerial/dynamics/)；从 ROS 2 下发这些指令见 [从 ROS 2 发飞行指令](/ros/flight-commands/)。
+
+```blueprint
+caption: 给实现了姿态指令接口的对象（变量 Drone）发一条横滚角速度指令，推力 55%
+nodes:
+  V: { var: Drone, class: UUBotAttitudeCommandable }
+  M: { ref: UKismetMathLibrary.MakeVector, set: { X: 1 } }
+  C: { ref: Make:FUBotBodyRateCommand, hideUnconnected: true, set: { bUseThrust: true, NormalizedThrust: 0.55 } }
+  D: UUBotAttitudeCommandable.ApplyBodyRateCommand
+wires:
+  - V.Drone -> D.self
+  - M.ReturnValue -> C.BodyRateRadiansPerSecond
+  - C.UBotBodyRateCommand -> D.Command
+```
 
 ## 例子：感知介质影响传感器
 
@@ -104,5 +139,7 @@ notes:
 ## 相关页面
 
 - [接收 cmd_vel](/ros/cmd-vel/)：`uBot ROS Velocity Command` 组件的属性、超时和限速。
+- [从 ROS 2 发飞行指令](/ros/flight-commands/)：姿态、角速度和电机指令组件。
+- [物理无人机的指令与控制模式](/aerial/dynamics/)：实现这些接口的无人机。
 - [感知介质](/sensor/medium/)：在蓝图里实现一个介质。
 - [在 C++ 中使用传感器与接口](/develop/cpp/)：查找实现了接口的对象，调用和实现接口。
