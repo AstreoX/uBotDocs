@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { checkEngineLists, entryRequirement, mergeEngineLists, parseEngineList, readEngineLists, requiredModules } from "../lib/engine-nodes.mjs";
+import { checkEngineLists, entryRequirements, mergeEngineLists, parseEngineList, readEngineLists, requiredModules } from "../lib/engine-nodes.mjs";
 import { root } from "./helpers.mjs";
 
 const core = { rel: "data/engine-nodes/core.txt", text: "# core\n/Script/Engine.KismetSystemLibrary:PrintString\nnode /Script/BlueprintGraph.K2Node_IfThenElse   # Branch\n\n" };
@@ -40,9 +40,40 @@ test("merging keeps every entry once, with its source file and line for error me
 });
 
 test("what entries need from the engine: script modules and plugin content mounts", () => {
-  assert.deepEqual(entryRequirement("event /Script/Engine.Actor:ReceiveTick"), { module: "Engine" });
-  assert.deepEqual(entryRequirement("macro /Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForLoop"), { mount: "Engine" });
+  assert.deepEqual(entryRequirements("event /Script/Engine.Actor:ReceiveTick"), [{ module: "Engine" }]);
+  assert.deepEqual(entryRequirements("macro /Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForLoop"), [{ mount: "Engine" }]);
   assert.deepEqual(requiredModules([core, vehicles]), { modules: ["BlueprintGraph", "ChaosVehicles", "Engine"], mounts: ["ChaosVehicles"] });
+});
+
+test("a Get Subsystem node names its subsystem class and needs both modules", () => {
+  const entry = "node /Script/BlueprintGraph.K2Node_GetSubsystem /Script/UBotDemo.DemoSubsystem";
+  const list = { rel: "data/engine-nodes/demo.txt", text: "node /Script/BlueprintGraph.K2Node_GetSubsystem\t /Script/UBotDemo.DemoSubsystem  # Get Subsystem\n" };
+  assert.deepEqual(parseEngineList(list.text), [{ line: 1, entry }], "the paths are separated by one space");
+  assert.deepEqual(checkEngineLists([list]), []);
+  assert.deepEqual(entryRequirements(entry), [{ module: "BlueprintGraph" }, { module: "UBotDemo" }]);
+  assert.deepEqual(requiredModules([list]), { modules: ["BlueprintGraph", "UBotDemo"], mounts: [] });
+  for (const node of ["K2Node_GetSubsystemFromPC", "K2Node_GetEngineSubsystem"]) {
+    assert.deepEqual(checkEngineLists([{ rel: "x.txt", text: `node /Script/BlueprintGraph.${node} /Script/Engine.SomeSubsystem\n` }]), [], node);
+  }
+  // The node with another subsystem is another entry; the same subsystem twice is a duplicate.
+  const twice = { rel: "x.txt", text: `${entry}\nnode /Script/BlueprintGraph.K2Node_GetSubsystem /Script/UBotDemo.OtherSubsystem\n${entry}\n` };
+  const f = checkEngineLists([twice]);
+  assert.deepEqual(f.map((x) => x.line), [3]);
+  assert.match(f[0].message, /listed twice \(first on line 1\)/);
+});
+
+test("only the Get Subsystem nodes take a class, and only one class path", () => {
+  const bad = [
+    "node /Script/BlueprintGraph.K2Node_IfThenElse /Script/UBotDemo.DemoSubsystem",
+    "event /Script/Engine.Actor:ReceiveTick /Script/Engine.Actor",
+    "node /Script/BlueprintGraph.K2Node_GetSubsystem DemoSubsystem",
+    "node /Script/BlueprintGraph.K2Node_GetSubsystem /Script/UBotDemo.DemoSubsystem:Tick",
+    "node /Script/BlueprintGraph.K2Node_GetSubsystem /Script/UBotDemo.DemoSubsystem /Script/UBotDemo.Other",
+    "node /Script/Engine.K2Node_GetSubsystem /Script/UBotDemo.DemoSubsystem",
+  ];
+  const f = checkEngineLists([{ rel: "x.txt", text: bad.join("\n") }]);
+  assert.deepEqual(f.map((x) => x.line), [1, 2, 3, 4, 5, 6]);
+  assert.ok(f[0].message.includes("node /Script/BlueprintGraph.K2Node_GetSubsystem /Script/Module.Subsystem"), "the message shows the form");
 });
 
 test("the repository's lists are valid; the merge script writes the commandlet's file and locates lines", () => {

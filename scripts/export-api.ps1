@@ -22,9 +22,10 @@
 
   Before anything runs, the script checks the project: every plugin to export must be enabled in the
   .uproject (listed with "Enabled": true, or found through AdditionalPluginDirectories and not
-  disabled), and every engine plugin the node lists or the packages' "enginePlugins" need must be
-  available. It prints exactly what to add when something is missing. -SkipEngine skips only the node
-  lists (their modules and content mount points); the packages' "enginePlugins" are always checked.
+  disabled), every engine plugin the node lists or the packages' "enginePlugins" need must be
+  available, and so must every uBot package whose class a node list names (the subsystem of a Get
+  Subsystem node). It prints exactly what to add when something is missing. -SkipEngine skips only the
+  node lists (their modules and content mount points); the packages' "enginePlugins" are always checked.
 
   The commandlet exits with 1 on any error (unknown plugin, an entry of the node list that does not
   resolve, a -MergeZh file of another plugin, ...); this script stops at the first failure and prints
@@ -121,32 +122,37 @@ function Find-ProjectPlugin([string]$Name) {
 }
 
 $problems = New-Object System.Collections.Generic.List[string]
-$enabledProjectPlugins = @()
-foreach ($plugin in $Plugins) {
-    $folder = $released[$plugin].Folder
-    $pluginRoot = Join-Path $PluginsDir $folder
+
+# Is the uBot package checked out in $PluginsDir and enabled in the project? Otherwise adds what to
+# change to $problems. $Why names what needs the package besides its own export.
+function Test-PackageEnabled([string]$plugin, [string]$Why = '') {
+    $name = if ($Why) { "$plugin (needed by $Why)" } else { $plugin }
+    $pluginRoot = Join-Path $PluginsDir $released[$plugin].Folder
     if (-not (Test-Path (Join-Path $pluginRoot "$plugin.uplugin"))) {
-        $problems.Add("$plugin is not checked out at $pluginRoot ($plugin.uplugin missing; use -PluginsDir, or clone its repository there)")
-        continue
+        $problems.Add("$name is not checked out at $pluginRoot ($plugin.uplugin missing; use -PluginsDir, or clone its repository there)")
+        return $false
     }
     $entry = $projectPlugins[$plugin]
     if ($entry -and $entry.Enabled -eq $false) {
-        $problems.Add("$plugin is disabled in $Project. Change its entry in ""Plugins"" to: { ""Name"": ""$plugin"", ""Enabled"": true }")
-        continue
+        $problems.Add("$name is disabled in $Project. Change its entry in ""Plugins"" to: { ""Name"": ""$plugin"", ""Enabled"": true }")
+        return $false
     }
-    if ($entry -and $entry.Enabled -eq $true) { $enabledProjectPlugins += $plugin; continue }
+    if ($entry -and $entry.Enabled -eq $true) { return $true }
     $found = Find-ProjectPlugin $plugin
     if ($found) {
-        $descriptor = Read-Json $found
-        if ($descriptor.EnabledByDefault -eq $false) {
-            $problems.Add("$plugin is found through AdditionalPluginDirectories but not enabled by default. Add to ""Plugins"" in ${Project}: { ""Name"": ""$plugin"", ""Enabled"": true }")
-        }
-        else { $enabledProjectPlugins += $plugin }
-        continue
+        if ((Read-Json $found).EnabledByDefault -ne $false) { return $true }
+        $problems.Add("$name is found through AdditionalPluginDirectories but not enabled by default. Add to ""Plugins"" in ${Project}: { ""Name"": ""$plugin"", ""Enabled"": true }")
+        return $false
     }
     $relative = $PluginsDir
     try { $relative = [System.Uri]::new($projectDir.TrimEnd('\') + '\').MakeRelativeUri([System.Uri]::new($PluginsDir)).ToString() -replace '%20', ' ' } catch { }
-    $problems.Add("$plugin is not part of $Project. Add to ""Plugins"": { ""Name"": ""$plugin"", ""Enabled"": true }, and make the folder visible: add ""$relative"" to ""AdditionalPluginDirectories"" (or copy $pluginRoot into $(Join-Path $projectDir 'Plugins'))")
+    $problems.Add("$name is not part of $Project. Add to ""Plugins"": { ""Name"": ""$plugin"", ""Enabled"": true }, and make the folder visible: add ""$relative"" to ""AdditionalPluginDirectories"" (or copy $pluginRoot into $(Join-Path $projectDir 'Plugins'))")
+    return $false
+}
+
+$enabledProjectPlugins = @()
+foreach ($plugin in $Plugins) {
+    if (Test-PackageEnabled $plugin) { $enabledProjectPlugins += $plugin }
 }
 
 # Is <Module> a module of the engine's own source? Most sit in Engine\Source\{Runtime,Editor,Developer}\<Module>,
@@ -176,9 +182,24 @@ $unresolved = @()
 if (-not $SkipEngine) {
     $needs = (& node (Join-Path $repoRoot 'scripts\engine-nodes.mjs') modules) | ConvertFrom-Json
     if ($LASTEXITCODE -ne 0) { throw "scripts\engine-nodes.mjs modules failed" }
+    # A list may name a class of a uBot package (the subsystem of a Get Subsystem node): that package
+    # must be enabled. Its modules come from the descriptors of the packages checked out in $PluginsDir.
+    $packageOfModule = @{}
+    foreach ($name in $released.Keys) {
+        $descriptor = Join-Path (Join-Path $PluginsDir $released[$name].Folder) "$name.uplugin"
+        if (Test-Path $descriptor) {
+            foreach ($m in @((Read-Json $descriptor).Modules)) { if ($m -and $m.Name) { $packageOfModule[[string]$m.Name] = $name } }
+        }
+    }
+    $listPackages = [ordered]@{}
     foreach ($module in @($needs.modules)) {
         if (-not $module) { continue }
+        if ($packageOfModule.ContainsKey($module)) { $listPackages[$packageOfModule[$module]] = "module $module in data\engine-nodes"; continue }
         if (-not (Test-EngineSourceModule $module)) { $unresolved += $module }
+    }
+    foreach ($name in $listPackages.Keys) {
+        if ($Plugins -contains $name) { continue }
+        if (Test-PackageEnabled $name $listPackages[$name]) { $enabledProjectPlugins += $name }
     }
     foreach ($mount in @($needs.mounts)) { if ($mount) { $requiredEngine[[string]$mount] = "content /$mount/ in data\engine-nodes" } }
 }
@@ -193,7 +214,7 @@ if ($unresolved.Count -gt 0 -or $requiredEngine.Count -gt 0) {
     }
     foreach ($module in $unresolved) {
         if ($moduleOwner.ContainsKey($module)) { $requiredEngine[$moduleOwner[$module]] = "module $module in data\engine-nodes" }
-        else { $problems.Add("data\engine-nodes: module /Script/$module is neither an engine module nor in an engine plugin of $EnginePath") }
+        else { $problems.Add("data\engine-nodes: module /Script/$module is neither an engine module, nor in an engine plugin of $EnginePath, nor in a uBot package checked out in $PluginsDir") }
     }
     # Plugins that enabled project plugins pull in through their own descriptors.
     $pulledIn = @{}

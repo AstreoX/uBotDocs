@@ -10,4 +10,5 @@
 /Script/Engine.KismetMathLibrary:MakeRotator
 /Script/Engine.KismetMathLibrary:MakeVector
 /Script/Engine.KismetMathLibrary:Multiply_VectorFloat
+node /Script/BlueprintGraph.K2Node_GetSubsystem /Script/UBotAerial.UBotWindSubsystem
 macro /Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForEachLoop

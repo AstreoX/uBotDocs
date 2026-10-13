@@ -293,16 +293,30 @@ Finding node ids and pins:
 - The node index page `/reference/nodes/` in `npm run dev`, last column.
 - `grep -n '"id": "' data/api/UBotSensor.json`. Ids are `<OwnerCpp>.<Function>` (for example
   `UUBotImuSensorComponent.GetLatestIMUData`), `Break:<FStruct>` / `Make:<FStruct>`, a K2Node
-  class name for special nodes (`K2Node_IfThenElse` is Branch) or `Macro:<Name>` for standard macros
+  class name for special nodes (`K2Node_IfThenElse` is Branch), `<K2NodeClass>:<Class>` for the getter
+  of a subsystem (`K2Node_GetSubsystem:UUBotWindSubsystem`) or `Macro:<Name>` for standard macros
   (`Macro:ForLoop`).
 
 If an engine node you need is not in `data/api/engine.json`, use an `inline` node (it produces a check
 warning) and add its path to a list in `data/engine-nodes/` in the same PR (`core.txt` for general
-nodes; nodes only one manual needs into the file of its area: `sensor.txt` and `ros.txt` (empty for now), or
+nodes; nodes only one manual needs into the file of its area: `sensor.txt`, `ros.txt`, `aerial.txt`, or
 `vehicles.txt` for nodes of an engine plugin), e.g.
 `/Script/Engine.KismetMathLibrary:Add_VectorVector`, `event /Script/Engine.Actor:ReceiveEndPlay`,
-`node /Script/BlueprintGraph.K2Node_DynamicCast`. The next local export picks it up; then replace the
+`node /Script/BlueprintGraph.K2Node_MakeArray`. The next local export picks it up; then replace the
 inline node with its id.
+
+- `node <K2Node class>` is only for nodes the editor's menu offers as they are (Branch, Sequence, Make
+  Array). The export refuses a node the menu offers only set up for a type, function or variable
+  (`Cast To …`, `Make <Struct>`, `Switch on <Enum>`): list the function, event or macro instead.
+- The getter of a subsystem takes the subsystem class after the node class:
+  `node /Script/BlueprintGraph.K2Node_GetSubsystem /Script/UBotAerial.UBotWindSubsystem` (the class
+  path has no `U` prefix). It works for World, GameInstance, LocalPlayer and AudioEngine subsystems of
+  the engine or of a uBot package; `K2Node_GetSubsystemFromPC` (a LocalPlayer subsystem from a Player
+  Controller) and `K2Node_GetEngineSubsystem` take a class the same way. The id is
+  `K2Node_GetSubsystem:UUBotWindSubsystem`. The menu lists the node as `Get UBotWindSubsystem`; in the
+  graph it is a compact node titled with the class's display name (`uBot Wind Subsystem`), and that is
+  the exported title. A class of a uBot package goes into that package's area file, and
+  `scripts/export-api.ps1` checks that the package is enabled in the project.
 
 ## Generated reference and Chinese summaries
 

@@ -1,6 +1,7 @@
 # UE engine nodes that only the uBotROS manual (src/content/docs/ros/) needs: timers, string
 # conversion for topic names, ... Nodes every page may use belong in core.txt.
 # One entry per line: /Script/Module.Class:Function, event /Script/Module.Class:Event,
-# node /Script/Module.K2Node_X or macro /Path/Lib.Lib:Macro. scripts/export-api.ps1 merges every
+# node /Script/Module.K2Node_X, node /Script/BlueprintGraph.K2Node_GetSubsystem /Script/Module.Subsystem
+# (the Get Subsystem node of one subsystem) or macro /Path/Lib.Lib:Macro. scripts/export-api.ps1 merges every
 # data/engine-nodes/*.txt and writes data/api/engine.json. See CLAUDE.md, "Blueprint graphs".
 

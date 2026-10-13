@@ -459,6 +459,45 @@
       ]
     },
     {
+      "id": "K2Node_GetSubsystem:UUBotWindSubsystem",
+      "kind": "node",
+      "title": "uBot Wind Subsystem",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "World Subsystems",
+      "tooltip": "Get uBot Wind Subsystem (World Subsystem)\n\nThe wind of a world: the sum of every enabled uBot Wind actor and the scripted wind set from\nBlueprint. The field is uniform in space; the location argument is there for future use.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "uBot Wind Subsystem",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotWindSubsystem",
+            "subtypeDisplay": "uBot Wind Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "K2Node_IfThenElse",
       "kind": "node",
       "title": "Branch",
