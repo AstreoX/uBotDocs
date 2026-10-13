@@ -6,14 +6,87 @@ sidebar:
   order: 80
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 开头一句话：这一页解决什么问题
-- [ ] 快速用法（一张节点图）
-- [ ] 步骤
-- [ ] 关键属性（表，只列常用的）
-- [ ] 输出与事件
-- [ ] 注意事项
-- [ ] 相关参考
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+在关卡里放一个 `uBot Wind` 加上恒定风和阵风，并用蓝图在运行时改变它。
+
+## 快速用法
+
+下面把关卡里的风改成 3 m/s 的侧风并打开：
+
+```blueprint
+caption: 把关卡里的 uBot Wind 改成 3 m/s 的侧风并打开
+nodes:
+  A: AActor.ReceiveBeginPlay
+  G: { ref: UGameplayStatics.GetActorOfClass, set: { ActorClass: UBotWind } }
+  V: { ref: UKismetMathLibrary.MakeVector, set: { Y: 3 } }
+  M: { ref: Make:FUBotWindSettings, hideUnconnected: true }
+  S: AUBotWind.SetWindSettings
+  E: { ref: AUBotWind.SetWindEnabled, set: { bNewEnabled: true } }
+wires:
+  - A.then -> G.execute
+  - G.then -> S.execute
+  - G.ReturnValue -> S.self
+  - G.ReturnValue -> E.self
+  - V.ReturnValue -> M.ConstantVelocityMetersPerSecond
+  - M.UBotWindSettings -> S.NewSettings
+  - S.then -> E.execute
+notes:
+  V: Y 为 3：世界系的风速，即空气移动的方向，单位 m/s。
+```
+
+## 步骤
+
+<Steps>
+
+1. **放风源**
+
+   把 `uBot Wind` 拖进关卡。风在整个关卡里均匀地吹，与位置无关；多个 Actor 的风叠加。编辑器里的箭头显示恒定风的方向，游戏中隐藏。
+
+2. **设置风**
+
+   在「Details」面板填 `Settings`：恒定风速、阵风的标准差、相关时间和种子。
+
+3. **控制是否生效**
+
+   `bEnabled` 决定这个 Actor 的风是否吹。运行时用 `Set Wind Settings` 和 `Set Wind Enabled` 改变。
+
+4. **让某架无人机不受风**
+
+   在这架无人机的 `Movement` 组件上关闭 `bEnableWind`。
+
+</Steps>
+
+试飞关卡里有一个默认关闭的风源：恒定 (0, 5, 0) m/s，阵风标准差 (1, 1, 0.3) m/s。
+
+## 关键属性
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `bEnabled` | 开 | 这个 Actor 的风是否吹 |
+| `Settings.ConstantVelocityMetersPerSecond` | (0, 0, 0) | 恒定风速，世界系，单位 m/s |
+| `Settings.GustStandardDeviationMetersPerSecond` | (0, 0, 0) | 每个世界轴阵风的标准差，单位 m/s；0 关闭阵风 |
+| `Settings.GustCorrelationTimeSeconds` | 2 s | 阵风的典型持续时间，越长越平缓，不小于 0.05 s |
+| `Settings.Seed` | 0 | 阵风的种子 |
+
+## 输出与事件
+
+风来自两处，全部叠加：关卡里的 `uBot Wind` Actor，和用风子系统 `uBot Wind Subsystem` 的 `Set Scripted Wind` 设置的风。
+
+- `Set Scripted Wind(Settings, Enabled)`：设置一份与关卡里的 `uBot Wind` 叠加的风，`Enabled` 为 false 时清除。
+- `Get Wind Velocity At(Location Cm)`：当前仿真时间、该位置的风速，单位 m/s。
+
+这两个节点在 `uBot Wind Subsystem` 上，要先用引擎的 `Get World Subsystem` 取得它，风子系统只在 Game 和 PIE 世界里存在。
+
+阵风是每个世界轴 8 个正弦分量的和，由种子预先生成，并按标准差和相关时间缩放。结果只取决于设置和仿真时间：多架无人机查到的风一样，同样的设置在同样的时刻给出同样的风。
+
+## 注意事项
+
+- 导航无人机把风当作有界的扰动：恒定风被补偿，不产生位移；风速变化时先随风漂移，再按 `WindRejectionTimeConstantSeconds`（默认 1 s）补偿，漂移速度是风速变化的 `WindResponse`（默认 0.5）倍。
+- 物理和裸机无人机按相对空气的速度计算阻力。悬停时内置飞控的位置保持把无人机拉回，机体向来风方向倾斜。
+- `uBot Wind` 在 `BeginPlay` 时向风子系统登记。
+
+## 相关参考
+
+- [uBot Wind](/reference/ubotaerial/aubotwind/) 和 [uBot Wind Subsystem](/reference/ubotaerial/uubotwindsubsystem/)：全部节点和属性。
+- [用速度指令飞导航无人机](/aerial/simple-flight/) 和 [物理无人机的指令与控制模式](/aerial/dynamics/)：两类无人机对风的响应。
