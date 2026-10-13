@@ -6,14 +6,70 @@ sidebar:
   order: 90
 ---
 
-{/* STUB */}
-{/*
-待写章节（功能页，章节顺序见 docs-templates/feature.mdx）：
-- [ ] 开头一句话：这一页解决什么问题
-- [ ] 快速用法（一张节点图）
-- [ ] 步骤
-- [ ] 关键属性（表，只列常用的）
-- [ ] 输出与事件
-- [ ] 注意事项
-- [ ] 相关参考
-*/}
+import { Steps } from "@astrojs/starlight/components";
+
+了解无人机碰到地面、墙和其他物体时的行为，并用 `On Impact` 在蓝图里得知撞击。
+
+## 快速用法
+
+无人机撞上东西，开始接触且沿表面法线的速度够大时，`Movement` 组件触发 `On Impact`：
+
+```blueprint
+caption: 撞击时在屏幕上显示撞击速度（m/s）
+nodes:
+  A: { ref: UUBotMultirotorMovementComponent.OnImpact, component: Movement }
+  S: UKismetStringLibrary.Conv_DoubleToString
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - A.then -> P.execute
+  - A.ImpactSpeedMetersPerSecond -> S.InDouble
+  - S.ReturnValue -> P.InString
+```
+
+## 步骤
+
+<Steps>
+
+1. **选中 `Movement` 组件**
+
+   在无人机蓝图的「Components」面板里选中 `Movement`。
+
+2. **添加事件**
+
+   在「Details」面板的「Events」区点 `On Impact` 旁的「+」，照上图连线。
+
+3. **按需调整**
+
+   `ImpactEventMinSpeedMetersPerSecond` 决定多慢的撞击不触发事件；`ContactFriction` 决定沿表面滑动时的损失。
+
+</Steps>
+
+## 关键属性
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `ImpactEventMinSpeedMetersPerSecond` | 0.3 m/s | 沿表面法线的撞击速度低于它时不触发 `On Impact` |
+| `ContactFriction` | 0.3 | 接触时滑动速度减少撞击速度的这个比例 |
+
+## 输出与事件
+
+`On Impact` 的参数是 `Hit`（命中结果）和 `Impact Speed Meters Per Second`（撞击速度，m/s）。事件在每帧的 tick 末尾按发生顺序触发，处理函数里可以再发指令。
+
+另有两个节点处理重置和移动：
+
+- `Reset Flight`：停止所有运动、清除当前指令，并在当前位姿重新悬停。
+- `Teleport Multirotor(New Location, New Rotation, Stop Motion)`：不扫掠地移动无人机，位置单位是 cm。`Stop Motion` 为 true（默认）时速度清零并在新位置悬停，否则保持速度继续飞。
+
+## 注意事项
+
+- 地面、墙和其他物体都只是碰撞面：无人机在表面前停住，沿表面滑动，接触期间照常执行每一条指令。没有着陆、起飞或坠毁状态，旋翼在地面上不会停转。
+- 开始时和 `Reset Flight` 之后，无人机都在当前位置悬停，放在地面上也一样。
+- 撞得再重也只触发 `On Impact`，无人机继续飞行，继续接受指令。
+- 每个物理步长，飞行模型沿运动方向扫掠根组件的碰撞形状，忽略无人机自己；旋转不参与扫掠，起点就嵌在几何体里时被推出。
+- 物理无人机的指令不会往最近 50 ms 内接触过的表面里推：在地面上按住下降键后紧接着上升，无人机立刻升起，不会迟钝。
+- 用 `Set Actor Location` 等从外部移动无人机时，飞行模型在下一帧接管新位姿，速度保持。
+
+## 相关参考
+
+- [uBot Multirotor Movement](/reference/ubotaerial/uubotmultirotormovementcomponent/)：`On Impact`、`Reset Flight` 和 `Teleport Multirotor`。
+- [示例无人机与试飞关卡](/aerial/examples/)：试飞关卡里有墙、斜墙、平台和立柱可以撞。
