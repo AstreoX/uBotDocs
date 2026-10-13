@@ -6,8 +6,54 @@ sidebar:
   order: 100
 ---
 
-{/* STUB */}
-{/*
-待写章节（常见问题，章节顺序见 docs-templates/faq.mdx）：
-- [ ] 按主题分组（二级标题），每题 1–3 句加链接
-*/}
+uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说明的链接。
+
+## 示例与安装
+
+### 为什么在 Content Browser 里看不到示例无人机？
+
+插件的 Content 默认不显示。打开 Content Browser 的「Settings > Show Plugin Content」就能看到 `/UBotAerial/` 下的示例蓝图和地图，见 [示例无人机与试飞关卡](/aerial/examples/)。
+
+### 修改了插件里的示例，更新插件后改动不见了怎么办？
+
+直接改的是插件里的原资产，更新插件时会被覆盖。先把示例复制到自己的工程再改：在示例上右键「Duplicate」后移到 `/Game` 下，或用「Asset Actions > Migrate」。见 [示例无人机与试飞关卡](/aerial/examples/#改成自己的)。
+
+### 示例无人机放在地面上，怎么起飞？
+
+不需要起飞：地面只是碰撞面，直接按方向键就贴着地面移动，按 Space 立刻上升。见 [碰撞](/aerial/collision/)。
+
+## 控制
+
+### 按键没有反应怎么办？
+
+依次检查三项：本地玩家是否在控制这架 Pawn（`Auto Possess Player` 或 `Possess`）；工程的「Default Player Input Class」是否是 Enhanced Input 的类；`Flight Mode` 是否是无人机能接受的。见 [键盘和手柄手动飞行](/aerial/manual-flight/)。
+
+### 为什么指令返回 `false`？
+
+有四种常见原因：这种指令被 `bAcceptVelocityCommands` 等属性关闭，裸机级无人机不接受速度和姿态指令；指令含 NaN；电机指令的个数不等于电机数；姿态四元数的长度接近 0。见 [物理无人机的指令与控制模式](/aerial/dynamics/#注意事项)。
+
+### 物理无人机在风里越飘越远，怎么让它停在原地？
+
+发零速度的速度指令只跟踪零速度，不锁定位置。要刹停并锁定位置，调用 `Stop Motion`。见 [物理无人机的指令与控制模式](/aerial/dynamics/#注意事项)。
+
+### Blueprint 写的飞控太慢怎么办？
+
+蓝图控制器每个物理步（默认 1 kHz）都经过蓝图虚拟机运行。写成 C++ 子类，或调大 `ControllerRateDivider`。见 [自己写飞控](/aerial/flight-controller/#注意事项)。
+
+## 行为
+
+### 为什么无人机撞上东西不会坠毁？
+
+插件不模拟坠毁。撞击只触发 `On Impact`，无人机继续飞行并接受指令。见 [碰撞](/aerial/collision/)。
+
+### 导航无人机加速时，挂在根组件上的传感器为什么不倾斜？
+
+默认 `TiltMode` 是 `Visual`，只有外观倾斜，根组件始终水平。要让根组件倾斜，把 `TiltMode` 设为 `Body`。见 [用速度指令飞导航无人机](/aerial/simple-flight/#注意事项)。
+
+### 运行中改了 `Airframe` 为什么没有效果？
+
+机架的改动在下一次 `Reset Flight` 生效。见 [自己拼一架无人机](/aerial/build-a-drone/#注意事项)。
+
+### 日志提示一帧需要的物理步数超过上限是什么意思？
+
+一帧太长，需要的物理步数超过了 `MaxStepsPerFrame`（默认 250），多出的时间被跳过。调大 `MaxStepsPerFrame` 或降低 `PhysicsRateHz`。
