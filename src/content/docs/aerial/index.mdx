@@ -14,13 +14,13 @@ uBotAerial 是规划中的多旋翼无人机插件，目前尚未发布。
 
 ## 定位
 
-给仿真提供现成的四旋翼无人机，按研究需要分三类：
+给仿真提供四旋翼无人机，按研究需要分三类。插件的 C++ 提供飞控和动力学组件；三类无人机是插件内容里的示例蓝图，由这些组件拼成，可以直接放进关卡，也可以复制后修改。另附一个试飞关卡。
 
-| 无人机 | 适合 | 接收的指令 |
+| 示例蓝图 | 适合 | 接收的指令 |
 | --- | --- | --- |
-| `uBot Navigation Drone` | 研究导航、规划，不关心飞控 | 速度、偏航角速度 |
-| `uBot Physics Drone` | 需要真实的动力学，用内置飞控 | 速度、姿态 |
-| `uBot Bare Airframe Drone` | 研究飞控，控制器自己写 | 角速度加推力、单电机 |
+| `BP_UBotNavigationDrone` | 研究导航、规划，不关心飞控 | 速度、偏航角速度 |
+| `BP_UBotPhysicsDrone` | 需要真实的动力学，用内置飞控 | 速度、姿态 |
+| `BP_UBotBareAirframeDrone` | 研究飞控，控制器自己写 | 角速度加推力、单电机 |
 
 后两类共用同一套刚体动力学，由插件按仿真时钟以固定步长计算，结果与帧率无关。在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
 
@@ -28,7 +28,7 @@ uBotAerial 是规划中的多旋翼无人机插件，目前尚未发布。
 
 | 能力标签 | 含义 |
 | --- | --- |
-| `Actuation.Velocity` | 速度指令：三类无人机都实现 uBotCore 的 `UBot Velocity Commandable` |
+| `Actuation.Velocity` | 速度指令：三类无人机的移动组件都实现 uBotCore 的 `UBot Velocity Commandable` |
 | `Actuation.Attitude` | 姿态指令和角速度指令（物理级、裸机级） |
 | `Actuation.Motor` | 单电机指令（裸机级） |
 | `Body.Multirotor` | 多旋翼机体：质量、惯量和转子布局可以配置 |
