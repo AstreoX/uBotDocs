@@ -1,0 +1,11 @@
+EUBotMotorCommandMapping:
+  summary: 归一化电机指令（0 到 1）如何换算成转子转速。
+  sourceHash: "11f05f2e6667"
+
+EUBotMotorCommandMapping.Speed:
+  summary: 转速随指令线性增长：转速 = 最大转速 × 指令。
+  sourceHash: "f15cfcb2dd4b"
+
+EUBotMotorCommandMapping.Thrust:
+  summary: 推力随指令线性增长：转速 = 最大转速 × sqrt(指令)。
+  sourceHash: "ff2aba451631"

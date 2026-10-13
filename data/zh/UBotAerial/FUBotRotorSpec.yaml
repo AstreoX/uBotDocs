@@ -1,0 +1,35 @@
+Break:FUBotRotorSpec:
+  summary: 把 UBot Rotor Spec 拆成位置、旋向、推力系数、扭矩系数、最大转速和电机时间常数。
+  sourceHash: "4f1d6a632a10"
+
+FUBotRotorSpec:
+  summary: 多旋翼的一个旋翼：位置、旋向和电机参数。
+  sourceHash: "3ad23ed3958b"
+
+FUBotRotorSpec.MaxSpeedRadiansPerSecond:
+  summary: 旋翼最大转速，单位 rad/s。默认 1100 rad/s。
+  sourceHash: "dd7bd0b6905f"
+
+FUBotRotorSpec.MotorTimeConstantSeconds:
+  summary: 电机转速的一阶时间常数，单位 s。默认 0.02 s。
+  sourceHash: "4e02e727a0f1"
+
+FUBotRotorSpec.PositionMeters:
+  summary: 旋翼轴心在机体系中的位置，单位 m（UE 坐标轴：X 向前，Y 向右，Z 向上）。
+  sourceHash: "f403fbf1faf2"
+
+FUBotRotorSpec.SpinDirection:
+  summary: 从上方看的旋向。机体受到方向相反的反扭矩。
+  sourceHash: "25fb8213ea1d"
+
+FUBotRotorSpec.ThrustCoefficient:
+  summary: 推力系数，推力 = 系数 × 转速²，单位 N/(rad/s)²。默认 5.84e-6。
+  sourceHash: "d8e4354719b4"
+
+FUBotRotorSpec.TorqueCoefficient:
+  summary: 扭矩系数，反扭矩 = 系数 × 转速²，单位 N·m/(rad/s)²。默认 9.344e-8。
+  sourceHash: "6060abb88800"
+
+Make:FUBotRotorSpec:
+  summary: 用各字段组装一个 UBot Rotor Spec。
+  sourceHash: "ce26475ecc25"

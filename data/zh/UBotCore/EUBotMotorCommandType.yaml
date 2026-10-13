@@ -1,0 +1,11 @@
+EUBotMotorCommandType:
+  summary: 电机指令里各个值的含义。
+  sourceHash: "ed8d13dacebc"
+
+EUBotMotorCommandType.AngularVelocity:
+  summary: 电机转速，单位 rad/s。
+  sourceHash: "6f448f63d1a8"
+
+EUBotMotorCommandType.Normalized:
+  summary: 占每台电机最大值的比例，范围 0 到 1。
+  sourceHash: "4f4ab1ca58ce"

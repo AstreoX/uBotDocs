@@ -1,0 +1,11 @@
+UUBotWindSubsystem:
+  summary: 世界的风：所有已启用的 `uBot Wind` Actor 加上蓝图设置的脚本风的总和。风场空间均匀，位置参数仅为以后扩展保留。
+  sourceHash: "d069a5467893"
+
+UUBotWindSubsystem.GetWindVelocityAt:
+  summary: 返回某个位置（世界坐标，单位 cm）此刻的风速，单位 m/s。
+  sourceHash: "71720b6fdcb0"
+
+UUBotWindSubsystem.SetScriptedWind:
+  summary: 设置一个叠加在关卡里 `uBot Wind` Actor 之上的风；`Enabled` 关闭时清除它。
+  sourceHash: "ae02dc5b1709"

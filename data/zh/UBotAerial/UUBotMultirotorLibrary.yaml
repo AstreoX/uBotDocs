@@ -1,0 +1,11 @@
+UUBotMultirotorLibrary:
+  summary: uBot 多旋翼的辅助函数。
+  sourceHash: "aebf44a9b971"
+
+UUBotMultirotorLibrary.FindMultirotorMovement:
+  summary: 返回 Actor 上的多旋翼运动组件（第一个），没有则为空。
+  sourceHash: "650befdc584b"
+
+UUBotMultirotorLibrary.MakeQuadXAirframe:
+  summary: 返回换了臂长和质量的默认机架，单位分别为 m 和 kg（转动惯量随质量和臂长的平方缩放）。
+  sourceHash: "9a8d06e425de"

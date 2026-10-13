@@ -1,0 +1,27 @@
+Break:FUBotMediumCell:
+  summary: 把 UBot Medium Cell 拆成世界位置、半径、密度和边缘系数。
+  sourceHash: "1d4370ec32c2"
+
+FUBotMediumCell:
+  summary: 感知介质中的一个球形单元。位置直接取自 UE，单位是 cm。
+  sourceHash: "e145be2a4be5"
+
+FUBotMediumCell.Density:
+  summary: 单元的浓度，范围 0 到 1。
+  sourceHash: "6527247a5bbe"
+
+FUBotMediumCell.EdgeFactor:
+  summary: 范围 0 到 1，越靠近介质边缘，对 Density 的衰减越大。
+  sourceHash: "6e34e1b36b0d"
+
+FUBotMediumCell.RadiusCentimeters:
+  summary: 单元半径，单位 cm；求交计算把小于 1 cm 的值按 1 cm 处理。
+  sourceHash: "a1767c4fabc3"
+
+FUBotMediumCell.WorldPositionCentimeters:
+  summary: 单元中心的世界坐标，单位 cm。
+  sourceHash: "e3b0c44298fc"
+
+Make:FUBotMediumCell:
+  summary: 用世界位置、半径、密度和边缘系数构造一个 UBot Medium Cell。
+  sourceHash: "d55b7c63608d"

@@ -1,0 +1,19 @@
+UUBotROSAttitudeCommandComponent:
+  summary: 接收 ROS 2 的 mavros_msgs/msg/AttitudeTarget，换算后交给实现了 UBot Attitude Commandable 的目标（飞行器，如带 uBot Multirotor Dynamics 的无人机）。话题是 /<namespace>/cmd_attitude。type_mask 不含 IGNORE_ATTITUDE（128）时是姿态指令，姿态从 ROS 世界系换成 UE，不用 body_rate；含 IGNORE_ATTITUDE 时是机体角速度指令，取 body_rate（FLU 换成 UE 机体系），带 IGNORE_ROLL_RATE（1）、IGNORE_PITCH_RATE（2）、IGNORE_YAW_RATE（4）的轴为 0。thrust（0 到 1，占最大推力的比例）除非设了 IGNORE_THRUST（64）否则使用，设了则飞行器保持高度。需要 mavros_msgs 包（ros-humble-mavros-msgs）。
+  sourceHash: "ca8b42f32faa"
+
+UUBotROSAttitudeCommandComponent.GetLastAttitudeCommand:
+  summary: 最近一条有效的姿态指令；收到第一条之前姿态为单位四元数。
+  sourceHash: "a1142cb0f554"
+
+UUBotROSAttitudeCommandComponent.GetLastBodyRateCommand:
+  summary: 最近一条有效的机体角速度指令；收到第一条之前全为 0。
+  sourceHash: "68ff7ecb1d40"
+
+UUBotROSAttitudeCommandComponent.OnAttitudeCommand:
+  summary: 每条有效姿态指令换算之后触发，有没有目标都触发。
+  sourceHash: "4b285c5faa16"
+
+UUBotROSAttitudeCommandComponent.OnBodyRateCommand:
+  summary: 每条有效机体角速度指令换算之后触发，有没有目标都触发。
+  sourceHash: "4f91bdefab55"

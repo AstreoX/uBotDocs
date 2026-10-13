@@ -1,0 +1,15 @@
+UUBotAttitudeCommandable:
+  summary: 接受姿态和机体角速度指令的接口，由飞行器实现，独立于执行器接口。
+  sourceHash: "e3b0c44298fc"
+
+UUBotAttitudeCommandable.ApplyAttitudeCommand:
+  summary: 应用一条姿态指令。指令被拒绝时（没有就绪、飞行器不接受、数值无效等）返回 false。
+  sourceHash: "938406ac4df0"
+
+UUBotAttitudeCommandable.ApplyBodyRateCommand:
+  summary: 应用一条机体角速度指令。指令被拒绝时（没有就绪、飞行器不接受、数值无效等）返回 false。
+  sourceHash: "938406ac4df0"
+
+UUBotAttitudeCommandable.ReleaseAttitudeCommand:
+  summary: 发送方已停止发送（比如指令超时）；飞行器退回自己的默认行为，例如悬停。
+  sourceHash: "18cf36e2dde9"

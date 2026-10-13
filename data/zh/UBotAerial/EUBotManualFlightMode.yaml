@@ -1,0 +1,15 @@
+EUBotManualFlightMode:
+  summary: 键盘和手柄输入如何驾驶多旋翼。
+  sourceHash: "3cccd5dc775c"
+
+EUBotManualFlightMode.Angle:
+  summary: 摇杆控制倾角和偏航角速度，上升轴控制爬升速度，适用于接受姿态指令的无人机。
+  sourceHash: "dd008f4c910b"
+
+EUBotManualFlightMode.Rate:
+  summary: 摇杆控制机体角速度，上升轴控制爬升速度，适用于接受角速度指令的无人机。
+  sourceHash: "6e1b2f45b6df"
+
+EUBotManualFlightMode.Velocity:
+  summary: 摇杆控制航向坐标系下的速度和偏航角速度，适用于任何接受速度指令的无人机。
+  sourceHash: "8834079645da"

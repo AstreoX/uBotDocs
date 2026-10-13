@@ -1,0 +1,11 @@
+EUBotRotorSpinDirection:
+  summary: 从上往下看，转子的旋转方向。
+  sourceHash: "72414a163bcc"
+
+EUBotRotorSpinDirection.Clockwise:
+  summary: 顺时针。
+  sourceHash: "e3b0c44298fc"
+
+EUBotRotorSpinDirection.CounterClockwise:
+  summary: 逆时针。
+  sourceHash: "e3b0c44298fc"

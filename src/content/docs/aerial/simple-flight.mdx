@@ -1,0 +1,112 @@
+---
+title: 用速度指令飞导航无人机
+description: 用速度指令控制导航级无人机，了解它的响应、刹车和倾斜。
+pageKind: feature
+sidebar:
+  order: 30
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+用速度和偏航角速度指令控制导航无人机（`uBot Simple Flight`），并了解它的响应、刹车和倾斜怎样设置。
+
+## 快速用法
+
+指令在航向坐标系里解释：X 沿当前航向向前，Y 向右，Z 向上，单位 m/s。角速度只用 Z 分量，即偏航角速度（rad/s，正值向右转）：
+
+```blueprint
+caption: 以 2 m/s 前进，同时以 0.5 rad/s 向右偏航
+nodes:
+  A: UUBotMultirotorLibrary.FindMultirotorMovement
+  V: { ref: UKismetMathLibrary.MakeVector, set: { X: 2 } }
+  W: { ref: UKismetMathLibrary.MakeVector, set: { Z: 0.5 } }
+  C: { ref: Make:FUBotVelocityCommand, hideUnconnected: true }
+  D: UUBotVelocityCommandable.ApplyVelocityCommand
+wires:
+  - A.ReturnValue -> D.self
+  - V.ReturnValue -> C.LinearVelocityMetersPerSecond
+  - W.ReturnValue -> C.AngularVelocityRadiansPerSecond
+  - C.UBotVelocityCommand -> D.Command
+notes:
+  A: Actor 引脚接无人机；从 Pawn 蓝图内部调用时接 `Get Self`。
+```
+
+最新的一条指令一直有效，直到被新指令替换或调用 `Stop Motion`。超过 `Velocity Limits` 的部分被截断。
+
+## 步骤
+
+<Steps>
+
+1. **找到飞行模型**
+
+   用 `Find Multirotor Movement` 从无人机取得 `Movement` 组件；在无人机的蓝图内部，也可以直接拖出 `Movement`。
+
+2. **发指令**
+
+   对它调用 `Apply Velocity Command`，`Command` 用 `Make UBot Velocity Command` 组装。返回 `false` 表示指令被拒绝，例如含 NaN。
+
+3. **停下**
+
+   调用 `Stop Motion`。无人机换用刹车参数减速到静止，`Is Braking` 在这段时间返回真。
+
+</Steps>
+
+用 uBotROS 的 `uBot ROS Velocity Command` 组件时，不用改任何东西就能驱动它，见 [接收 cmd_vel](/ros/cmd-vel/)。
+
+## 关键属性
+
+飞行模型按一阶响应逼近目标速度，并有加速度和加加速度（Jerk）上限。属性在「Details」面板的 `Simple Flight` 类别下：
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `HorizontalTimeConstantSeconds` | 0.3 s | 水平速度响应的时间常数 |
+| `VerticalTimeConstantSeconds` | 0.25 s | 垂直速度响应的时间常数 |
+| `MaxHorizontalAccelerationMetersPerSecondSquared` | 4 m/s² | 水平加速度上限 |
+| `MaxVerticalAccelerationMetersPerSecondSquared` | 3 m/s² | 垂直加速度上限 |
+| `JerkLimitMetersPerSecondCubed` | 30 m/s³ | 加速度变化率上限，0 表示关闭 |
+| `YawTimeConstantSeconds` | 0.15 s | 偏航角速度响应的时间常数 |
+| `BrakeTimeConstantSeconds` | 0.1 s | `Stop Motion` 之后刹车的时间常数 |
+| `BrakeHorizontalAccelerationMetersPerSecondSquared` | 6 m/s² | 刹车时水平减速度上限 |
+| `TiltMode` | `Visual` | 什么随加速度倾斜 |
+| `MaxTiltDegrees` | 25° | 最大倾角，范围 0 到 60 |
+
+`Velocity Limits`（在共有属性里）默认水平 10 m/s、爬升 3 m/s、下降 2 m/s、偏航 π/2 rad/s。其余属性见 [uBot Simple Flight](/reference/ubotaerial/uubotsimpleflightcomponent/) 和 [uBot Multirotor Movement](/reference/ubotaerial/uubotmultirotormovementcomponent/)。
+
+## 输出与事件
+
+`Get Multirotor State` 返回无人机的真值状态，用 `Break UBot Multirotor State` 取出位置（m）、姿态、线速度（m/s）、角速度（rad/s）等：
+
+```blueprint
+caption: 每个 Tick 在屏幕上显示当前速度（m/s）
+nodes:
+  T: AActor.ReceiveTick
+  A: UUBotMultirotorLibrary.FindMultirotorMovement
+  S: UUBotMultirotorMovementComponent.GetMultirotorState
+  B: { ref: Break:FUBotMultirotorState, hideUnconnected: true }
+  L: UKismetMathLibrary.VSize
+  Q: UKismetStringLibrary.Conv_DoubleToString
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - T.then -> P.execute
+  - A.ReturnValue -> S.self
+  - S.ReturnValue -> B.UBotMultirotorState
+  - B.LinearVelocityMetersPerSecond -> L.A
+  - L.ReturnValue -> Q.InDouble
+  - Q.ReturnValue -> P.InString
+```
+
+## 注意事项
+
+- 倾斜不是动力学的结果：机体 Z 轴指向加速度减去重力的方向，倾角不超过 `MaxTiltDegrees`。`TiltMode` 决定哪一部分跟着倾斜：
+  - `None`：都不倾斜，只偏航。
+  - `Visual`（默认）：只有 `Visual Component` 指向的外观倾斜，挂在根组件上的传感器保持水平。
+  - `Body`：根组件倾斜，传感器看到真实多旋翼会有的姿态。
+- `Get Tilted Attitude` 在任何模式下都返回倾斜后的姿态。
+- 物理步频固定为 500 Hz，按 uBot 仿真时钟推进：暂停时不动，结果与帧率无关。
+- 导航无人机没有姿态、角速度和电机指令的接口，需要它们时用 [物理无人机](/aerial/dynamics/)。
+
+## 相关参考
+
+- [uBot Simple Flight](/reference/ubotaerial/uubotsimpleflightcomponent/)：全部节点和属性。
+- [uBot Multirotor Library](/reference/ubotaerial/uubotmultirotorlibrary/)：`Find Multirotor Movement`。
+- [物理无人机的指令与控制模式](/aerial/dynamics/)：需要姿态、角速度或电机指令时。

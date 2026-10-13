@@ -1,0 +1,27 @@
+Break:FUBotMotorCommand:
+  summary: 把 UBot Motor Command 拆成值的含义、各电机的值、时间戳和来源。
+  sourceHash: "16215e90312e"
+
+FUBotMotorCommand:
+  summary: 逐台电机的指令，每台电机一个值，顺序与接收者的电机顺序一致。
+  sourceHash: "4f70fbf382dc"
+
+FUBotMotorCommand.Source:
+  summary: 来源标签，格式自由，比如 ROS、MCP、Blueprint。
+  sourceHash: "9030c0986c07"
+
+FUBotMotorCommand.TimestampSeconds:
+  summary: 发出指令时的仿真时间，单位秒。
+  sourceHash: "c2d8ddc4c0fb"
+
+FUBotMotorCommand.Type:
+  summary: Values 里各个值的含义：占最大值的比例（0 到 1），或转速（rad/s）。
+  sourceHash: "d0ad8882c525"
+
+FUBotMotorCommand.Values:
+  summary: 每台电机一个值。
+  sourceHash: "d62c96da0e2d"
+
+Make:FUBotMotorCommand:
+  summary: 用值的含义、各电机的值、时间戳和来源构造一个 UBot Motor Command。
+  sourceHash: "0c10e986a729"

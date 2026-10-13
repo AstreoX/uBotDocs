@@ -1,0 +1,15 @@
+EUBotSimpleFlightTiltMode:
+  summary: 简化飞行模型倾斜的对象。
+  sourceHash: "773d0177c887"
+
+EUBotSimpleFlightTiltMode.Body:
+  summary: 根组件倾斜，挂在上面的传感器能读到真实多旋翼会有的姿态。
+  sourceHash: "3edfe95fea9a"
+
+EUBotSimpleFlightTiltMode.None:
+  summary: 什么都不倾斜，无人机只偏航。
+  sourceHash: "e5b1d2b3b41e"
+
+EUBotSimpleFlightTiltMode.Visual:
+  summary: 只有视觉组件倾斜，根组件和挂在它上面的所有东西保持水平。
+  sourceHash: "b34dba444655"

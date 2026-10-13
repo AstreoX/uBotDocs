@@ -1,0 +1,23 @@
+EUBotPackageLayer:
+  summary: uBot Package 在插件描述文件 UBot 块里声明的分类。
+  sourceHash: "eefbda228b2b"
+
+EUBotPackageLayer.Adapter:
+  summary: 对接外部系统或协议的 Package。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPackageLayer.Capability:
+  summary: 提供传感器、动力学等具体能力的 Package。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPackageLayer.Content:
+  summary: 提供场景、资产等内容的 Package。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPackageLayer.Foundation:
+  summary: 被其他 Package 共同依赖的基础 Package。
+  sourceHash: "e3b0c44298fc"
+
+EUBotPackageLayer.Unknown:
+  summary: 描述文件没有声明或无法识别的分类。
+  sourceHash: "e3b0c44298fc"

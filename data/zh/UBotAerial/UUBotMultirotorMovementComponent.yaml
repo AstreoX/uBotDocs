@@ -1,0 +1,59 @@
+UUBotMultirotorMovementComponent:
+  summary: 多旋翼飞行模型的基类。它按 uBot 仿真时间以固定物理步移动根组件（被更新的组件），用碰撞体扫过世界并沿接触面滑动（地面和其他表面一样），每帧显示外推到当前仿真时间的姿态。接受航向坐标系下的速度指令（`IUBotVelocityCommandable`）：X 沿当前朝向向前，Y 向右，Z 向上，只用 Z 方向的角速度（偏航角速度）。
+  sourceHash: "9255bd065af0"
+
+UUBotMultirotorMovementComponent.ActuatorId:
+  summary: 向 uBot 报告的执行器 ID。为空时使用所属 Actor 的机器人 ID（其 uBot Identity，否则用它的名字）。
+  sourceHash: "170deb3b26ce"
+
+UUBotMultirotorMovementComponent.ContactFriction:
+  summary: 接触时的滑动摩擦：滑动速度减少冲击速度的这个比例。
+  sourceHash: "44ce2f8ddbb3"
+
+UUBotMultirotorMovementComponent.GetLastVelocityCommand:
+  summary: 最近一条被接受的速度指令（限幅之后）。
+  sourceHash: "f0b38df72371"
+
+UUBotMultirotorMovementComponent.GetMultirotorState:
+  summary: 最近一个物理步的真值状态（SI 单位，UE 世界轴）。
+  sourceHash: "a2afeef21e22"
+
+UUBotMultirotorMovementComponent.GetPhysicsStepCount:
+  summary: 开始游玩以来已运行的物理步数。
+  sourceHash: "8a1e86e6c768"
+
+UUBotMultirotorMovementComponent.GetRotorLayout:
+  summary: 按电机顺序返回转子的位置（机体坐标系，单位 m，UE 轴）和旋转方向。默认是臂长 0.225 m 的四旋翼 X 型，按 PX4 顺序：右前、左后、左前、右后。把每个 `uBot Rotor` 放在对应 `Rotor Index` 的位置上；开始游玩时转子从这里取旋转方向。
+  sourceHash: "c68962301c8d"
+
+UUBotMultirotorMovementComponent.ImpactEventMinSpeedMetersPerSecond:
+  summary: 沿表面法线的撞击速度低于这个值时不触发 `On Impact`，单位 m/s。
+  sourceHash: "97d731b17725"
+
+UUBotMultirotorMovementComponent.MaxStepsPerFrame:
+  summary: 每帧最多运行这么多个物理步。帧时间更长时，多出的时间被跳过，并记录一次警告。
+  sourceHash: "5a22ab92cd27"
+
+UUBotMultirotorMovementComponent.OnImpact:
+  summary: 无人机开始接触物体，且撞击速度不低于 `Impact Event Min Speed` 时触发。
+  sourceHash: "2c446f6b3fcd"
+
+UUBotMultirotorMovementComponent.PhysicsRateHz:
+  summary: 每秒仿真时间的物理步数，单位 Hz。步数越多越准确，开销也越大。
+  sourceHash: "da19aece6c79"
+
+UUBotMultirotorMovementComponent.ResetFlight:
+  summary: 停止所有运动，并像开始游玩时那样在当前位姿重新悬停。
+  sourceHash: "75f0690a80bd"
+
+UUBotMultirotorMovementComponent.TeleportMultirotor:
+  summary: 把无人机移到新位姿，不做扫掠检测。勾选 `Stop Motion` 时速度清零，无人机在新位置悬停。
+  sourceHash: "6312d1acf94d"
+
+UUBotMultirotorMovementComponent.VelocityLimits:
+  summary: 超过这些限制的速度指令会被限幅。
+  sourceHash: "e87c872d1a49"
+
+UUBotMultirotorMovementComponent.bEnableWind:
+  summary: "`uBot Wind` 的风是否影响这架无人机。"
+  sourceHash: "dd927b4a9adc"

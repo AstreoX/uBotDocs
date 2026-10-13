@@ -1,0 +1,75 @@
+UUBotSimpleFlightComponent:
+  summary: 用于导航研究的简化飞行控制：无人机以平滑、有界的响应（一阶、限制加速度和加加速度）跟踪速度指令，并在有限距离内刹停。没有力和姿态动力学，倾角随加速度变化。
+  sourceHash: "8b0fd9a99e48"
+
+UUBotSimpleFlightComponent.BrakeHorizontalAccelerationMetersPerSecondSquared:
+  summary: 刹车时最大的水平减速度，单位 m/s²。
+  sourceHash: "65cee9ea6cda"
+
+UUBotSimpleFlightComponent.BrakeTimeConstantSeconds:
+  summary: "`Stop Motion` 之后刹车的时间常数，单位 s。"
+  sourceHash: "82e4608f425f"
+
+UUBotSimpleFlightComponent.BrakeVerticalAccelerationMetersPerSecondSquared:
+  summary: 刹车时最大的垂直减速度，单位 m/s²。
+  sourceHash: "adeb260e202b"
+
+UUBotSimpleFlightComponent.GetTiltedAttitude:
+  summary: 最近一步倾斜后的姿态（`Visual` 模式下根组件保持水平，这里仍是倾斜的姿态）。
+  sourceHash: "ca3700a9e65a"
+
+UUBotSimpleFlightComponent.HorizontalTimeConstantSeconds:
+  summary: 水平速度响应的时间常数，单位 s。
+  sourceHash: "5682fcfc4ba4"
+
+UUBotSimpleFlightComponent.HoverRotorSpeedRadiansPerSecond:
+  summary: 悬停时显示的转速，单位 rad/s（只影响外观）。
+  sourceHash: "ca1ad229c9c4"
+
+UUBotSimpleFlightComponent.IsBraking:
+  summary: 从 `Stop Motion` 之后刹车开始到下一条速度指令之前为 true。
+  sourceHash: "ca4138180c51"
+
+UUBotSimpleFlightComponent.JerkLimitMetersPerSecondCubed:
+  summary: 加速度的最大变化率，单位 m/s³。0 关闭限制。
+  sourceHash: "8e76c1754b33"
+
+UUBotSimpleFlightComponent.MaxHorizontalAccelerationMetersPerSecondSquared:
+  summary: 最大水平加速度，单位 m/s²。
+  sourceHash: "f860f4dcc1d1"
+
+UUBotSimpleFlightComponent.MaxTiltDegrees:
+  summary: 最大倾角，单位度。
+  sourceHash: "88ae342e24bd"
+
+UUBotSimpleFlightComponent.MaxVerticalAccelerationMetersPerSecondSquared:
+  summary: 最大垂直加速度，单位 m/s²。
+  sourceHash: "aaa030628764"
+
+UUBotSimpleFlightComponent.MaxYawAccelerationRadiansPerSecondSquared:
+  summary: 最大偏航角加速度，单位 rad/s²。
+  sourceHash: "d22d66164e53"
+
+UUBotSimpleFlightComponent.TiltMode:
+  summary: 随加速度倾斜的对象。`Visual` 让根组件和挂在上面的传感器保持水平，只倾斜 `Visual Component`。
+  sourceHash: "4a030476df70"
+
+UUBotSimpleFlightComponent.VerticalTimeConstantSeconds:
+  summary: 垂直速度响应的时间常数，单位 s。
+  sourceHash: "209a1042ab95"
+
+UUBotSimpleFlightComponent.VisualComponent:
+  summary: "`Visual` 模式下倾斜的组件（通常是无人机网格的父组件）。"
+  sourceHash: "d3d91af8a8e2"
+
+UUBotSimpleFlightComponent.WindRejectionTimeConstantSeconds:
+  summary: 无人机补偿风变化的快慢，单位 s。
+  sourceHash: "87b1d5480e53"
+
+UUBotSimpleFlightComponent.WindResponse:
+  summary: 无人机在补偿之前随风漂移的比例（占风变化的份额）。0 表示忽略风。
+  sourceHash: "f6031497e37f"
+
+UUBotSimpleFlightComponent.YawTimeConstantSeconds:
+  summary: 偏航角速度响应的时间常数，单位 s。
+  sourceHash: "b4d4544edf20"

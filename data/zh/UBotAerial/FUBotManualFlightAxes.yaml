@@ -1,0 +1,27 @@
+Break:FUBotManualFlightAxes:
+  summary: 把 UBot Manual Flight Axes 拆成前、右、上和偏航四个轴。
+  sourceHash: "ec45a9fb2d48"
+
+FUBotManualFlightAxes:
+  summary: 手动飞行的输入，每个轴的取值范围是 -1 到 1。
+  sourceHash: "f41aef53a632"
+
+FUBotManualFlightAxes.Forward:
+  summary: 前后轴，正值向前。
+  sourceHash: "acff7d93d9e6"
+
+FUBotManualFlightAxes.Right:
+  summary: 左右轴，正值向右。
+  sourceHash: "6da545eb0378"
+
+FUBotManualFlightAxes.Up:
+  summary: 上下轴，正值向上。
+  sourceHash: "05066397b282"
+
+FUBotManualFlightAxes.Yaw:
+  summary: 偏航轴，正值向右偏航。
+  sourceHash: "1ef2772c8298"
+
+Make:FUBotManualFlightAxes:
+  summary: 用各字段组装一个 UBot Manual Flight Axes。
+  sourceHash: "b6c4a7f5dc76"
