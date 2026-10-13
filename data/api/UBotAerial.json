@@ -1,0 +1,6353 @@
+{
+  "format": 1,
+  "plugin": "UBotAerial",
+  "version": "0.1.0",
+  "engine": "5.5",
+  "repository": "https://github.com/AstreoX/uBotAerial",
+  "generator": "UBotDocExport 1",
+  "culture": "en",
+  "modules": [
+    {
+      "name": "UBotAerial",
+      "type": "Runtime"
+    }
+  ],
+  "classes": [
+    {
+      "id": "AUBotWind",
+      "displayName": "uBot Wind",
+      "kind": "actor",
+      "parent": "AActor",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotWind.h",
+      "category": "",
+      "tooltip": "Wind for uBot multirotors. Place one in the level: its wind blows everywhere (the field is uniform),\nand several actors add up. The arrow shows the steady wind's direction in the editor.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": true,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "Arrow",
+          "displayName": "Arrow",
+          "type": {
+            "category": "object",
+            "subtype": "UArrowComponent",
+            "subtypeDisplay": "Arrow Component",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "/Script/Engine.ArrowComponent'/Script/UBotAerial.Default__UBotWind:Arrow'",
+          "category": "Wind",
+          "access": "none",
+          "editable": "none",
+          "tooltip": "",
+          "meta": {}
+        },
+        {
+          "id": "Settings",
+          "displayName": "Settings",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotWindSettings",
+            "subtypeDisplay": "UBot Wind Settings",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(ConstantVelocityMetersPerSecond=(X=0.000000,Y=0.000000,Z=0.000000),GustStandardDeviationMetersPerSecond=(X=0.000000,Y=0.000000,Z=0.000000),GustCorrelationTimeSeconds=2.000000)",
+          "category": "Wind",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Steady wind and gusts.",
+          "meta": {}
+        },
+        {
+          "id": "bEnabled",
+          "displayName": "Enabled",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Wind",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Whether this wind blows.",
+          "meta": {}
+        }
+      ],
+      "nodes": [
+        "AUBotWind.SetWindEnabled",
+        "AUBotWind.SetWindSettings"
+      ]
+    },
+    {
+      "id": "UUBotCascadedFlightController",
+      "displayName": "uBot Cascaded Flight Controller",
+      "kind": "object",
+      "parent": "UUBotFlightController",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotCascadedFlightController.h",
+      "category": "",
+      "tooltip": "The built-in flight controller: velocity (PID, world frame) -> thrust vector and attitude ->\nattitude (P on the quaternion error) -> body rates (PI with inertia feed-forward) -> thrust\nallocation over the rotors. Each mode enters the cascade at its own level. The default gains suit\nthe default airframe at 1 kHz.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": true,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "AttitudeP",
+          "displayName": "Attitude P",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=6.500000,Y=6.500000,Z=2.800000)",
+          "category": "Attitude",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Attitude loop P gain per body axis, 1/s.",
+          "meta": {}
+        },
+        {
+          "id": "MaxBodyRateDegreesPerSecond",
+          "displayName": "Max Body Rate Degrees Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=220.000000,Y=220.000000,Z=200.000000)",
+          "category": "Attitude",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest body rate the attitude loop asks for, per body axis, deg/s.",
+          "meta": {}
+        },
+        {
+          "id": "MaxThrustShare",
+          "displayName": "Max Thrust Share",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.950000",
+          "category": "Thrust",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest collective thrust the controller asks for, as a share of the maximum (leaves room for attitude control).",
+          "meta": {
+            "ClampMin": "0.0",
+            "ClampMax": "1.0"
+          }
+        },
+        {
+          "id": "MaxTiltDegrees",
+          "displayName": "Max Tilt Degrees",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "35.000000",
+          "category": "Velocity",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest tilt the velocity loop asks for, degrees.",
+          "meta": {
+            "ClampMin": "1.0",
+            "ClampMax": "80.0"
+          }
+        },
+        {
+          "id": "MinThrustShare",
+          "displayName": "Min Thrust Share",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.080000",
+          "category": "Thrust",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Smallest collective thrust the velocity loop asks for, as a share of the maximum (keeps attitude control alive).",
+          "meta": {
+            "ClampMin": "0.0",
+            "ClampMax": "1.0"
+          }
+        },
+        {
+          "id": "PositionHoldGain",
+          "displayName": "Position Hold Gain",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1.500000",
+          "category": "Velocity",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Position hold gain, 1/s.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "PositionHoldMaxSpeed",
+          "displayName": "Position Hold Max Speed",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1.000000",
+          "category": "Velocity",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest correction speed of the position hold, m/s.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "RateI",
+          "displayName": "Rate I",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=5.000000,Y=5.000000,Z=2.000000)",
+          "category": "Rate",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Rate loop I gain per body axis, 1/s².",
+          "meta": {}
+        },
+        {
+          "id": "RateIntegratorLimit",
+          "displayName": "Rate Integrator Limit",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=10.000000,Y=10.000000,Z=2.000000)",
+          "category": "Rate",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest angular acceleration the rate integrator may add, per body axis, rad/s².",
+          "meta": {}
+        },
+        {
+          "id": "RateP",
+          "displayName": "Rate P",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=20.000000,Y=20.000000,Z=8.000000)",
+          "category": "Rate",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Rate loop P gain per body axis, 1/s.",
+          "meta": {}
+        },
+        {
+          "id": "VelocityD",
+          "displayName": "Velocity D",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=0.200000,Y=0.200000,Z=0.000000)",
+          "category": "Velocity",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Velocity loop D gain (on the measured acceleration) per world axis.",
+          "meta": {}
+        },
+        {
+          "id": "VelocityI",
+          "displayName": "Velocity I",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=0.400000,Y=0.400000,Z=2.000000)",
+          "category": "Velocity",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Velocity loop I gain per world axis, 1/s².",
+          "meta": {}
+        },
+        {
+          "id": "VelocityIntegratorLimit",
+          "displayName": "Velocity Integrator Limit",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=3.000000,Y=3.000000,Z=5.000000)",
+          "category": "Velocity",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest acceleration the velocity integrator may add, per world axis, m/s².",
+          "meta": {}
+        },
+        {
+          "id": "VelocityP",
+          "displayName": "Velocity P",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=1.800000,Y=1.800000,Z=4.000000)",
+          "category": "Velocity",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Velocity loop P gain per world axis, 1/s.",
+          "meta": {}
+        }
+      ],
+      "nodes": []
+    },
+    {
+      "id": "UUBotFlightController",
+      "displayName": "uBot Flight Controller",
+      "kind": "object",
+      "parent": "UObject",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotFlightController.h",
+      "category": "",
+      "tooltip": "Flight controller of a physics multirotor. The multirotor calls Compute Motor Commands once per\nphysics step (or every Controller Rate Divider steps) with the ground-truth state and the setpoint\nof the active control mode, and applies the normalized motor commands it returns.\n\nSubclass it in C++ (override the _Implementation functions) to bring your own controller. A\nBlueprint subclass works too, but runs at the physics rate (1 kHz by default) through the\nBlueprint VM; raise Controller Rate Divider for it.",
+      "flags": {
+        "abstract": true,
+        "blueprintType": true,
+        "blueprintable": true,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [],
+      "nodes": [
+        "UUBotFlightController.ComputeMotorCommands",
+        "UUBotFlightController.ResetController",
+        "UUBotFlightController.SupportsControlMode"
+      ]
+    },
+    {
+      "id": "UUBotMultirotorDynamicsComponent",
+      "displayName": "uBot Multirotor Dynamics",
+      "kind": "component",
+      "parent": "UUBotMultirotorMovementComponent",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotMultirotorDynamicsComponent.h",
+      "category": "uBot",
+      "tooltip": "Rigid-body multirotor for flight-control research: rotors with motor lag, thrust and reaction\ntorque, air-relative drag and gravity, integrated in fixed steps on uBot sim time. A flight\ncontroller turns the active command into motor commands, or motor commands drive the rotors\ndirectly. Accepts velocity (heading frame), attitude, body-rate and motor commands.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": false,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "Airframe",
+          "displayName": "Airframe",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorAirframe",
+            "subtypeDisplay": "UBot Multirotor Airframe",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(MassKilograms=1.500000,InertiaKilogramSquareMeters=(X=0.029000,Y=0.029000,Z=0.055000),Rotors=((PositionMeters=(X=0.159099,Y=0.159099,Z=0.000000),SpinDirection=CounterClockwise),(PositionMeters=(X=-0.159099,Y=-0.159099,Z=0.000000),SpinDirection=CounterClockwise),(PositionMeters=(X=0.159099,Y=-0.159099,Z=0.000000)),(PositionMeters=(X=-0.159099,Y=0.159099,Z=0.000000))),LinearDragCoefficients=(X=0.250000,Y=0.250000,Z=0.300000),QuadraticDragCoefficients=(X=0.030000,Y=0.030000,Z=0.050000),AngularDragCoefficients=(X=0.003000,Y=0.003000,Z=0.005000))",
+          "category": "Dynamics|Airframe",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Mass, inertia, rotors and drag. Changes take effect at the next Reset Flight.",
+          "meta": {}
+        },
+        {
+          "id": "CommandLossAction",
+          "displayName": "Command Loss Action",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotCommandLossAction",
+            "subtypeDisplay": "EUBot Command Loss Action",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Hover",
+          "category": "Dynamics|Control",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "What the drone does when its commands stop: released by the sender, or older than Command Timeout Seconds.",
+          "meta": {}
+        },
+        {
+          "id": "CommandTimeoutSeconds",
+          "displayName": "Command Timeout Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "category": "Dynamics|Control",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Commands older than this (sim time) count as lost, s. 0 leaves the timeout to the sender (uBot ROS components have their own).",
+          "meta": {
+            "ClampMin": "0.0",
+            "Units": "Seconds"
+          }
+        },
+        {
+          "id": "ControllerRateDivider",
+          "displayName": "Controller Rate Divider",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1",
+          "category": "Dynamics|Control",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "The controller runs every this many physics steps and its commands are held in between.",
+          "meta": {
+            "ClampMin": "1"
+          }
+        },
+        {
+          "id": "DynamicsBackendName",
+          "displayName": "Dynamics Backend Name",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "BuiltIn",
+          "category": "Dynamics",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Dynamics backend by name, from the UBotAerial.DynamicsBackend extension point. Experimental; BuiltIn is the plugin's own integrator.",
+          "meta": {}
+        },
+        {
+          "id": "FlightController",
+          "displayName": "Flight Controller",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotFlightController",
+            "subtypeDisplay": "uBot Flight Controller",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "/Script/UBotAerial.UBotCascadedFlightController'/Script/UBotAerial.Default__UBotMultirotorDynamicsComponent:FlightController'",
+          "category": "Dynamics|Control",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Flight controller for velocity, attitude and body-rate commands. Replace it with your own subclass.",
+          "meta": {}
+        },
+        {
+          "id": "LandingSpeedMetersPerSecond",
+          "displayName": "Landing Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.700000",
+          "category": "Dynamics|Control",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Descent speed of the Land command-loss action, m/s.",
+          "meta": {
+            "ClampMin": "0.05",
+            "Units": "MetersPerSecond"
+          }
+        },
+        {
+          "id": "PhysicsRateHz",
+          "displayName": "Physics Rate Hz",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1000.000000",
+          "category": "Multirotor",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Physics steps per second of sim time. More steps are more accurate and cost more.",
+          "meta": {
+            "ClampMin": "100.0",
+            "ClampMax": "4000.0",
+            "Units": "Hertz"
+          }
+        },
+        {
+          "id": "bAcceptAttitudeCommands",
+          "displayName": "Accept Attitude Commands",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Dynamics|Control",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Whether attitude commands are accepted.",
+          "meta": {}
+        },
+        {
+          "id": "bAcceptBodyRateCommands",
+          "displayName": "Accept Body Rate Commands",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Dynamics|Control",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Whether body-rate commands are accepted.",
+          "meta": {}
+        },
+        {
+          "id": "bAcceptMotorCommands",
+          "displayName": "Accept Motor Commands",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Dynamics|Control",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Whether motor commands are accepted.",
+          "meta": {}
+        },
+        {
+          "id": "bAcceptVelocityCommands",
+          "displayName": "Accept Velocity Commands",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Dynamics|Control",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Whether velocity commands are accepted.",
+          "meta": {}
+        }
+      ],
+      "nodes": [
+        "UUBotMultirotorDynamicsComponent.GetActiveControlMode",
+        "UUBotMultirotorDynamicsComponent.GetFlightSetpoint",
+        "UUBotMultirotorDynamicsComponent.GetHoverMotorCommand",
+        "UUBotMultirotorDynamicsComponent.GetLastMotorCommands",
+        "UUBotMultirotorDynamicsComponent.SetFlightController"
+      ]
+    },
+    {
+      "id": "UUBotMultirotorLibrary",
+      "displayName": "uBot Multirotor Library",
+      "kind": "library",
+      "parent": "UBlueprintFunctionLibrary",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotMultirotorLibrary.h",
+      "category": "",
+      "tooltip": "Helpers for uBot multirotors.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": false,
+        "blueprintable": false,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [],
+      "nodes": [
+        "UUBotMultirotorLibrary.FindMultirotorMovement",
+        "UUBotMultirotorLibrary.MakeQuadXAirframe"
+      ]
+    },
+    {
+      "id": "UUBotMultirotorManualInputComponent",
+      "displayName": "uBot Multirotor Manual Input",
+      "kind": "component",
+      "parent": "UActorComponent",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotMultirotorManualInputComponent.h",
+      "category": "uBot",
+      "tooltip": "Flies the owning multirotor with keyboard or gamepad while a local player controls (possesses) it.\nThe input actions and the mapping context are created at run time (Enhanced Input), so no assets\nare needed; set your own to change the keys. While it controls the drone it sends a command every\nframe; when control ends the drone brakes and hovers.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": false,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "CustomMappingContext",
+          "displayName": "Custom Mapping Context",
+          "type": {
+            "category": "object",
+            "subtype": "UInputMappingContext",
+            "subtypeDisplay": "Input Mapping Context",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "None",
+          "category": "Manual Input|Custom",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Your own mapping context; it must map Custom Move Action and Custom Yaw Action. Empty uses the built-in keys.",
+          "meta": {}
+        },
+        {
+          "id": "CustomMoveAction",
+          "displayName": "Custom Move Action",
+          "type": {
+            "category": "object",
+            "subtype": "UInputAction",
+            "subtypeDisplay": "Input Action",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "None",
+          "category": "Manual Input|Custom",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Your own move action (Axis3D: forward, right, up), used with Custom Mapping Context.",
+          "meta": {}
+        },
+        {
+          "id": "CustomYawAction",
+          "displayName": "Custom Yaw Action",
+          "type": {
+            "category": "object",
+            "subtype": "UInputAction",
+            "subtypeDisplay": "Input Action",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "None",
+          "category": "Manual Input|Custom",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Your own yaw action (Axis1D, + yaws right), used with Custom Mapping Context.",
+          "meta": {}
+        },
+        {
+          "id": "DeadZone",
+          "displayName": "Dead Zone",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.150000",
+          "category": "Manual Input",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Stick dead zone, share of full deflection.",
+          "meta": {
+            "ClampMin": "0.0",
+            "ClampMax": "0.9"
+          }
+        },
+        {
+          "id": "FlightMode",
+          "displayName": "Flight Mode",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotManualFlightMode",
+            "subtypeDisplay": "EUBot Manual Flight Mode",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Velocity",
+          "category": "Manual Input",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "What the sticks command.",
+          "meta": {}
+        },
+        {
+          "id": "MappingPriority",
+          "displayName": "Mapping Priority",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1",
+          "category": "Manual Input|Custom",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Priority of the mapping context.",
+          "meta": {}
+        },
+        {
+          "id": "MaxBodyRateDegreesPerSecond",
+          "displayName": "Max Body Rate Degrees Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "220.000000",
+          "category": "Manual Input",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Roll and pitch rate at full deflection (Rate mode), deg/s.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "MaxHorizontalSpeedMetersPerSecond",
+          "displayName": "Max Horizontal Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "5.000000",
+          "category": "Manual Input",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Horizontal speed at full deflection (Velocity mode), m/s.",
+          "meta": {
+            "ClampMin": "0.0",
+            "Units": "MetersPerSecond"
+          }
+        },
+        {
+          "id": "MaxTiltDegrees",
+          "displayName": "Max Tilt Degrees",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "30.000000",
+          "category": "Manual Input",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Tilt at full deflection (Angle mode), degrees.",
+          "meta": {
+            "ClampMin": "0.0",
+            "ClampMax": "60.0",
+            "Units": "Degrees"
+          }
+        },
+        {
+          "id": "MaxVerticalSpeedMetersPerSecond",
+          "displayName": "Max Vertical Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "2.000000",
+          "category": "Manual Input",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Climb or descent speed at full deflection, m/s.",
+          "meta": {
+            "ClampMin": "0.0",
+            "Units": "MetersPerSecond"
+          }
+        },
+        {
+          "id": "MaxYawRateDegreesPerSecond",
+          "displayName": "Max Yaw Rate Degrees Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "90.000000",
+          "category": "Manual Input",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Yaw rate at full deflection, deg/s.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "bTakeControlWhenPossessed",
+          "displayName": "Take Control when Possessed",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Manual Input",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Take over the drone when a local player possesses its pawn.",
+          "meta": {}
+        }
+      ],
+      "nodes": [
+        "UUBotMultirotorManualInputComponent.GetAxes",
+        "UUBotMultirotorManualInputComponent.IsControlling"
+      ]
+    },
+    {
+      "id": "UUBotMultirotorMovementComponent",
+      "displayName": "uBot Multirotor Movement",
+      "kind": "component",
+      "parent": "UMovementComponent",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotMultirotorMovementComponent.h",
+      "category": "uBot",
+      "tooltip": "Base of the multirotor flight models. Moves the root component (the updated component) in fixed\nphysics steps on uBot sim time, sweeps its collision shape through the world and slides along what\nit touches (the ground is a surface like any other), and presents the pose extrapolated to the\ncurrent sim time every frame. Accepts velocity commands\n(IUBotVelocityCommandable) in the heading frame: X forward and Y right along the current heading,\nZ up; only the Z angular velocity (yaw rate) is used.",
+      "flags": {
+        "abstract": true,
+        "blueprintType": true,
+        "blueprintable": false,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "ActuatorId",
+          "displayName": "Actuator Id",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "Multirotor",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Actuator id reported to uBot. Empty uses the robot id of the owner (its uBot Identity, else its name).",
+          "meta": {}
+        },
+        {
+          "id": "ContactFriction",
+          "displayName": "Contact Friction",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.300000",
+          "category": "Multirotor|Contact",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Sliding friction on contact: the sliding speed drops by this share of the impact speed.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "ImpactEventMinSpeedMetersPerSecond",
+          "displayName": "Impact Event Min Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.300000",
+          "category": "Multirotor|Contact",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Impacts slower than this (along the surface normal) do not fire On Impact, m/s.",
+          "meta": {
+            "ClampMin": "0.0",
+            "Units": "MetersPerSecond"
+          }
+        },
+        {
+          "id": "MaxStepsPerFrame",
+          "displayName": "Max Steps Per Frame",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "250",
+          "category": "Multirotor",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "At most this many physics steps per frame. When a frame is longer, the extra time is skipped and a warning is logged once.",
+          "meta": {
+            "ClampMin": "1"
+          }
+        },
+        {
+          "id": "PhysicsRateHz",
+          "displayName": "Physics Rate Hz",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "500.000000",
+          "category": "Multirotor",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Physics steps per second of sim time. More steps are more accurate and cost more.",
+          "meta": {
+            "ClampMin": "100.0",
+            "ClampMax": "4000.0",
+            "Units": "Hertz"
+          }
+        },
+        {
+          "id": "VelocityLimits",
+          "displayName": "Velocity Limits",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorVelocityLimits",
+            "subtypeDisplay": "UBot Multirotor Velocity Limits",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(MaxHorizontalSpeedMetersPerSecond=10.000000,MaxClimbSpeedMetersPerSecond=3.000000,MaxDescentSpeedMetersPerSecond=2.000000,MaxYawRateRadiansPerSecond=1.570796)",
+          "category": "Multirotor|Limits",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Velocity commands above these limits are clamped.",
+          "meta": {}
+        },
+        {
+          "id": "bEnableWind",
+          "displayName": "Enable Wind",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Multirotor",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Whether wind from uBot Wind actors affects this drone.",
+          "meta": {}
+        }
+      ],
+      "nodes": [
+        "UUBotMultirotorMovementComponent.GetLastVelocityCommand",
+        "UUBotMultirotorMovementComponent.GetMultirotorState",
+        "UUBotMultirotorMovementComponent.GetPhysicsStepCount",
+        "UUBotMultirotorMovementComponent.GetRotorLayout",
+        "UUBotMultirotorMovementComponent.OnImpact",
+        "UUBotMultirotorMovementComponent.ResetFlight",
+        "UUBotMultirotorMovementComponent.TeleportMultirotor"
+      ]
+    },
+    {
+      "id": "UUBotRotorComponent",
+      "displayName": "uBot Rotor",
+      "kind": "component",
+      "parent": "UStaticMeshComponent",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotRotorComponent.h",
+      "category": "uBot",
+      "tooltip": "Visual rotor of a multirotor: a mesh spinning about its local Z axis. The multirotor movement\ncomponent on the same actor sets the rotor speed every frame from its motor with the same Rotor\nIndex, and the spin direction at begin play from its rotor layout.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": true,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "RotorIndex",
+          "displayName": "Rotor Index",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0",
+          "category": "Rotor",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Index of the motor that drives this rotor (the order of the airframe's rotors).",
+          "meta": {
+            "ClampMin": "0"
+          }
+        },
+        {
+          "id": "SpinDirection",
+          "displayName": "Spin Direction",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotRotorSpinDirection",
+            "subtypeDisplay": "EUBot Rotor Spin Direction",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Clockwise",
+          "category": "Rotor",
+          "access": "readOnly",
+          "editable": "none",
+          "tooltip": "Spin direction seen from above, taken from the movement component's rotor layout at begin play.",
+          "meta": {}
+        },
+        {
+          "id": "VisualSpinScale",
+          "displayName": "Visual Spin Scale",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.040000",
+          "category": "Rotor",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Display speed as a share of the real rotor speed: real speeds alias at frame rate, so the blades are shown slower.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        }
+      ],
+      "nodes": [
+        "UUBotRotorComponent.GetRotorSpeed",
+        "UUBotRotorComponent.SetRotorSpeed"
+      ]
+    },
+    {
+      "id": "UUBotSimpleFlightComponent",
+      "displayName": "uBot Simple Flight",
+      "kind": "component",
+      "parent": "UUBotMultirotorMovementComponent",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotSimpleFlightComponent.h",
+      "category": "uBot",
+      "tooltip": "Simplified flight control for navigation research: the drone tracks velocity commands with a\nsmooth, bounded response (first order, limited acceleration and jerk) and brakes to a stop within\na bounded distance. There are no forces or attitude dynamics; the tilt follows the acceleration.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": false,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "BrakeHorizontalAccelerationMetersPerSecondSquared",
+          "displayName": "Brake Horizontal Acceleration Meters Per Second Squared",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "6.000000",
+          "category": "Simple Flight|Braking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest horizontal deceleration while braking, m/s².",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "BrakeTimeConstantSeconds",
+          "displayName": "Brake Time Constant Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.100000",
+          "category": "Simple Flight|Braking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Time constant while braking after Stop Motion, s.",
+          "meta": {
+            "ClampMin": "0.01",
+            "Units": "Seconds"
+          }
+        },
+        {
+          "id": "BrakeVerticalAccelerationMetersPerSecondSquared",
+          "displayName": "Brake Vertical Acceleration Meters Per Second Squared",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "4.000000",
+          "category": "Simple Flight|Braking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest vertical deceleration while braking, m/s².",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "HorizontalTimeConstantSeconds",
+          "displayName": "Horizontal Time Constant Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.300000",
+          "category": "Simple Flight|Tracking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Time constant of the horizontal velocity response, s.",
+          "meta": {
+            "ClampMin": "0.01",
+            "Units": "Seconds"
+          }
+        },
+        {
+          "id": "HoverRotorSpeedRadiansPerSecond",
+          "displayName": "Hover Rotor Speed Radians Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "794.000000",
+          "category": "Simple Flight",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Rotor speed shown while hovering, rad/s (visual only).",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "JerkLimitMetersPerSecondCubed",
+          "displayName": "Jerk Limit Meters Per Second Cubed",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "30.000000",
+          "category": "Simple Flight|Tracking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest change of acceleration, m/s³. 0 turns the limit off.",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "MaxHorizontalAccelerationMetersPerSecondSquared",
+          "displayName": "Max Horizontal Acceleration Meters Per Second Squared",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "4.000000",
+          "category": "Simple Flight|Tracking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest horizontal acceleration, m/s².",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "MaxTiltDegrees",
+          "displayName": "Max Tilt Degrees",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "25.000000",
+          "category": "Simple Flight",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest tilt, degrees.",
+          "meta": {
+            "ClampMin": "0.0",
+            "ClampMax": "60.0",
+            "Units": "Degrees"
+          }
+        },
+        {
+          "id": "MaxVerticalAccelerationMetersPerSecondSquared",
+          "displayName": "Max Vertical Acceleration Meters Per Second Squared",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "3.000000",
+          "category": "Simple Flight|Tracking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest vertical acceleration, m/s².",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "MaxYawAccelerationRadiansPerSecondSquared",
+          "displayName": "Max Yaw Acceleration Radians Per Second Squared",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "6.000000",
+          "category": "Simple Flight|Tracking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Largest yaw acceleration, rad/s².",
+          "meta": {
+            "ClampMin": "0.0"
+          }
+        },
+        {
+          "id": "TiltMode",
+          "displayName": "Tilt Mode",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotSimpleFlightTiltMode",
+            "subtypeDisplay": "EUBot Simple Flight Tilt Mode",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Visual",
+          "category": "Simple Flight",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "What tilts with the acceleration. Visual keeps the root and attached sensors level and tilts only the Visual Component.",
+          "meta": {}
+        },
+        {
+          "id": "VerticalTimeConstantSeconds",
+          "displayName": "Vertical Time Constant Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.250000",
+          "category": "Simple Flight|Tracking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Time constant of the vertical velocity response, s.",
+          "meta": {
+            "ClampMin": "0.01",
+            "Units": "Seconds"
+          }
+        },
+        {
+          "id": "VisualComponent",
+          "displayName": "Visual Component",
+          "type": {
+            "category": "struct",
+            "subtype": "FComponentReference",
+            "subtypeDisplay": "Component Reference",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "()",
+          "category": "Simple Flight",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "The component that tilts in Visual mode (usually the parent of the drone's meshes).",
+          "meta": {}
+        },
+        {
+          "id": "WindRejectionTimeConstantSeconds",
+          "displayName": "Wind Rejection Time Constant Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1.000000",
+          "category": "Simple Flight|Wind",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "How fast the drone compensates a wind change, s.",
+          "meta": {
+            "ClampMin": "0.01",
+            "Units": "Seconds"
+          }
+        },
+        {
+          "id": "WindResponse",
+          "displayName": "Wind Response",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.500000",
+          "category": "Simple Flight|Wind",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Share of a wind change the drone drifts with before it compensates. 0 ignores wind.",
+          "meta": {
+            "ClampMin": "0.0",
+            "ClampMax": "1.0"
+          }
+        },
+        {
+          "id": "YawTimeConstantSeconds",
+          "displayName": "Yaw Time Constant Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.150000",
+          "category": "Simple Flight|Tracking",
+          "access": "readWrite",
+          "editable": "anywhere",
+          "tooltip": "Time constant of the yaw rate response, s.",
+          "meta": {
+            "ClampMin": "0.01",
+            "Units": "Seconds"
+          }
+        }
+      ],
+      "nodes": [
+        "UUBotSimpleFlightComponent.GetTiltedAttitude",
+        "UUBotSimpleFlightComponent.IsBraking"
+      ]
+    },
+    {
+      "id": "UUBotWindSubsystem",
+      "displayName": "uBot Wind Subsystem",
+      "kind": "subsystem",
+      "parent": "UWorldSubsystem",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotWindSubsystem.h",
+      "category": "",
+      "tooltip": "The wind of a world: the sum of every enabled uBot Wind actor and the scripted wind set from\nBlueprint. The field is uniform in space; the location argument is there for future use.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": false,
+        "blueprintable": false,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [],
+      "nodes": [
+        "UUBotWindSubsystem.GetWindVelocityAt",
+        "UUBotWindSubsystem.SetScriptedWind"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "AUBotWind.SetWindEnabled",
+      "kind": "call",
+      "title": "Set Wind Enabled",
+      "subtitle": "Target is uBot Wind",
+      "subtitleZh": "目标是uBot Wind",
+      "owner": "AUBotWind",
+      "member": "SetWindEnabled",
+      "category": "uBot|Aerial|Wind",
+      "tooltip": "Turns this wind on or off.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "AUBotWind",
+            "subtypeDisplay": "uBot Wind",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "bNewEnabled",
+          "name": "New Enabled",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "false",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "AUBotWind.SetWindSettings",
+      "kind": "call",
+      "title": "Set Wind Settings",
+      "subtitle": "Target is uBot Wind",
+      "subtitleZh": "目标是uBot Wind",
+      "owner": "AUBotWind",
+      "member": "SetWindSettings",
+      "category": "uBot|Aerial|Wind",
+      "tooltip": "Changes the wind from now on.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "AUBotWind",
+            "subtypeDisplay": "uBot Wind",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "NewSettings",
+          "name": "New Settings",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotWindSettings",
+            "subtypeDisplay": "UBot Wind Settings",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotFlightSetpoint",
+      "kind": "break",
+      "title": "Break UBot Flight Setpoint",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Flight Setpoint' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotFlightSetpoint",
+          "name": "UBot Flight Setpoint",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotFlightSetpoint",
+            "subtypeDisplay": "UBot Flight Setpoint",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Mode",
+          "name": "Mode",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotFlightControlMode",
+            "subtypeDisplay": "EUBot Flight Control Mode",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Which fields apply. Motor mode never reaches a controller."
+        },
+        {
+          "id": "VelocityMetersPerSecond",
+          "name": "Velocity Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Velocity mode: target velocity in the world frame, m/s."
+        },
+        {
+          "id": "YawRateRadiansPerSecond",
+          "name": "Yaw Rate Radians Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Velocity mode: yaw rate, rad/s (+ turns right)."
+        },
+        {
+          "id": "bHoldPosition",
+          "name": "Hold Position",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Velocity mode: hold Hold Position horizontally, and its altitude while the vertical velocity is 0."
+        },
+        {
+          "id": "HoldPositionMeters",
+          "name": "Hold Position Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Velocity mode: the position to hold, m (world)."
+        },
+        {
+          "id": "Orientation",
+          "name": "Orientation",
+          "type": {
+            "category": "struct",
+            "subtype": "FQuat",
+            "subtypeDisplay": "Quat",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Attitude mode: target attitude, body to world."
+        },
+        {
+          "id": "bUseYawRate",
+          "name": "Use Yaw Rate",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Attitude mode: turn the heading at Yaw Rate instead of following the yaw of Orientation."
+        },
+        {
+          "id": "BodyRateRadiansPerSecond",
+          "name": "Body Rate Radians Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Body rate mode: target angular velocity in the body frame, rad/s."
+        },
+        {
+          "id": "bUseThrust",
+          "name": "Use Thrust",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Attitude and body rate modes: use Normalized Thrust; otherwise fly Vertical Velocity."
+        },
+        {
+          "id": "NormalizedThrust",
+          "name": "Normalized Thrust",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Collective thrust as a share of the maximum, 0..1."
+        },
+        {
+          "id": "VerticalVelocityMetersPerSecond",
+          "name": "Vertical Velocity Meters Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Attitude and body rate modes without thrust: climb rate, m/s (+ up)."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotManualFlightAxes",
+      "kind": "break",
+      "title": "Break UBot Manual Flight Axes",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Manual Flight Axes' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotManualFlightAxes",
+          "name": "UBot Manual Flight Axes",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotManualFlightAxes",
+            "subtypeDisplay": "UBot Manual Flight Axes",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Forward",
+          "name": "Forward",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "+ forward."
+        },
+        {
+          "id": "Right",
+          "name": "Right",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "+ right."
+        },
+        {
+          "id": "Up",
+          "name": "Up",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "+ up."
+        },
+        {
+          "id": "Yaw",
+          "name": "Yaw",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "+ yaw right."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotMultirotorAirframe",
+      "kind": "break",
+      "title": "Break UBot Multirotor Airframe",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Multirotor Airframe' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotMultirotorAirframe",
+          "name": "UBot Multirotor Airframe",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorAirframe",
+            "subtypeDisplay": "UBot Multirotor Airframe",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "MassKilograms",
+          "name": "Mass Kilograms",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Mass, kg."
+        },
+        {
+          "id": "InertiaKilogramSquareMeters",
+          "name": "Inertia Kilogram Square Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Principal moments of inertia about the body X, Y and Z axes, kg·m²."
+        },
+        {
+          "id": "Rotors",
+          "name": "Rotors",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotRotorSpec",
+            "subtypeDisplay": "UBot Rotor Spec",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "The rotors, in motor order (motor commands use this order)."
+        },
+        {
+          "id": "LinearDragCoefficients",
+          "name": "Linear Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Linear drag along the body axes, N per m/s of air-relative speed."
+        },
+        {
+          "id": "QuadraticDragCoefficients",
+          "name": "Quadratic Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Quadratic drag along the body axes, N per (m/s)² of air-relative speed."
+        },
+        {
+          "id": "AngularDragCoefficients",
+          "name": "Angular Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Rotational drag about the body axes, N·m per rad/s."
+        },
+        {
+          "id": "MotorCommandMapping",
+          "name": "Motor Command Mapping",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotMotorCommandMapping",
+            "subtypeDisplay": "EUBot Motor Command Mapping",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "How a normalized motor command maps to rotor speed."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotMultirotorState",
+      "kind": "break",
+      "title": "Break UBot Multirotor State",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Multirotor State' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotMultirotorState",
+          "name": "UBot Multirotor State",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorState",
+            "subtypeDisplay": "UBot Multirotor State",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "PositionMeters",
+          "name": "Position Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Position of the root in the world, m (UE axes: X forward, Y right, Z up)."
+        },
+        {
+          "id": "Orientation",
+          "name": "Orientation",
+          "type": {
+            "category": "struct",
+            "subtype": "FQuat",
+            "subtypeDisplay": "Quat",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Orientation of the body (body to world)."
+        },
+        {
+          "id": "LinearVelocityMetersPerSecond",
+          "name": "Linear Velocity Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Linear velocity in the world frame, m/s."
+        },
+        {
+          "id": "AngularVelocityRadiansPerSecond",
+          "name": "Angular Velocity Radians Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Angular velocity in the body frame, rad/s, UE rotation sense (+Z yaws right)."
+        },
+        {
+          "id": "LinearAccelerationMetersPerSecondSquared",
+          "name": "Linear Acceleration Meters Per Second Squared",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Linear acceleration in the world frame over the latest step, m/s²."
+        },
+        {
+          "id": "SpecificForceMetersPerSecondSquared",
+          "name": "Specific Force Meters Per Second Squared",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "What an ideal accelerometer on the body reads (acceleration minus gravity, in the body frame), m/s². Hover reads about +9.81 on Z."
+        },
+        {
+          "id": "RotorSpeedsRadiansPerSecond",
+          "name": "Rotor Speeds Radians Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Rotor speeds in motor order, rad/s (empty for the simplified flight model)."
+        },
+        {
+          "id": "SimTimeSeconds",
+          "name": "Sim Time Seconds",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "uBot sim time of this step, s."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotMultirotorVelocityLimits",
+      "kind": "break",
+      "title": "Break UBot Multirotor Velocity Limits",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Multirotor Velocity Limits' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotMultirotorVelocityLimits",
+          "name": "UBot Multirotor Velocity Limits",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorVelocityLimits",
+            "subtypeDisplay": "UBot Multirotor Velocity Limits",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "MaxHorizontalSpeedMetersPerSecond",
+          "name": "Max Horizontal Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Maximum horizontal speed (norm of the horizontal velocity), m/s."
+        },
+        {
+          "id": "MaxClimbSpeedMetersPerSecond",
+          "name": "Max Climb Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Maximum climb speed, m/s."
+        },
+        {
+          "id": "MaxDescentSpeedMetersPerSecond",
+          "name": "Max Descent Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Maximum descent speed (a positive number), m/s."
+        },
+        {
+          "id": "MaxYawRateRadiansPerSecond",
+          "name": "Max Yaw Rate Radians Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Maximum yaw rate, rad/s."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotRotorSpec",
+      "kind": "break",
+      "title": "Break UBot Rotor Spec",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Rotor Spec' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotRotorSpec",
+          "name": "UBot Rotor Spec",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotRotorSpec",
+            "subtypeDisplay": "UBot Rotor Spec",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "PositionMeters",
+          "name": "Position Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Position of the rotor hub in the body frame, m (UE axes: X forward, Y right, Z up)."
+        },
+        {
+          "id": "SpinDirection",
+          "name": "Spin Direction",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotRotorSpinDirection",
+            "subtypeDisplay": "EUBot Rotor Spin Direction",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Spin direction seen from above. The body feels the opposite reaction torque."
+        },
+        {
+          "id": "ThrustCoefficient",
+          "name": "Thrust Coefficient",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Thrust = this * speed², N/(rad/s)²."
+        },
+        {
+          "id": "TorqueCoefficient",
+          "name": "Torque Coefficient",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Reaction torque = this * speed², N·m/(rad/s)²."
+        },
+        {
+          "id": "MaxSpeedRadiansPerSecond",
+          "name": "Max Speed Radians Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Largest rotor speed, rad/s."
+        },
+        {
+          "id": "MotorTimeConstantSeconds",
+          "name": "Motor Time Constant Seconds",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "First-order time constant of the motor speed, s."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotWindSettings",
+      "kind": "break",
+      "title": "Break UBot Wind Settings",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Wind Settings' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotWindSettings",
+          "name": "UBot Wind Settings",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotWindSettings",
+            "subtypeDisplay": "UBot Wind Settings",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ConstantVelocityMetersPerSecond",
+          "name": "Constant Velocity Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Steady wind velocity in the world frame, m/s (the direction the air moves)."
+        },
+        {
+          "id": "GustStandardDeviationMetersPerSecond",
+          "name": "Gust Standard Deviation Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Standard deviation of the gusts per world axis, m/s. Zero turns gusts off."
+        },
+        {
+          "id": "GustCorrelationTimeSeconds",
+          "name": "Gust Correlation Time Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Typical duration of a gust, s. Longer is smoother."
+        },
+        {
+          "id": "Seed",
+          "name": "Seed",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Seed of the gust pattern."
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotFlightSetpoint",
+      "kind": "make",
+      "title": "Make UBot Flight Setpoint",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Flight Setpoint' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Mode",
+          "name": "Mode",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotFlightControlMode",
+            "subtypeDisplay": "EUBot Flight Control Mode",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Velocity",
+          "advanced": false,
+          "tooltip": "Which fields apply. Motor mode never reaches a controller."
+        },
+        {
+          "id": "VelocityMetersPerSecond",
+          "name": "Velocity Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000,0.000000,0.000000",
+          "advanced": false,
+          "tooltip": "Velocity mode: target velocity in the world frame, m/s."
+        },
+        {
+          "id": "YawRateRadiansPerSecond",
+          "name": "Yaw Rate Radians Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "advanced": true,
+          "tooltip": "Velocity mode: yaw rate, rad/s (+ turns right)."
+        },
+        {
+          "id": "bHoldPosition",
+          "name": "Hold Position",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "False",
+          "advanced": true,
+          "tooltip": "Velocity mode: hold Hold Position horizontally, and its altitude while the vertical velocity is 0."
+        },
+        {
+          "id": "HoldPositionMeters",
+          "name": "Hold Position Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000,0.000000,0.000000",
+          "advanced": true,
+          "tooltip": "Velocity mode: the position to hold, m (world)."
+        },
+        {
+          "id": "Orientation",
+          "name": "Orientation",
+          "type": {
+            "category": "struct",
+            "subtype": "FQuat",
+            "subtypeDisplay": "Quat",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "(X=0.000000,Y=0.000000,Z=0.000000,W=1.000000)",
+          "advanced": true,
+          "tooltip": "Attitude mode: target attitude, body to world."
+        },
+        {
+          "id": "bUseYawRate",
+          "name": "Use Yaw Rate",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "False",
+          "advanced": true,
+          "tooltip": "Attitude mode: turn the heading at Yaw Rate instead of following the yaw of Orientation."
+        },
+        {
+          "id": "BodyRateRadiansPerSecond",
+          "name": "Body Rate Radians Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000,0.000000,0.000000",
+          "advanced": true,
+          "tooltip": "Body rate mode: target angular velocity in the body frame, rad/s."
+        },
+        {
+          "id": "bUseThrust",
+          "name": "Use Thrust",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "False",
+          "advanced": true,
+          "tooltip": "Attitude and body rate modes: use Normalized Thrust; otherwise fly Vertical Velocity."
+        },
+        {
+          "id": "NormalizedThrust",
+          "name": "Normalized Thrust",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "advanced": true,
+          "tooltip": "Collective thrust as a share of the maximum, 0..1."
+        },
+        {
+          "id": "VerticalVelocityMetersPerSecond",
+          "name": "Vertical Velocity Meters Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "advanced": true,
+          "tooltip": "Attitude and body rate modes without thrust: climb rate, m/s (+ up)."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotFlightSetpoint",
+          "name": "UBot Flight Setpoint",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotFlightSetpoint",
+            "subtypeDisplay": "UBot Flight Setpoint",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotManualFlightAxes",
+      "kind": "make",
+      "title": "Make UBot Manual Flight Axes",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Manual Flight Axes' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Forward",
+          "name": "Forward",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "advanced": false,
+          "tooltip": "+ forward."
+        },
+        {
+          "id": "Right",
+          "name": "Right",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "advanced": false,
+          "tooltip": "+ right."
+        },
+        {
+          "id": "Up",
+          "name": "Up",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "advanced": false,
+          "tooltip": "+ up."
+        },
+        {
+          "id": "Yaw",
+          "name": "Yaw",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "advanced": false,
+          "tooltip": "+ yaw right."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotManualFlightAxes",
+          "name": "UBot Manual Flight Axes",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotManualFlightAxes",
+            "subtypeDisplay": "UBot Manual Flight Axes",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotMultirotorAirframe",
+      "kind": "make",
+      "title": "Make UBot Multirotor Airframe",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Multirotor Airframe' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "MassKilograms",
+          "name": "Mass Kilograms",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1.500000",
+          "advanced": false,
+          "tooltip": "Mass, kg."
+        },
+        {
+          "id": "InertiaKilogramSquareMeters",
+          "name": "Inertia Kilogram Square Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.029000,0.029000,0.055000",
+          "advanced": false,
+          "tooltip": "Principal moments of inertia about the body X, Y and Z axes, kg·m²."
+        },
+        {
+          "id": "Rotors",
+          "name": "Rotors",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotRotorSpec",
+            "subtypeDisplay": "UBot Rotor Spec",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "The rotors, in motor order (motor commands use this order)."
+        },
+        {
+          "id": "LinearDragCoefficients",
+          "name": "Linear Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.250000,0.250000,0.300000",
+          "advanced": true,
+          "tooltip": "Linear drag along the body axes, N per m/s of air-relative speed."
+        },
+        {
+          "id": "QuadraticDragCoefficients",
+          "name": "Quadratic Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.030000,0.030000,0.050000",
+          "advanced": true,
+          "tooltip": "Quadratic drag along the body axes, N per (m/s)² of air-relative speed."
+        },
+        {
+          "id": "AngularDragCoefficients",
+          "name": "Angular Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.003000,0.003000,0.005000",
+          "advanced": true,
+          "tooltip": "Rotational drag about the body axes, N·m per rad/s."
+        },
+        {
+          "id": "MotorCommandMapping",
+          "name": "Motor Command Mapping",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotMotorCommandMapping",
+            "subtypeDisplay": "EUBot Motor Command Mapping",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Thrust",
+          "advanced": true,
+          "tooltip": "How a normalized motor command maps to rotor speed."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotMultirotorAirframe",
+          "name": "UBot Multirotor Airframe",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorAirframe",
+            "subtypeDisplay": "UBot Multirotor Airframe",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotMultirotorState",
+      "kind": "make",
+      "title": "Make UBot Multirotor State",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Multirotor State' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "UBotMultirotorState",
+          "name": "UBot Multirotor State",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorState",
+            "subtypeDisplay": "UBot Multirotor State",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotMultirotorVelocityLimits",
+      "kind": "make",
+      "title": "Make UBot Multirotor Velocity Limits",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Multirotor Velocity Limits' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "MaxHorizontalSpeedMetersPerSecond",
+          "name": "Max Horizontal Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "10.000000",
+          "advanced": false,
+          "tooltip": "Maximum horizontal speed (norm of the horizontal velocity), m/s."
+        },
+        {
+          "id": "MaxClimbSpeedMetersPerSecond",
+          "name": "Max Climb Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "3.000000",
+          "advanced": false,
+          "tooltip": "Maximum climb speed, m/s."
+        },
+        {
+          "id": "MaxDescentSpeedMetersPerSecond",
+          "name": "Max Descent Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "2.000000",
+          "advanced": false,
+          "tooltip": "Maximum descent speed (a positive number), m/s."
+        },
+        {
+          "id": "MaxYawRateRadiansPerSecond",
+          "name": "Max Yaw Rate Radians Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1.570796",
+          "advanced": false,
+          "tooltip": "Maximum yaw rate, rad/s."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotMultirotorVelocityLimits",
+          "name": "UBot Multirotor Velocity Limits",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorVelocityLimits",
+            "subtypeDisplay": "UBot Multirotor Velocity Limits",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotRotorSpec",
+      "kind": "make",
+      "title": "Make UBot Rotor Spec",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Rotor Spec' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "PositionMeters",
+          "name": "Position Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000,0.000000,0.000000",
+          "advanced": false,
+          "tooltip": "Position of the rotor hub in the body frame, m (UE axes: X forward, Y right, Z up)."
+        },
+        {
+          "id": "SpinDirection",
+          "name": "Spin Direction",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotRotorSpinDirection",
+            "subtypeDisplay": "EUBot Rotor Spin Direction",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Clockwise",
+          "advanced": false,
+          "tooltip": "Spin direction seen from above. The body feels the opposite reaction torque."
+        },
+        {
+          "id": "ThrustCoefficient",
+          "name": "Thrust Coefficient",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000006",
+          "advanced": true,
+          "tooltip": "Thrust = this * speed², N/(rad/s)²."
+        },
+        {
+          "id": "TorqueCoefficient",
+          "name": "Torque Coefficient",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000",
+          "advanced": true,
+          "tooltip": "Reaction torque = this * speed², N·m/(rad/s)²."
+        },
+        {
+          "id": "MaxSpeedRadiansPerSecond",
+          "name": "Max Speed Radians Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1100.000000",
+          "advanced": true,
+          "tooltip": "Largest rotor speed, rad/s."
+        },
+        {
+          "id": "MotorTimeConstantSeconds",
+          "name": "Motor Time Constant Seconds",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.020000",
+          "advanced": true,
+          "tooltip": "First-order time constant of the motor speed, s."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotRotorSpec",
+          "name": "UBot Rotor Spec",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotRotorSpec",
+            "subtypeDisplay": "UBot Rotor Spec",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotWindSettings",
+      "kind": "make",
+      "title": "Make UBot Wind Settings",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Wind Settings' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "ConstantVelocityMetersPerSecond",
+          "name": "Constant Velocity Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000,0.000000,0.000000",
+          "advanced": false,
+          "tooltip": "Steady wind velocity in the world frame, m/s (the direction the air moves)."
+        },
+        {
+          "id": "GustStandardDeviationMetersPerSecond",
+          "name": "Gust Standard Deviation Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.000000,0.000000,0.000000",
+          "advanced": false,
+          "tooltip": "Standard deviation of the gusts per world axis, m/s. Zero turns gusts off."
+        },
+        {
+          "id": "GustCorrelationTimeSeconds",
+          "name": "Gust Correlation Time Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "2.000000",
+          "advanced": false,
+          "tooltip": "Typical duration of a gust, s. Longer is smoother."
+        },
+        {
+          "id": "Seed",
+          "name": "Seed",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0",
+          "advanced": false,
+          "tooltip": "Seed of the gust pattern."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "UBotWindSettings",
+          "name": "UBot Wind Settings",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotWindSettings",
+            "subtypeDisplay": "UBot Wind Settings",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotFlightController.ComputeMotorCommands",
+      "kind": "call",
+      "title": "Compute Motor Commands",
+      "subtitle": "Target is uBot Flight Controller",
+      "subtitleZh": "目标是uBot Flight Controller",
+      "owner": "UUBotFlightController",
+      "member": "ComputeMotorCommands",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Normalized motor commands (0..1, one per rotor in motor order) for this step. Delta Seconds is the\ntime until the next call.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotFlightController",
+            "subtypeDisplay": "uBot Flight Controller",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "State",
+          "name": "State",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorState",
+            "subtypeDisplay": "UBot Multirotor State",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Setpoint",
+          "name": "Setpoint",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotFlightSetpoint",
+            "subtypeDisplay": "UBot Flight Setpoint",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "DeltaSeconds",
+          "name": "Delta Seconds",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "OutMotorCommands",
+          "name": "Out Motor Commands",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotFlightController.ResetController",
+      "kind": "call",
+      "title": "Reset Controller",
+      "subtitle": "Target is uBot Flight Controller",
+      "subtitleZh": "目标是uBot Flight Controller",
+      "owner": "UUBotFlightController",
+      "member": "ResetController",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Clears the controller's memory (integrators, setpoints) and takes the airframe it flies.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotFlightController",
+            "subtypeDisplay": "uBot Flight Controller",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "State",
+          "name": "State",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorState",
+            "subtypeDisplay": "UBot Multirotor State",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Airframe",
+          "name": "Airframe",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorAirframe",
+            "subtypeDisplay": "UBot Multirotor Airframe",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotFlightController.SupportsControlMode",
+      "kind": "pure",
+      "title": "Supports Control Mode",
+      "subtitle": "Target is uBot Flight Controller",
+      "subtitleZh": "目标是uBot Flight Controller",
+      "owner": "UUBotFlightController",
+      "member": "SupportsControlMode",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Whether this controller flies setpoints of Mode. Motor mode never reaches a controller.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotFlightController",
+            "subtypeDisplay": "uBot Flight Controller",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Mode",
+          "name": "Mode",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotFlightControlMode",
+            "subtypeDisplay": "EUBot Flight Control Mode",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "Velocity",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorDynamicsComponent.GetActiveControlMode",
+      "kind": "pure",
+      "title": "Get Active Control Mode",
+      "subtitle": "Target is uBot Multirotor Dynamics",
+      "subtitleZh": "目标是uBot Multirotor Dynamics",
+      "owner": "UUBotMultirotorDynamicsComponent",
+      "member": "GetActiveControlMode",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "The control mode of the latest accepted command (Velocity while hovering on its own).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorDynamicsComponent",
+            "subtypeDisplay": "uBot Multirotor Dynamics",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotFlightControlMode",
+            "subtypeDisplay": "EUBot Flight Control Mode",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorDynamicsComponent.GetFlightSetpoint",
+      "kind": "pure",
+      "title": "Get Flight Setpoint",
+      "subtitle": "Target is uBot Multirotor Dynamics",
+      "subtitleZh": "目标是uBot Multirotor Dynamics",
+      "owner": "UUBotMultirotorDynamicsComponent",
+      "member": "GetFlightSetpoint",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "The setpoint the controller flies now.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorDynamicsComponent",
+            "subtypeDisplay": "uBot Multirotor Dynamics",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotFlightSetpoint",
+            "subtypeDisplay": "UBot Flight Setpoint",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorDynamicsComponent.GetHoverMotorCommand",
+      "kind": "pure",
+      "title": "Get Hover Motor Command",
+      "subtitle": "Target is uBot Multirotor Dynamics",
+      "subtitleZh": "目标是uBot Multirotor Dynamics",
+      "owner": "UUBotMultirotorDynamicsComponent",
+      "member": "GetHoverMotorCommand",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Normalized command that holds a level hover with this airframe and the world's gravity.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorDynamicsComponent",
+            "subtypeDisplay": "uBot Multirotor Dynamics",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorDynamicsComponent.GetLastMotorCommands",
+      "kind": "pure",
+      "title": "Get Last Motor Commands",
+      "subtitle": "Target is uBot Multirotor Dynamics",
+      "subtitleZh": "目标是uBot Multirotor Dynamics",
+      "owner": "UUBotMultirotorDynamicsComponent",
+      "member": "GetLastMotorCommands",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Motor commands applied in the latest step (normalized, motor order). Copies an array.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorDynamicsComponent",
+            "subtypeDisplay": "uBot Multirotor Dynamics",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorDynamicsComponent.SetFlightController",
+      "kind": "call",
+      "title": "Set Flight Controller",
+      "subtitle": "Target is uBot Multirotor Dynamics",
+      "subtitleZh": "目标是uBot Multirotor Dynamics",
+      "owner": "UUBotMultirotorDynamicsComponent",
+      "member": "SetFlightController",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Replaces the flight controller; it is reset at once. Null falls back to the built-in cascaded controller.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorDynamicsComponent",
+            "subtypeDisplay": "uBot Multirotor Dynamics",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "NewController",
+          "name": "New Controller",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotFlightController",
+            "subtypeDisplay": "uBot Flight Controller",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorLibrary.FindMultirotorMovement",
+      "kind": "pure",
+      "title": "Find Multirotor Movement",
+      "subtitle": "",
+      "owner": "UUBotMultirotorLibrary",
+      "member": "FindMultirotorMovement",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "The multirotor movement component of an actor (the actor's first one), or null.",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Actor",
+          "name": "Actor",
+          "type": {
+            "category": "object",
+            "subtype": "AActor",
+            "subtypeDisplay": "Actor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorMovementComponent",
+            "subtypeDisplay": "uBot Multirotor Movement",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorLibrary.MakeQuadXAirframe",
+      "kind": "pure",
+      "title": "Make Quad X Airframe",
+      "subtitle": "",
+      "owner": "UUBotMultirotorLibrary",
+      "member": "MakeQuadXAirframe",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "The default airframe with a different arm length and mass (inertia scales with mass and arm length squared).",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "ArmLengthMeters",
+          "name": "Arm Length Meters",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.225000",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "MassKilograms",
+          "name": "Mass Kilograms",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "1.500000",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorAirframe",
+            "subtypeDisplay": "UBot Multirotor Airframe",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorManualInputComponent.GetAxes",
+      "kind": "pure",
+      "title": "Get Manual Flight Axes",
+      "subtitle": "Target is uBot Multirotor Manual Input",
+      "subtitleZh": "目标是uBot Multirotor Manual Input",
+      "owner": "UUBotMultirotorManualInputComponent",
+      "member": "GetAxes",
+      "category": "uBot|Aerial|Input",
+      "tooltip": "The axes of the latest frame, after dead zones.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorManualInputComponent",
+            "subtypeDisplay": "uBot Multirotor Manual Input",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotManualFlightAxes",
+            "subtypeDisplay": "UBot Manual Flight Axes",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorManualInputComponent.IsControlling",
+      "kind": "pure",
+      "title": "Is Controlling",
+      "subtitle": "Target is uBot Multirotor Manual Input",
+      "subtitleZh": "目标是uBot Multirotor Manual Input",
+      "owner": "UUBotMultirotorManualInputComponent",
+      "member": "IsControlling",
+      "category": "uBot|Aerial|Input",
+      "tooltip": "True while this component flies the drone.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorManualInputComponent",
+            "subtypeDisplay": "uBot Multirotor Manual Input",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorMovementComponent.GetLastVelocityCommand",
+      "kind": "pure",
+      "title": "Get Last Velocity Command",
+      "subtitle": "Target is uBot Multirotor Movement",
+      "subtitleZh": "目标是uBot Multirotor Movement",
+      "owner": "UUBotMultirotorMovementComponent",
+      "member": "GetLastVelocityCommand",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "The latest accepted velocity command, after clamping.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorMovementComponent",
+            "subtypeDisplay": "uBot Multirotor Movement",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotVelocityCommand",
+            "subtypeDisplay": "UBot Velocity Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorMovementComponent.GetMultirotorState",
+      "kind": "pure",
+      "title": "Get Multirotor State",
+      "subtitle": "Target is uBot Multirotor Movement",
+      "subtitleZh": "目标是uBot Multirotor Movement",
+      "owner": "UUBotMultirotorMovementComponent",
+      "member": "GetMultirotorState",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Ground-truth state at the latest physics step (SI units, UE world axes).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorMovementComponent",
+            "subtypeDisplay": "uBot Multirotor Movement",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMultirotorState",
+            "subtypeDisplay": "UBot Multirotor State",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorMovementComponent.GetPhysicsStepCount",
+      "kind": "pure",
+      "title": "Get Physics Step Count",
+      "subtitle": "Target is uBot Multirotor Movement",
+      "subtitleZh": "目标是uBot Multirotor Movement",
+      "owner": "UUBotMultirotorMovementComponent",
+      "member": "GetPhysicsStepCount",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Physics steps run since play began.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorMovementComponent",
+            "subtypeDisplay": "uBot Multirotor Movement",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "int64",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorMovementComponent.GetRotorLayout",
+      "kind": "pure",
+      "title": "Get Rotor Layout",
+      "subtitle": "Target is uBot Multirotor Movement",
+      "subtitleZh": "目标是uBot Multirotor Movement",
+      "owner": "UUBotMultirotorMovementComponent",
+      "member": "GetRotorLayout",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Where the rotors are (body frame, m, UE axes) and how they spin, in motor order. The default is a\nquadrotor X with 0.225 m arms in PX4 order: front right, rear left, front left, rear right.\nPlace each uBot Rotor at the position of its Rotor Index; at begin play the rotors take their spin\ndirection from here.",
+      "keywords": "rotor motor position airframe",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorMovementComponent",
+            "subtypeDisplay": "uBot Multirotor Movement",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "PositionsMeters",
+          "name": "Positions Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "SpinDirections",
+          "name": "Spin Directions",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotRotorSpinDirection",
+            "subtypeDisplay": "EUBot Rotor Spin Direction",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorMovementComponent.OnImpact",
+      "kind": "event",
+      "title": "On Impact",
+      "subtitle": "",
+      "owner": "UUBotMultirotorMovementComponent",
+      "member": "OnImpact",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Fires when the drone starts touching something at least Impact Event Min Speed fast.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Hit",
+          "name": "Hit",
+          "type": {
+            "category": "struct",
+            "subtype": "FHitResult",
+            "subtypeDisplay": "Hit Result",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ImpactSpeedMetersPerSecond",
+          "name": "Impact Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorMovementComponent.ResetFlight",
+      "kind": "call",
+      "title": "Reset Flight",
+      "subtitle": "Target is uBot Multirotor Movement",
+      "subtitleZh": "目标是uBot Multirotor Movement",
+      "owner": "UUBotMultirotorMovementComponent",
+      "member": "ResetFlight",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Stops all motion and hovers again at the current pose, as at begin play.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorMovementComponent",
+            "subtypeDisplay": "uBot Multirotor Movement",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotMultirotorMovementComponent.TeleportMultirotor",
+      "kind": "call",
+      "title": "Teleport Multirotor",
+      "subtitle": "Target is uBot Multirotor Movement",
+      "subtitleZh": "目标是uBot Multirotor Movement",
+      "owner": "UUBotMultirotorMovementComponent",
+      "member": "TeleportMultirotor",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Moves the drone to a new pose without sweeping. With Stop Motion, velocities are zeroed and the drone hovers there.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotMultirotorMovementComponent",
+            "subtypeDisplay": "uBot Multirotor Movement",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "NewLocation",
+          "name": "New Location",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "NewRotation",
+          "name": "New Rotation",
+          "type": {
+            "category": "rotator",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "bStopMotion",
+          "name": "Stop Motion",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "true",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotRotorComponent.GetRotorSpeed",
+      "kind": "pure",
+      "title": "Get Rotor Speed",
+      "subtitle": "Target is uBot Rotor",
+      "subtitleZh": "目标是uBot Rotor",
+      "owner": "UUBotRotorComponent",
+      "member": "GetRotorSpeed",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "The rotor speed last set, rad/s.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotRotorComponent",
+            "subtypeDisplay": "uBot Rotor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotRotorComponent.SetRotorSpeed",
+      "kind": "call",
+      "title": "Set Rotor Speed",
+      "subtitle": "Target is uBot Rotor",
+      "subtitleZh": "目标是uBot Rotor",
+      "owner": "UUBotRotorComponent",
+      "member": "SetRotorSpeed",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "Sets the rotor speed shown from now on, rad/s (the magnitude; the direction comes from Spin Direction).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotRotorComponent",
+            "subtypeDisplay": "uBot Rotor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "RadiansPerSecond",
+          "name": "Radians Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotSimpleFlightComponent.GetTiltedAttitude",
+      "kind": "pure",
+      "title": "Get Tilted Attitude",
+      "subtitle": "Target is uBot Simple Flight",
+      "subtitleZh": "目标是uBot Simple Flight",
+      "owner": "UUBotSimpleFlightComponent",
+      "member": "GetTiltedAttitude",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "The tilted attitude of the latest step (also in Visual mode, where the root stays level).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotSimpleFlightComponent",
+            "subtypeDisplay": "uBot Simple Flight",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FQuat",
+            "subtypeDisplay": "Quat",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotSimpleFlightComponent.IsBraking",
+      "kind": "pure",
+      "title": "Is Braking",
+      "subtitle": "Target is uBot Simple Flight",
+      "subtitleZh": "目标是uBot Simple Flight",
+      "owner": "UUBotSimpleFlightComponent",
+      "member": "IsBraking",
+      "category": "uBot|Aerial|Multirotor",
+      "tooltip": "True while braking after Stop Motion, until the next velocity command.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotSimpleFlightComponent",
+            "subtypeDisplay": "uBot Simple Flight",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotWindSubsystem.GetWindVelocityAt",
+      "kind": "pure",
+      "title": "Get Wind Velocity At",
+      "subtitle": "Target is uBot Wind Subsystem",
+      "subtitleZh": "目标是uBot Wind Subsystem",
+      "owner": "UUBotWindSubsystem",
+      "member": "GetWindVelocityAt",
+      "category": "uBot|Aerial|Wind",
+      "tooltip": "Wind velocity now at a location (cm, world), m/s.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotWindSubsystem",
+            "subtypeDisplay": "uBot Wind Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "LocationCm",
+          "name": "Location Cm",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotWindSubsystem.SetScriptedWind",
+      "kind": "call",
+      "title": "Set Scripted Wind",
+      "subtitle": "Target is uBot Wind Subsystem",
+      "subtitleZh": "目标是uBot Wind Subsystem",
+      "owner": "UUBotWindSubsystem",
+      "member": "SetScriptedWind",
+      "category": "uBot|Aerial|Wind",
+      "tooltip": "Sets (or with Enabled off, clears) a wind that adds to the uBot Wind actors of the level.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotWindSubsystem",
+            "subtypeDisplay": "uBot Wind Subsystem",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Settings",
+          "name": "Settings",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotWindSettings",
+            "subtypeDisplay": "UBot Wind Settings",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "bEnabled",
+          "name": "Enabled",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "true",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    }
+  ],
+  "structs": [
+    {
+      "id": "FUBotFlightSetpoint",
+      "displayName": "UBot Flight Setpoint",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "What a flight controller is asked to fly during one physics step. SI units on UE world axes.",
+      "fields": [
+        {
+          "id": "BodyRateRadiansPerSecond",
+          "displayName": "Body Rate Radians Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Body rate mode: target angular velocity in the body frame, rad/s.",
+          "access": "readWrite"
+        },
+        {
+          "id": "HoldPositionMeters",
+          "displayName": "Hold Position Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Velocity mode: the position to hold, m (world).",
+          "access": "readWrite"
+        },
+        {
+          "id": "Mode",
+          "displayName": "Mode",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotFlightControlMode",
+            "subtypeDisplay": "EUBot Flight Control Mode",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Which fields apply. Motor mode never reaches a controller.",
+          "access": "readWrite"
+        },
+        {
+          "id": "NormalizedThrust",
+          "displayName": "Normalized Thrust",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Collective thrust as a share of the maximum, 0..1.",
+          "access": "readWrite"
+        },
+        {
+          "id": "Orientation",
+          "displayName": "Orientation",
+          "type": {
+            "category": "struct",
+            "subtype": "FQuat",
+            "subtypeDisplay": "Quat",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Attitude mode: target attitude, body to world.",
+          "access": "readWrite"
+        },
+        {
+          "id": "VelocityMetersPerSecond",
+          "displayName": "Velocity Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Velocity mode: target velocity in the world frame, m/s.",
+          "access": "readWrite"
+        },
+        {
+          "id": "VerticalVelocityMetersPerSecond",
+          "displayName": "Vertical Velocity Meters Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Attitude and body rate modes without thrust: climb rate, m/s (+ up).",
+          "access": "readWrite"
+        },
+        {
+          "id": "YawRateRadiansPerSecond",
+          "displayName": "Yaw Rate Radians Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Velocity mode: yaw rate, rad/s (+ turns right).",
+          "access": "readWrite"
+        },
+        {
+          "id": "bHoldPosition",
+          "displayName": "Hold Position",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Velocity mode: hold Hold Position horizontally, and its altitude while the vertical velocity is 0.",
+          "access": "readWrite"
+        },
+        {
+          "id": "bUseThrust",
+          "displayName": "Use Thrust",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Attitude and body rate modes: use Normalized Thrust; otherwise fly Vertical Velocity.",
+          "access": "readWrite"
+        },
+        {
+          "id": "bUseYawRate",
+          "displayName": "Use Yaw Rate",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Attitude mode: turn the heading at Yaw Rate instead of following the yaw of Orientation.",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotFlightSetpoint",
+      "break": "Break:FUBotFlightSetpoint"
+    },
+    {
+      "id": "FUBotManualFlightAxes",
+      "displayName": "UBot Manual Flight Axes",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "Manual flight input, each axis -1..1.",
+      "fields": [
+        {
+          "id": "Forward",
+          "displayName": "Forward",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "+ forward.",
+          "access": "readWrite"
+        },
+        {
+          "id": "Right",
+          "displayName": "Right",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "+ right.",
+          "access": "readWrite"
+        },
+        {
+          "id": "Up",
+          "displayName": "Up",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "+ up.",
+          "access": "readWrite"
+        },
+        {
+          "id": "Yaw",
+          "displayName": "Yaw",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "+ yaw right.",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotManualFlightAxes",
+      "break": "Break:FUBotManualFlightAxes"
+    },
+    {
+      "id": "FUBotMultirotorAirframe",
+      "displayName": "UBot Multirotor Airframe",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "Mass, inertia, rotors and drag of a multirotor. The default is a 1.5 kg, 450 mm quadrotor X.",
+      "fields": [
+        {
+          "id": "AngularDragCoefficients",
+          "displayName": "Angular Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Rotational drag about the body axes, N·m per rad/s.",
+          "access": "readWrite"
+        },
+        {
+          "id": "InertiaKilogramSquareMeters",
+          "displayName": "Inertia Kilogram Square Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Principal moments of inertia about the body X, Y and Z axes, kg·m².",
+          "access": "readWrite"
+        },
+        {
+          "id": "LinearDragCoefficients",
+          "displayName": "Linear Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Linear drag along the body axes, N per m/s of air-relative speed.",
+          "access": "readWrite"
+        },
+        {
+          "id": "MassKilograms",
+          "displayName": "Mass Kilograms",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Mass, kg.",
+          "access": "readWrite"
+        },
+        {
+          "id": "MotorCommandMapping",
+          "displayName": "Motor Command Mapping",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotMotorCommandMapping",
+            "subtypeDisplay": "EUBot Motor Command Mapping",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "How a normalized motor command maps to rotor speed.",
+          "access": "readWrite"
+        },
+        {
+          "id": "QuadraticDragCoefficients",
+          "displayName": "Quadratic Drag Coefficients",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Quadratic drag along the body axes, N per (m/s)² of air-relative speed.",
+          "access": "readWrite"
+        },
+        {
+          "id": "Rotors",
+          "displayName": "Rotors",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotRotorSpec",
+            "subtypeDisplay": "UBot Rotor Spec",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "The rotors, in motor order (motor commands use this order).",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotMultirotorAirframe",
+      "break": "Break:FUBotMultirotorAirframe"
+    },
+    {
+      "id": "FUBotMultirotorState",
+      "displayName": "UBot Multirotor State",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "Ground-truth state of a multirotor at its latest physics step, in SI units on UE world axes.",
+      "fields": [
+        {
+          "id": "AngularVelocityRadiansPerSecond",
+          "displayName": "Angular Velocity Radians Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Angular velocity in the body frame, rad/s, UE rotation sense (+Z yaws right).",
+          "access": "readOnly"
+        },
+        {
+          "id": "LinearAccelerationMetersPerSecondSquared",
+          "displayName": "Linear Acceleration Meters Per Second Squared",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Linear acceleration in the world frame over the latest step, m/s².",
+          "access": "readOnly"
+        },
+        {
+          "id": "LinearVelocityMetersPerSecond",
+          "displayName": "Linear Velocity Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Linear velocity in the world frame, m/s.",
+          "access": "readOnly"
+        },
+        {
+          "id": "Orientation",
+          "displayName": "Orientation",
+          "type": {
+            "category": "struct",
+            "subtype": "FQuat",
+            "subtypeDisplay": "Quat",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Orientation of the body (body to world).",
+          "access": "readOnly"
+        },
+        {
+          "id": "PositionMeters",
+          "displayName": "Position Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Position of the root in the world, m (UE axes: X forward, Y right, Z up).",
+          "access": "readOnly"
+        },
+        {
+          "id": "RotorSpeedsRadiansPerSecond",
+          "displayName": "Rotor Speeds Radians Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Rotor speeds in motor order, rad/s (empty for the simplified flight model).",
+          "access": "readOnly"
+        },
+        {
+          "id": "SimTimeSeconds",
+          "displayName": "Sim Time Seconds",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "uBot sim time of this step, s.",
+          "access": "readOnly"
+        },
+        {
+          "id": "SpecificForceMetersPerSecondSquared",
+          "displayName": "Specific Force Meters Per Second Squared",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "What an ideal accelerometer on the body reads (acceleration minus gravity, in the body frame), m/s². Hover reads about +9.81 on Z.",
+          "access": "readOnly"
+        }
+      ],
+      "make": "Make:FUBotMultirotorState",
+      "break": "Break:FUBotMultirotorState"
+    },
+    {
+      "id": "FUBotMultirotorVelocityLimits",
+      "displayName": "UBot Multirotor Velocity Limits",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "Velocity limits of a multirotor. Commands above them are clamped, keeping the horizontal direction.",
+      "fields": [
+        {
+          "id": "MaxClimbSpeedMetersPerSecond",
+          "displayName": "Max Climb Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Maximum climb speed, m/s.",
+          "access": "readWrite"
+        },
+        {
+          "id": "MaxDescentSpeedMetersPerSecond",
+          "displayName": "Max Descent Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Maximum descent speed (a positive number), m/s.",
+          "access": "readWrite"
+        },
+        {
+          "id": "MaxHorizontalSpeedMetersPerSecond",
+          "displayName": "Max Horizontal Speed Meters Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Maximum horizontal speed (norm of the horizontal velocity), m/s.",
+          "access": "readWrite"
+        },
+        {
+          "id": "MaxYawRateRadiansPerSecond",
+          "displayName": "Max Yaw Rate Radians Per Second",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Maximum yaw rate, rad/s.",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotMultirotorVelocityLimits",
+      "break": "Break:FUBotMultirotorVelocityLimits"
+    },
+    {
+      "id": "FUBotRotorSpec",
+      "displayName": "UBot Rotor Spec",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "One rotor of a multirotor: where it sits, how it spins, and its motor.",
+      "fields": [
+        {
+          "id": "MaxSpeedRadiansPerSecond",
+          "displayName": "Max Speed Radians Per Second",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Largest rotor speed, rad/s.",
+          "access": "readWrite"
+        },
+        {
+          "id": "MotorTimeConstantSeconds",
+          "displayName": "Motor Time Constant Seconds",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "First-order time constant of the motor speed, s.",
+          "access": "readWrite"
+        },
+        {
+          "id": "PositionMeters",
+          "displayName": "Position Meters",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Position of the rotor hub in the body frame, m (UE axes: X forward, Y right, Z up).",
+          "access": "readWrite"
+        },
+        {
+          "id": "SpinDirection",
+          "displayName": "Spin Direction",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotRotorSpinDirection",
+            "subtypeDisplay": "EUBot Rotor Spin Direction",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Spin direction seen from above. The body feels the opposite reaction torque.",
+          "access": "readWrite"
+        },
+        {
+          "id": "ThrustCoefficient",
+          "displayName": "Thrust Coefficient",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Thrust = this * speed², N/(rad/s)².",
+          "access": "readWrite"
+        },
+        {
+          "id": "TorqueCoefficient",
+          "displayName": "Torque Coefficient",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Reaction torque = this * speed², N·m/(rad/s)².",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotRotorSpec",
+      "break": "Break:FUBotRotorSpec"
+    },
+    {
+      "id": "FUBotWindSettings",
+      "displayName": "UBot Wind Settings",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "Wind: a constant part plus gusts. The gusts are a sum of sines with seeded phases, so the same settings give the same wind at the same sim time.",
+      "fields": [
+        {
+          "id": "ConstantVelocityMetersPerSecond",
+          "displayName": "Constant Velocity Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Steady wind velocity in the world frame, m/s (the direction the air moves).",
+          "access": "readWrite"
+        },
+        {
+          "id": "GustCorrelationTimeSeconds",
+          "displayName": "Gust Correlation Time Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Typical duration of a gust, s. Longer is smoother.",
+          "access": "readWrite"
+        },
+        {
+          "id": "GustStandardDeviationMetersPerSecond",
+          "displayName": "Gust Standard Deviation Meters Per Second",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Standard deviation of the gusts per world axis, m/s. Zero turns gusts off.",
+          "access": "readWrite"
+        },
+        {
+          "id": "Seed",
+          "displayName": "Seed",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Seed of the gust pattern.",
+          "access": "readWrite"
+        }
+      ],
+      "make": "Make:FUBotWindSettings",
+      "break": "Break:FUBotWindSettings"
+    }
+  ],
+  "enums": [
+    {
+      "id": "EUBotCommandLossAction",
+      "displayName": "EUBot Command Loss Action",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "What a physics multirotor does when its commands stop (released by the sender or timed out). Append new values at the end.",
+      "values": [
+        {
+          "id": "CutMotors",
+          "displayName": "Cut Motors",
+          "value": 2,
+          "tooltip": "Stop all motors (the drone falls)."
+        },
+        {
+          "id": "Hover",
+          "displayName": "Hover",
+          "value": 0,
+          "tooltip": "Brake and hold the position."
+        },
+        {
+          "id": "Land",
+          "displayName": "Land",
+          "value": 1,
+          "tooltip": "Descend in place at Landing Speed; the ground stops it like any other surface."
+        }
+      ]
+    },
+    {
+      "id": "EUBotFlightControlMode",
+      "displayName": "EUBot Flight Control Mode",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "Which command a physics multirotor flies. Append new values at the end.",
+      "values": [
+        {
+          "id": "Attitude",
+          "displayName": "Attitude",
+          "value": 1,
+          "tooltip": "Attitude plus thrust or climb rate."
+        },
+        {
+          "id": "BodyRate",
+          "displayName": "Body Rate",
+          "value": 2,
+          "tooltip": "Body rates plus thrust or climb rate."
+        },
+        {
+          "id": "Motor",
+          "displayName": "Motor",
+          "value": 3,
+          "tooltip": "One command per motor; no flight controller."
+        },
+        {
+          "id": "Velocity",
+          "displayName": "Velocity",
+          "value": 0,
+          "tooltip": "Velocity in the heading frame plus yaw rate (the full built-in cascade)."
+        }
+      ]
+    },
+    {
+      "id": "EUBotManualFlightMode",
+      "displayName": "EUBot Manual Flight Mode",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "How keyboard and gamepad input flies a multirotor. Append new values at the end.",
+      "values": [
+        {
+          "id": "Angle",
+          "displayName": "Angle",
+          "value": 1,
+          "tooltip": "Sticks command tilt and yaw rate, the up axis commands climb rate (drones that take attitude commands)."
+        },
+        {
+          "id": "Rate",
+          "displayName": "Rate",
+          "value": 2,
+          "tooltip": "Sticks command body rates, the up axis commands climb rate (drones that take body-rate commands)."
+        },
+        {
+          "id": "Velocity",
+          "displayName": "Velocity",
+          "value": 0,
+          "tooltip": "Sticks command velocity in the heading frame and yaw rate (any drone that takes velocity commands)."
+        }
+      ]
+    },
+    {
+      "id": "EUBotMotorCommandMapping",
+      "displayName": "EUBot Motor Command Mapping",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "How a normalized motor command (0..1) maps to rotor speed. Append new values at the end.",
+      "values": [
+        {
+          "id": "Speed",
+          "displayName": "Speed",
+          "value": 1,
+          "tooltip": "Speed grows linearly with the command: speed = max speed * command."
+        },
+        {
+          "id": "Thrust",
+          "displayName": "Thrust",
+          "value": 0,
+          "tooltip": "Thrust grows linearly with the command: speed = max speed * sqrt(command)."
+        }
+      ]
+    },
+    {
+      "id": "EUBotRotorSpinDirection",
+      "displayName": "EUBot Rotor Spin Direction",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "Spin direction of a rotor seen from above. Append new values at the end.",
+      "values": [
+        {
+          "id": "Clockwise",
+          "displayName": "Clockwise",
+          "value": 0,
+          "tooltip": ""
+        },
+        {
+          "id": "CounterClockwise",
+          "displayName": "Counter Clockwise",
+          "value": 1,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "EUBotSimpleFlightTiltMode",
+      "displayName": "EUBot Simple Flight Tilt Mode",
+      "module": "UBotAerial",
+      "header": "Source/UBotAerial/Public/UBotAerialTypes.h",
+      "tooltip": "What the simplified flight model tilts. Append new values at the end.",
+      "values": [
+        {
+          "id": "Body",
+          "displayName": "Body",
+          "value": 2,
+          "tooltip": "The root tilts, so attached sensors see the attitude a real multirotor would have."
+        },
+        {
+          "id": "None",
+          "displayName": "None",
+          "value": 0,
+          "tooltip": "Nothing tilts: the drone only yaws."
+        },
+        {
+          "id": "Visual",
+          "displayName": "Visual",
+          "value": 1,
+          "tooltip": "Only the visual component tilts; the root and everything attached to it stay level."
+        }
+      ]
+    }
+  ]
+}

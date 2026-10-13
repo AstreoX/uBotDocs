@@ -1,7 +1,7 @@
 {
   "format": 1,
   "plugin": "UBotROS",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engine": "5.5",
   "repository": "https://github.com/AstreoX/uBotROS",
   "generator": "UBotDocExport 1",
@@ -13,6 +13,30 @@
     }
   ],
   "classes": [
+    {
+      "id": "UUBotROSAttitudeCommandComponent",
+      "displayName": "uBot ROS Attitude Command",
+      "kind": "component",
+      "parent": "UUBotROSCommandReceiverComponent",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSAttitudeCommandComponent.h",
+      "category": "uBot",
+      "tooltip": "Receives mavros_msgs/msg/AttitudeTarget on /<namespace>/cmd_attitude and forwards it to an\nIUBotAttitudeCommandable target (an aerial vehicle, such as a drone with a uBot Multirotor Dynamics component).\n\n- type_mask without IGNORE_ATTITUDE (128): an attitude command; the orientation is converted from the ROS world\n  frame to UE and body_rate is not used.\n- type_mask with IGNORE_ATTITUDE: a body-rate command from body_rate (FLU -> UE body); axes with\n  IGNORE_ROLL_RATE (1), IGNORE_PITCH_RATE (2) or IGNORE_YAW_RATE (4) are 0.\n- thrust (0..1 of the vehicle's maximum) is used unless IGNORE_THRUST (64) is set; then the vehicle holds its\n  altitude.\n\nThe bridge needs the mavros_msgs package (ros-humble-mavros-msgs).",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": false,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [],
+      "nodes": [
+        "UUBotROSAttitudeCommandComponent.GetLastAttitudeCommand",
+        "UUBotROSAttitudeCommandComponent.GetLastBodyRateCommand",
+        "UUBotROSAttitudeCommandComponent.OnAttitudeCommand",
+        "UUBotROSAttitudeCommandComponent.OnBodyRateCommand"
+      ]
+    },
     {
       "id": "UUBotROSBridgeSubsystem",
       "displayName": "UBot ROSBridge Subsystem",
@@ -40,6 +64,157 @@
         "UUBotROSBridgeSubsystem.IsBridgeConnected",
         "UUBotROSBridgeSubsystem.OnBridgeConnected",
         "UUBotROSBridgeSubsystem.OnBridgeDisconnected"
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent",
+      "displayName": "uBot ROS Command Receiver",
+      "kind": "component",
+      "parent": "UActorComponent",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSCommandReceiverComponent.h",
+      "category": "uBot",
+      "tooltip": "Base of the components that receive commands from ROS 2 through the uBot ROS bridge and forward them to a\ntarget that implements a uBotCore actuation interface. Contains no control logic.\n\n- Topic: /<namespace>/<leaf of the subclass> (best_effort / volatile / depth 10). The namespace comes from\n  UBot::Identity unless Robot Namespace Override is set; Command Topic Override replaces the whole topic.\n- Target: Target Component when set, else the owner actor or its first component that implements the\n  subclass' interface. Without a target the component still decodes commands, fires its events and runs\n  the timeout.\n- Timeout: when no command arrived for Command Timeout Seconds of sim time, the target is released exactly\n  once (it falls back to its own behavior, such as a hover) and On Command Timeout fires. Ending play\n  releases an active command too.",
+      "flags": {
+        "abstract": true,
+        "blueprintType": true,
+        "blueprintable": false,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "CommandTimeoutSeconds",
+          "displayName": "Command Timeout Seconds",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.500000",
+          "category": "uBot|ROS|Command|Safety",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Sim seconds without a command before the target is released. 0 disables the timeout.",
+          "meta": {
+            "ClampMin": "0.0",
+            "Units": "s"
+          }
+        },
+        {
+          "id": "CommandTopicOverride",
+          "displayName": "Command Topic Override",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "uBot|ROS|Command|Topic",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Non-empty -> used instead of /<namespace>/<leaf>. A missing leading '/' is added.",
+          "meta": {}
+        },
+        {
+          "id": "RobotNamespaceOverride",
+          "displayName": "Robot Namespace Override",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "uBot|ROS|Command|Identity",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Empty -> the namespace resolved by UBot::Identity (identity component, else the sanitized actor name).\nLeading/trailing '/' are ignored and every segment is sanitized; a value made only of '/' selects the\nroot namespace.",
+          "meta": {}
+        },
+        {
+          "id": "TargetComponent",
+          "displayName": "Target Component",
+          "type": {
+            "category": "struct",
+            "subtype": "FComponentReference",
+            "subtypeDisplay": "Component Reference",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "()",
+          "category": "uBot|ROS|Command|Target",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Component that receives the commands; it must implement the subclass' interface. Unset -> the owner actor\nor its first implementing component. With only \"Referenced Actor\" set, that actor is searched the same way.",
+          "meta": {}
+        },
+        {
+          "id": "bAutoStartReceiver",
+          "displayName": "Auto Start Receiver",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "uBot|ROS|Command",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Subscribe in BeginPlay. When false, call Restart Command Receiver to start receiving.",
+          "meta": {}
+        }
+      ],
+      "nodes": [
+        "UUBotROSCommandReceiverComponent.GetCommandError",
+        "UUBotROSCommandReceiverComponent.GetCommandTarget",
+        "UUBotROSCommandReceiverComponent.GetResolvedCommandTopic",
+        "UUBotROSCommandReceiverComponent.IsCommandActive",
+        "UUBotROSCommandReceiverComponent.IsCommandReceiverReady",
+        "UUBotROSCommandReceiverComponent.OnCommandError",
+        "UUBotROSCommandReceiverComponent.OnCommandTimeout",
+        "UUBotROSCommandReceiverComponent.RestartCommandReceiver",
+        "UUBotROSCommandReceiverComponent.SetTargetComponent",
+        "UUBotROSCommandReceiverComponent.StopCommandReceiver"
+      ]
+    },
+    {
+      "id": "UUBotROSMotorCommandComponent",
+      "displayName": "uBot ROS Motor Command",
+      "kind": "component",
+      "parent": "UUBotROSCommandReceiverComponent",
+      "module": "UBotROS",
+      "header": "Source/UBotROS/Public/UBotROSMotorCommandComponent.h",
+      "category": "uBot",
+      "tooltip": "Receives actuator_msgs/msg/Actuators on /<namespace>/cmd_motors and forwards it to an IUBotMotorCommandable\ntarget (for example a drone's uBot Multirotor Dynamics component). velocity[] (rad/s) is used when it has\nvalues, else normalized[] (0..1); position[] is ignored. A command whose length differs from the target's\nmotor count is not dispatched.\n\nThe bridge needs the actuator_msgs package (ros-humble-actuator-msgs).",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": false,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [],
+      "nodes": [
+        "UUBotROSMotorCommandComponent.GetLastMotorCommand",
+        "UUBotROSMotorCommandComponent.OnMotorCommand"
       ]
     },
     {
@@ -1157,6 +1332,230 @@
       ]
     },
     {
+      "id": "UUBotROSAttitudeCommandComponent.GetLastAttitudeCommand",
+      "kind": "pure",
+      "title": "Get Last Attitude Command",
+      "subtitle": "Target is uBot ROS Attitude Command",
+      "subtitleZh": "目标是uBot ROS Attitude Command",
+      "owner": "UUBotROSAttitudeCommandComponent",
+      "member": "GetLastAttitudeCommand",
+      "category": "uBot|ROS|Command",
+      "tooltip": "The most recent valid attitude command (identity before the first one).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSAttitudeCommandComponent",
+            "subtypeDisplay": "uBot ROS Attitude Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotAttitudeCommand",
+            "subtypeDisplay": "UBot Attitude Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSAttitudeCommandComponent.GetLastBodyRateCommand",
+      "kind": "pure",
+      "title": "Get Last Body Rate Command",
+      "subtitle": "Target is uBot ROS Attitude Command",
+      "subtitleZh": "目标是uBot ROS Attitude Command",
+      "owner": "UUBotROSAttitudeCommandComponent",
+      "member": "GetLastBodyRateCommand",
+      "category": "uBot|ROS|Command",
+      "tooltip": "The most recent valid body-rate command (zero before the first one).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSAttitudeCommandComponent",
+            "subtypeDisplay": "uBot ROS Attitude Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotBodyRateCommand",
+            "subtypeDisplay": "UBot Body Rate Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSAttitudeCommandComponent.OnAttitudeCommand",
+      "kind": "event",
+      "title": "On Attitude Command",
+      "subtitle": "",
+      "owner": "UUBotROSAttitudeCommandComponent",
+      "member": "OnAttitudeCommand",
+      "category": "uBot|ROS|Command",
+      "tooltip": "Fires for every valid attitude command after conversion, whether or not a target exists.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Command",
+          "name": "Command",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotAttitudeCommand",
+            "subtypeDisplay": "UBot Attitude Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSAttitudeCommandComponent.OnBodyRateCommand",
+      "kind": "event",
+      "title": "On Body Rate Command",
+      "subtitle": "",
+      "owner": "UUBotROSAttitudeCommandComponent",
+      "member": "OnBodyRateCommand",
+      "category": "uBot|ROS|Command",
+      "tooltip": "Fires for every valid body-rate command after conversion, whether or not a target exists.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Command",
+          "name": "Command",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotBodyRateCommand",
+            "subtypeDisplay": "UBot Body Rate Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "UUBotROSBridgeSubsystem.Connect",
       "kind": "call",
       "title": "Connect",
@@ -1722,6 +2121,748 @@
             "valueType": null,
             "byRef": false,
             "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.GetCommandError",
+      "kind": "pure",
+      "title": "Get Command Error",
+      "subtitle": "Target is uBot ROS Command Receiver",
+      "subtitleZh": "目标是uBot ROS Command Receiver",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "GetCommandError",
+      "category": "uBot|ROS|Command",
+      "tooltip": "The most recent error message (empty when none since the last start).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSCommandReceiverComponent",
+            "subtypeDisplay": "uBot ROS Command Receiver",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.GetCommandTarget",
+      "kind": "pure",
+      "title": "Get Command Target",
+      "subtitle": "Target is uBot ROS Command Receiver",
+      "subtitleZh": "目标是uBot ROS Command Receiver",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "GetCommandTarget",
+      "category": "uBot|ROS|Command",
+      "tooltip": "The object commands are dispatched to, or nullptr (events only).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSCommandReceiverComponent",
+            "subtypeDisplay": "uBot ROS Command Receiver",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "object",
+            "subtype": "UObject",
+            "subtypeDisplay": "Object",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.GetResolvedCommandTopic",
+      "kind": "pure",
+      "title": "Get Resolved Command Topic",
+      "subtitle": "Target is uBot ROS Command Receiver",
+      "subtitleZh": "目标是uBot ROS Command Receiver",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "GetResolvedCommandTopic",
+      "category": "uBot|ROS|Command",
+      "tooltip": "The subscribed topic while the receiver runs, else the topic the next start would use.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSCommandReceiverComponent",
+            "subtypeDisplay": "uBot ROS Command Receiver",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.IsCommandActive",
+      "kind": "pure",
+      "title": "Is Command Active",
+      "subtitle": "Target is uBot ROS Command Receiver",
+      "subtitleZh": "目标是uBot ROS Command Receiver",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "IsCommandActive",
+      "category": "uBot|ROS|Command",
+      "tooltip": "True from a valid command until its timeout (always true after a command when the timeout is disabled).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSCommandReceiverComponent",
+            "subtypeDisplay": "uBot ROS Command Receiver",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.IsCommandReceiverReady",
+      "kind": "pure",
+      "title": "Is Command Receiver Ready",
+      "subtitle": "Target is uBot ROS Command Receiver",
+      "subtitleZh": "目标是uBot ROS Command Receiver",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "IsCommandReceiverReady",
+      "category": "uBot|ROS|Command",
+      "tooltip": "True while subscribed to the bridge (independent of the bridge connection state).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSCommandReceiverComponent",
+            "subtypeDisplay": "uBot ROS Command Receiver",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.OnCommandError",
+      "kind": "event",
+      "title": "On Command Error",
+      "subtitle": "",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "OnCommandError",
+      "category": "uBot|ROS|Command",
+      "tooltip": "Setup failures, malformed or invalid messages, an unusable configured target, rejected commands.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ErrorMessage",
+          "name": "Error Message",
+          "type": {
+            "category": "string",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.OnCommandTimeout",
+      "kind": "event",
+      "title": "On Command Timeout",
+      "subtitle": "",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "OnCommandTimeout",
+      "category": "uBot|ROS|Command",
+      "tooltip": "Fires once per timeout, after the target (if any) was released.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.RestartCommandReceiver",
+      "kind": "call",
+      "title": "Restart Command Receiver",
+      "subtitle": "Target is uBot ROS Command Receiver",
+      "subtitleZh": "目标是uBot ROS Command Receiver",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "RestartCommandReceiver",
+      "category": "uBot|ROS|Command",
+      "tooltip": "Unsubscribes and subscribes again with the current settings. The command timeout keeps running.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSCommandReceiverComponent",
+            "subtypeDisplay": "uBot ROS Command Receiver",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.SetTargetComponent",
+      "kind": "call",
+      "title": "Set Target Component",
+      "subtitle": "Target is uBot ROS Command Receiver",
+      "subtitleZh": "目标是uBot ROS Command Receiver",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "SetTargetComponent",
+      "category": "uBot|ROS|Command",
+      "tooltip": "Replaces Target Component by a direct reference; nullptr restores the automatic lookup on the owner.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSCommandReceiverComponent",
+            "subtypeDisplay": "uBot ROS Command Receiver",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "NewTarget",
+          "name": "New Target",
+          "type": {
+            "category": "object",
+            "subtype": "UActorComponent",
+            "subtypeDisplay": "Actor Component",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSCommandReceiverComponent.StopCommandReceiver",
+      "kind": "call",
+      "title": "Stop Command Receiver",
+      "subtitle": "Target is uBot ROS Command Receiver",
+      "subtitleZh": "目标是uBot ROS Command Receiver",
+      "owner": "UUBotROSCommandReceiverComponent",
+      "member": "StopCommandReceiver",
+      "category": "uBot|ROS|Command",
+      "tooltip": "Unsubscribes. An active command still times out normally.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSCommandReceiverComponent",
+            "subtypeDisplay": "uBot ROS Command Receiver",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSMotorCommandComponent.GetLastMotorCommand",
+      "kind": "pure",
+      "title": "Get Last Motor Command",
+      "subtitle": "Target is uBot ROS Motor Command",
+      "subtitleZh": "目标是uBot ROS Motor Command",
+      "owner": "UUBotROSMotorCommandComponent",
+      "member": "GetLastMotorCommand",
+      "category": "uBot|ROS|Command",
+      "tooltip": "The most recent valid motor command (empty before the first one).",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotROSMotorCommandComponent",
+            "subtypeDisplay": "uBot ROS Motor Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMotorCommand",
+            "subtypeDisplay": "UBot Motor Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotROSMotorCommandComponent.OnMotorCommand",
+      "kind": "event",
+      "title": "On Motor Command",
+      "subtitle": "",
+      "owner": "UUBotROSMotorCommandComponent",
+      "member": "OnMotorCommand",
+      "category": "uBot|ROS|Command",
+      "tooltip": "Fires for every valid motor command after conversion, whether or not a target exists.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Command",
+          "name": "Command",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotMotorCommand",
+            "subtypeDisplay": "UBot Motor Command",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
           },
           "default": "",
           "advanced": false,

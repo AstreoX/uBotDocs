@@ -7,8 +7,8 @@ FUBotVelocityCommand.AngularVelocityRadiansPerSecond:
   sourceHash: "b3f896c4ef54"
 
 FUBotVelocityCommand.LinearVelocityMetersPerSecond:
-  summary: 机体系线速度，用 UE 的坐标轴（X 前、Y 右、Z 上），单位 m/s。
-  sourceHash: "1afcac46967e"
+  summary: 机体系线速度，用 UE 的坐标轴（X 前、Y 右、Z 上），单位 m/s。机体会倾斜的接收者（多旋翼）按航向坐标系理解：X、Y 沿当前航向，Z 向上。
+  sourceHash: "814f419ac5d9"
 
 FUBotVelocityCommand.Source:
   summary: 来源标签，格式自由，比如 ROS、MCP、Blueprint。
