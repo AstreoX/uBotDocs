@@ -10,6 +10,80 @@
   "classes": [],
   "nodes": [
     {
+      "id": "AActor.GetComponentByClass",
+      "kind": "pure",
+      "title": "Get Component by Class",
+      "titleZh": "按类获取组件",
+      "subtitle": "Target is Actor",
+      "subtitleZh": "目标是Actor",
+      "owner": "AActor",
+      "member": "GetComponentByClass",
+      "category": "Actor",
+      "tooltip": "Searches components array and returns first encountered component of the specified class",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "AActor",
+            "subtypeDisplay": "Actor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ComponentClass",
+          "name": "Component Class",
+          "type": {
+            "category": "class",
+            "subtype": "UActorComponent",
+            "subtypeDisplay": "Actor Component",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "/Script/Engine.ActorComponent",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "object",
+            "subtype": "UActorComponent",
+            "subtypeDisplay": "Actor Component",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "AActor.K2_GetActorLocation",
       "kind": "pure",
       "title": "Get Actor Location",
@@ -54,6 +128,64 @@
           "name": "Return Value",
           "type": {
             "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "AActor.K2_GetActorRotation",
+      "kind": "pure",
+      "title": "Get Actor Rotation",
+      "titleZh": "获取Actor旋转",
+      "subtitle": "Target is Actor",
+      "subtitleZh": "目标是Actor",
+      "owner": "AActor",
+      "member": "K2_GetActorRotation",
+      "category": "Transformation",
+      "tooltip": "Returns rotation of the RootComponent of this Actor.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "AActor",
+            "subtypeDisplay": "Actor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "rotator",
             "subtype": "",
             "subtypeDisplay": "",
             "container": "none",
@@ -150,6 +282,96 @@
           "name": "Delta Seconds",
           "type": {
             "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "AController.Possess",
+      "kind": "call",
+      "title": "Possess",
+      "titleZh": "控制",
+      "subtitle": "Target is Controller",
+      "subtitleZh": "目标是控制器",
+      "owner": "AController",
+      "member": "Possess",
+      "category": "Pawn",
+      "tooltip": "Handles attaching this controller to the specified pawn.\nOnly runs on the network authority (where HasAuthority() returns true).\nDerived native classes can override OnPossess to filter the specified pawn.\nWhen possessed pawn changed, blueprint class gets notified by ReceivePossess\nand OnNewPawn delegate is broadcasted.",
+      "keywords": "set controller",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "AController",
+            "subtypeDisplay": "Controller",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "InPawn",
+          "name": "In Pawn",
+          "type": {
+            "category": "object",
+            "subtype": "APawn",
+            "subtypeDisplay": "Pawn",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "The Pawn to be possessed."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
             "subtype": "",
             "subtypeDisplay": "",
             "container": "none",
@@ -383,6 +605,126 @@
       ]
     },
     {
+      "id": "Macro:ForEachLoop",
+      "kind": "node",
+      "title": "For Each Loop",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities| Array",
+      "tooltip": "ForEachLoop instance",
+      "keywords": "Foreach",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Exec",
+          "name": "Exec",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Array",
+          "name": "Array",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "LoopBody",
+          "name": "Loop Body",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Array Element",
+          "name": "Array Element",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Array Index",
+          "name": "Array Index",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Completed",
+          "name": "Completed",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "Macro:ForLoop",
       "kind": "node",
       "title": "For Loop",
@@ -491,6 +833,152 @@
             "category": "exec",
             "subtype": "",
             "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UGameplayStatics.GetActorOfClass",
+      "kind": "call",
+      "title": "Get Actor Of Class",
+      "titleZh": "获取类的actor",
+      "subtitle": "",
+      "owner": "UGameplayStatics",
+      "member": "GetActorOfClass",
+      "category": "Actor",
+      "tooltip": "Find the first Actor in the world of the specified class.",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ActorClass",
+          "name": "Actor Class",
+          "type": {
+            "category": "class",
+            "subtype": "AActor",
+            "subtypeDisplay": "Actor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Class of Actor to find. Must be specified or result will be empty."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "object",
+            "subtype": "AActor",
+            "subtypeDisplay": "Actor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Actor of the specified class."
+        }
+      ]
+    },
+    {
+      "id": "UGameplayStatics.GetPlayerController",
+      "kind": "pure",
+      "title": "Get Player Controller",
+      "titleZh": "获取玩家控制器",
+      "subtitle": "",
+      "owner": "UGameplayStatics",
+      "member": "GetPlayerController",
+      "category": "Game",
+      "tooltip": "Returns the player controller found while iterating through the local and available remote player controllers.\nOn a network client, this will only include local players as remote player controllers are not available.\nThe index will be consistent as long as no new players join or leave, but it will not be the same across different clients and servers.",
+      "keywords": "",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "PlayerIndex",
+          "name": "Player Index",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0",
+          "advanced": false,
+          "tooltip": "Index in the player controller list, starting first with local players and then available remote ones"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "object",
+            "subtype": "APlayerController",
+            "subtypeDisplay": "Player Controller",
             "container": "none",
             "valueType": null,
             "byRef": false,
@@ -677,6 +1165,314 @@
           "default": "",
           "advanced": false,
           "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.Conv_RotatorToQuaternion",
+      "kind": "pure",
+      "title": "ToQuaternion (Rotator)",
+      "titleZh": "ToQuaternion（旋转体）",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "Conv_RotatorToQuaternion",
+      "category": "Math|Conversions",
+      "tooltip": "Converts to Quaternion representation of this Rotator.",
+      "keywords": "cast convert",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "•",
+      "inputs": [
+        {
+          "id": "InRot",
+          "name": "In Rot",
+          "type": {
+            "category": "rotator",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0, 0, 0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "struct",
+            "subtype": "FQuat",
+            "subtypeDisplay": "Quat",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.MakeRotator",
+      "kind": "pure",
+      "title": "Make Rotator",
+      "titleZh": "创建旋转体",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "MakeRotator",
+      "category": "Math|Rotator",
+      "tooltip": "Makes a rotator {Roll, Pitch, Yaw} from rotation values supplied in degrees",
+      "keywords": "construct build rotation rotate rotator makerotator",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Roll",
+          "name": "X (Roll)",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Pitch",
+          "name": "Y (Pitch)",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Yaw",
+          "name": "Z (Yaw)",
+          "type": {
+            "category": "float",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "rotator",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.MakeVector",
+      "kind": "pure",
+      "title": "Make Vector",
+      "titleZh": "创建向量",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "MakeVector",
+      "category": "Math|Vector",
+      "tooltip": "Makes a vector {X, Y, Z}",
+      "keywords": "construct build",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "X",
+          "name": "X",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Y",
+          "name": "Y",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "Z",
+          "name": "Z",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "0.0",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "vector",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UKismetMathLibrary.Multiply_VectorFloat",
+      "kind": "pure",
+      "title": "vector * float",
+      "titleZh": "向量*浮点",
+      "subtitle": "",
+      "owner": "UKismetMathLibrary",
+      "member": "Multiply_VectorFloat",
+      "category": "Math|Vector",
+      "tooltip": "Scales Vector A by B",
+      "keywords": "* multiply",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": true
+      },
+      "compactTitle": "×",
+      "inputs": [
+        {
+          "id": "A",
+          "name": "A",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Right click this pin to convert its type."
+        },
+        {
+          "id": "B",
+          "name": "B",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Right click this pin to convert its type."
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "wildcard",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Scales Vector A by B\n\nRight click this pin to convert its type."
         }
       ]
     },

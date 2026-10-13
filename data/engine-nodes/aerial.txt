@@ -1,0 +1,13 @@
+# UE engine nodes that the uBotAerial pages use: finding the drone and its components, possessing it,
+# building commands (vectors, rotators, quaternions), the wind subsystem, loops over the rotor layout.
+
+/Script/Engine.Actor:GetComponentByClass
+/Script/Engine.Actor:K2_GetActorRotation
+/Script/Engine.Controller:Possess
+/Script/Engine.GameplayStatics:GetActorOfClass
+/Script/Engine.GameplayStatics:GetPlayerController
+/Script/Engine.KismetMathLibrary:Conv_RotatorToQuaternion
+/Script/Engine.KismetMathLibrary:MakeRotator
+/Script/Engine.KismetMathLibrary:MakeVector
+/Script/Engine.KismetMathLibrary:Multiply_VectorFloat
+macro /Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForEachLoop

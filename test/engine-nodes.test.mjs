@@ -56,7 +56,9 @@ test("the repository's lists are valid; the merge script writes the commandlet's
     const merged = readFileSync(out, "utf8");
     assert.equal(parseEngineList(merged).length, lists.reduce((n, l) => n + parseEngineList(l.text).length, 0));
     const where = execFileSync(process.execPath, [join(root, "scripts", "engine-nodes.mjs"), "locate", out, "2"], { encoding: "utf8" }).trim();
-    assert.match(where, /^data\/engine-nodes\/core\.txt:\d+$/);
+    // Line 2 of the merged file comes from the first list in merge order (whatever areas exist).
+    assert.ok(where.startsWith(`${lists[0].rel}:`), where);
+    assert.match(where, /:\d+$/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
