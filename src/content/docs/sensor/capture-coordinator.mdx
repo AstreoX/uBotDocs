@@ -58,9 +58,13 @@ notes:
 
    选中每个要同步的相机组件，在「Details」面板的「Camera > Synchronization」里把 `Capture Group Id` 填成同一个名字，这些相机就属于同一个采集组（capture group）。填了组 ID 的相机不再自己采样。
 
+   ![RGB 相机的 Details 面板：Camera 类别下 Synchronization 里的 Capture Group Id](../../../assets/sensor/camera-sync.png)
+
 2. **添加协调器**
 
    在「Components」面板点「Add」，搜索 `uBot Camera Capture Coordinator`，在「Camera Capture Group」里填同一个 `Capture Group Id`。一个组 ID 只能有一个协调器。
+
+   ![uBot Camera Capture Coordinator 的 Details 面板：Camera Capture Group 类别下有 Capture Group Id、Update Rate Hz、Auto Start 和 Enabled](../../../assets/sensor/capture-coordinator.png)
 
 3. **设置频率**
 
