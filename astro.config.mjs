@@ -55,7 +55,6 @@ export default defineConfig({
       locales: {
         root: { label: "简体中文", lang: "zh-CN" },
       },
-      social: [{ icon: "github", label: "GitHub", href: "https://github.com/AstreoX" }],
       // Every group is generated from its folder; page order comes from `sidebar.order` in the
       // frontmatter and nested folder labels from `_group.yml` (see src/route-middleware.mjs).
       sidebar: docsSidebar({ packages, reference }),
@@ -66,6 +65,9 @@ export default defineConfig({
         Hero: "./src/components/Hero.astro",
         // The "需要：…" line under the title and the Pagefind "package" filter.
         PageTitle: "./src/components/PageTitle.astro",
+        // The GitHub link in the header and the mobile menu: the repository of the page being read
+        // (there is no site-wide `social` link), see lib/repositories.mjs.
+        SocialIcons: "./src/components/SocialIcons.astro",
       },
       routeMiddleware: "./src/route-middleware.mjs",
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
