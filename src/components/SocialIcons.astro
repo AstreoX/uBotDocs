@@ -1,0 +1,54 @@
+---
+// Replaces Starlight's SocialIcons, which draws the site-wide `social` links of the config in the
+// header and in the mobile menu. The site has no global account to link to; instead the one link
+// shows the GitHub repository of the page being read: the plugin of a manual or reference page,
+// uBot Manager under /manager/, else this site's repository (lib/repositories.mjs, repositoryForPage).
+// It uses the page's content id, which has no base path, so it is the same on GitHub Pages.
+import { Icon } from "@astrojs/starlight/components";
+import index from "../../data/index.json";
+import { createPackageRegistry } from "../../lib/packages.mjs";
+import { repositoryForPage } from "../../lib/repositories.mjs";
+
+const { entry } = Astro.locals.starlightRoute;
+const repo = repositoryForPage(entry.id, createPackageRegistry(index));
+---
+
+<a href={repo.url} class="github-link" aria-label={repo.label} title={repo.label} data-repo={repo.name}>
+  <Icon name="github" size="1.25rem" />
+  <span class="text">GitHub</span>
+</a>
+
+<style>
+  .github-link {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+    padding: 0.5em;
+    margin: -0.5em;
+    color: var(--sl-color-text-accent);
+    font-size: var(--sl-text-sm);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .github-link:hover {
+    color: var(--sl-color-white);
+  }
+
+  /* Below 50rem Starlight hides the header's right-hand group and shows the link in the mobile menu
+     instead. A page without a sidebar (the home page) has no mobile menu, so there the header keeps
+     the link, as an icon, and leaves out the theme and language selects as before. */
+  @media (max-width: 49.999rem) {
+    :global(.header .github-link .text) {
+      display: none;
+    }
+    :global(:root:not([data-has-sidebar]) .header .right-group) {
+      display: flex;
+    }
+    :global(:root:not([data-has-sidebar]) .header .right-group > :not(.social-icons)) {
+      display: none;
+    }
+    :global(:root:not([data-has-sidebar]) .header .social-icons::after) {
+      display: none;
+    }
+  }
+</style>

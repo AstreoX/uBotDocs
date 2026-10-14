@@ -67,14 +67,16 @@ lib/packages.mjs            the package registry: every package list comes from 
 lib/semver.mjs              versions and ranges (the grammar of uBotCore's UBotSemVer)
 lib/content-packages.mjs    which packages a page declares (frontmatter or folder default), the page kinds, the sections
 lib/sidebar.mjs             the sidebar: built from the registry
+lib/repositories.mjs        the GitHub repositories (the plugins from the registry, uBot Manager and this site) and the repository a page's header link points at
 lib/dependency-graph.mjs    layout of the dependency graph (columns by dependency depth, orthogonal arrows)
 lib/reference/              reference generator: package framework (index.mjs) and providers (blueprint.mjs)
 lib/blueprint/              graph parser, validator, layout and HTML renderer (shared by all tools)
 lib/engine-nodes.mjs        engine node lists: check, merge
 src/plugins/blueprint.mjs   Markdown plugin: ```blueprint block -> graph HTML
-src/components/             PackageList, RecipeTable, PackageStatus, DependencyGraph (see "Components"),
+src/components/             PackageList, RecipeTable, PackageStatus, DependencyGraph, RepositoryOverview (see "Components"),
                             SamplingTimeline, PageTitle (the "需要：…" line under the title and the search's package filter),
-                            Hero (the home page's headline beside a Blueprint graph; replaces Starlight's Hero), HomePlugins (home page only)
+                            Hero (the home page's headline beside a Blueprint graph; replaces Starlight's Hero), HomePlugins (home page only),
+                            SocialIcons (the header's GitHub link of the page's repository; replaces Starlight's SocialIcons)
 src/scripts/blueprint.js    client: wires, node cards, full-screen view, node index filter
 src/scripts/scrollables.js  client: tab stop and scroll hint for tables and diagrams that scroll sideways
 scripts/                    gen-reference, check, sync-index, sync-api, sync-branch, add-package, export-api.ps1 (Windows + UE only), zh, find-node, rebase-links
@@ -201,6 +203,7 @@ page edit. Import them with a relative path (`import PackageList from "../../../
 | `<PackageStatus name="UBotX" />` | status line, description, required packages (links), engine plugins, what it provides, the recipes that include it |
 | `<DependencyGraph />` | the dependency graph, drawn like uBot Manager's 依赖图 view |
 | `<HomePlugins />` | the home page only: every package as one row of a plain list (name, description, version or 规划中), released first |
+| `<RepositoryOverview />` | the home page and the introduction: the recommendation to install through uBot Manager, then one row per GitHub repository (released plugins from the index, uBot Manager, this site) with its manual and GitHub links; planned plugins have no repository yet and are left out |
 
 The dependency graph (`src/components/DependencyGraph.astro`, layout in `lib/dependency-graph.mjs`,
 tests in `test/dependency-graph.test.mjs`): columns by dependency depth from left to right (a package
@@ -213,6 +216,13 @@ inside its own box on a phone. The colour of a card's top bar comes from a small
 package name inside the component (decoration only; an unknown package gets a stable spare colour), not
 from the index. If you change the layout, keep `test/dependency-graph.test.mjs` green: arrows never
 overlap and stay inside the canvas, also in 500 random graphs.
+
+The GitHub link in the header (and in the mobile menu) is `src/components/SocialIcons.astro`, which replaces
+Starlight's `social` links; the config has no `social` entry. It points at the repository of the page being read
+(`repositoryForPage()` in `lib/repositories.mjs`, covered by `test/repositories.test.mjs`): the plugin of a released
+plugin's manual or reference pages (the index's `repository`), uBot Manager under `/manager/`, and this site's
+repository (uBotDocs) for every other page, placeholders of planned plugins included. Never link the profile page
+of the owner. uBot Manager and uBotDocs are not in the index; they are fixed in `lib/repositories.mjs`.
 
 ## Writing style
 
