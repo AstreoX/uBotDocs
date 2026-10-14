@@ -59,26 +59,28 @@ notes:
 
 | 模式 | 指令 | 内容 |
 | --- | --- | --- |
-| `Velocity` | `UBot Velocity Command` | 航向系线速度加偏航角速度，按 `Velocity Limits` 截断 |
+| `Velocity` | `UBot Velocity Command` | 航向系线速度加偏航角速度，按 `Velocity Limits` 截断；悬停和 `Land` 也是这个模式的设定值 |
 | `Attitude` | `UBot Attitude Command` | 目标姿态（机体到世界）；`Use Yaw Rate` 时航向按偏航角速度转动 |
-| `BodyRate` | `UBot Body Rate Command` | 机体系目标角速度（rad/s），不截断 |
+| `BodyRate` | `UBot Body Rate Command` | 机体系目标角速度（rad/s，UE 旋向：+Z 向右偏航），不截断 |
 | `Motor` | `UBot Motor Command` | 每个电机一个值，不经过飞控 |
 
 姿态和角速度指令的推力有两种给法：`Use Thrust` 为 true 时用 `Normalized Thrust`（0 到 1，最大总推力的比例），否则按 `Vertical Velocity Meters Per Second` 飞爬升率，0 保持高度。
 
-电机指令的 `Type` 是 `Normalized`（0 到 1）或 `AngularVelocity`（rad/s）。值的个数必须等于电机数（`Get Motor Count`，默认机架 4 个），按机架的电机顺序：PX4 四旋翼 X 里 0 右前、1 左后、2 左前、3 右后。
+电机指令的 `Type` 是 `Normalized`（0 到 1）或 `AngularVelocity`（rad/s）。`Normalized` 默认是推力比例：转速 = 最大转速 × √指令（`Motor Command Mapping` 为 `Thrust` 时）。值的个数必须等于电机数（`Get Motor Count`，默认机架 4 个），按机架的电机顺序：PX4 四旋翼 X 里 0 右前、1 左后、2 左前、3 右后。
 
-常用属性在 `Movement` 组件上：
+常用属性在 `Movement` 组件上，选中它就能在「Details」面板的 Dynamics 和 Multirotor 下找到：
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
-| `bAcceptVelocityCommands` 等四个 | 开 | 单独关闭某种指令，关闭后接口返回 `false` |
-| `CommandLossAction` | `Hover` | 指令丢失时怎么做 |
-| `CommandTimeoutSeconds` | 0 s | 最后一条指令距今超过这么多仿真秒算丢失；0 表示不超时 |
-| `LandingSpeedMetersPerSecond` | 0.7 m/s | `Land` 时的下降速度 |
-| `PhysicsRateHz` | 1000 Hz | 每秒物理步数 |
+| `Accept Velocity Commands` 等四个 | 开 | 单独关闭某种指令，关闭后接口返回 `false` |
+| `Command Loss Action` | `Hover` | 指令丢失时怎么做 |
+| `Command Timeout Seconds` | 0 s | 最后一条指令距今超过这么多仿真秒算丢失；0 表示不超时 |
+| `Landing Speed Meters Per Second` | 0.7 m/s | `Land` 时的下降速度 |
+| `Physics Rate Hz` | 1000 Hz | 每秒物理步数，范围 100 到 4000 Hz |
 
-`CommandLossAction` 有三个取值：
+![物理无人机的组件树和 Movement 组件的 Details 面板：Dynamics 下有 Airframe 和 Control，Multirotor 下有 Physics Rate Hz](../../../assets/aerial/physics-movement.png)
+
+`Command Loss Action` 有三个取值：
 
 | 取值 | 效果 |
 | --- | --- |
@@ -86,13 +88,13 @@ notes:
 | `Land` | 原地下降，被地面挡住后停在那里 |
 | `CutMotors` | 所有电机指令置 0，无人机下落 |
 
-默认机架是 1.5 kg、轴距 450 mm 的四旋翼 X，最大总推力约为重量的 1.92 倍；机架参数在 `Airframe` 上，改动在下一次 `Reset Flight` 生效。其余属性见 [uBot Multirotor Dynamics](/reference/ubotaerial/uubotmultirotordynamicscomponent/)。
+默认机架是 1.5 kg、轴距 450 mm 的四旋翼 X，最大总推力约为重量的 1.92 倍；机架参数在 `Airframe` 上，改动在下一次 `Reset Flight` 生效；`Airframe` 在 `BeginPlay` 时检查一次。其余属性见 [uBot Multirotor Dynamics](/reference/ubotaerial/uubotmultirotordynamicscomponent/)。
 
 ## 输出与事件
 
 - `Get Multirotor State` 返回真值状态（SI 单位、UE 世界轴），含转子转速和比力。
 - `Get Last Motor Commands` 返回最近一次实际送给电机的指令。
-- `Get Hover Motor Command` 按工程的重力返回悬停所需的归一化电机指令，默认机架约 0.52。
+- `Get Hover Motor Command` 按工程的重力返回悬停所需的归一化电机指令（推力比例），默认机架约 0.52。
 
 用它给四个电机发悬停指令：
 
@@ -116,10 +118,12 @@ notes:
 
 ## 注意事项
 
-- 指令被拒绝（返回 `false`）有三种情况：这种指令被 `bAccept…Commands` 关闭，指令含 NaN，或电机值的个数与电机数不一致。裸机级不接受速度和姿态指令。
-- `Stop Motion` 总是刹停并锁定位置，不看 `CommandLossAction`：速度降到 0.05 m/s 以下后，锁定当前的水平位置和高度。
+- 指令被拒绝（返回 `false`）有四种情况：这种指令被 `Accept … Commands` 关闭，指令含 NaN 或非有限值，姿态四元数的长度接近 0（平方长度小于 0.01），或电机值的个数与电机数不一致。裸机级不接受速度和姿态指令。
+- `Stop Motion` 总是刹停并锁定位置，不看 `Command Loss Action`：水平速度低于 0.05 m/s 后，锁定当前的水平位置和高度。
 - 发零速度的速度指令只跟踪零速度，不锁定位置，风造成的位移不会被拉回。
-- 用 uBotROS 下发指令时，它的组件自带 0.5 s 超时，超时后调用 `Release …`，由 `CommandLossAction` 处理。
+- 用 uBotROS 下发指令时，它的组件自带 0.5 s 超时，超时后的处理按组件区分：
+  - `uBot ROS Velocity Command` 调用 `Stop Motion`，刹停并锁定位置，不看 `Command Loss Action`。
+  - `uBot ROS Attitude Command` 和 `uBot ROS Motor Command` 调用 `Release Attitude Command` 或 `Release Motor Command`，由 `Command Loss Action` 处理。
 
 ## 相关参考
 

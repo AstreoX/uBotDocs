@@ -12,7 +12,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 ## 快速用法
 
-下面的蓝图在每个 Tick 把当前摇杆量显示在屏幕上，用来检查输入有没有到达：
+下面的蓝图在每个 Tick 把当前摇杆量显示在屏幕上，用来检查输入有没有到达。三个示例蓝图的 `Start with Tick Enabled` 是关的（行为都在组件里），要先在「Class Defaults」里打开它，`Event Tick` 才会运行；也可以把这张图放在别的 Actor 里：
 
 ```blueprint
 caption: 每个 Tick 显示手动输入的前进量（-1 到 1）
@@ -53,7 +53,7 @@ wires:
 
 1. **添加组件**
 
-   示例蓝图里的 `ManualInput` 就是这个组件。自己拼的无人机添加 `uBot Multirotor Manual Input` 即可。
+   示例蓝图里的 `ManualInput` 就是这个组件。自己拼的无人机添加 `uBot Multirotor Manual Input` 即可，所属的 Actor 必须是 Pawn。
 
 2. **让玩家控制这架 Pawn**
 
@@ -61,7 +61,9 @@ wires:
 
 3. **选飞行模式**
 
-   `Flight Mode` 要和无人机能接受的指令匹配，见下表。
+   `Flight Mode` 要和无人机能接受的指令匹配，见下表。选中 `ManualInput`，全部设置都在「Details」面板的 Manual Input 下：
+
+   ![ManualInput 组件的 Details 面板：Manual Input 下有 Take Control when Possessed、Flight Mode、各项满偏量和 Dead Zone，Custom 下是自定义键位的三项和 Mapping Priority](../../../assets/aerial/physics-manual-input.png)
 
 4. **检查输入设置**
 
@@ -94,20 +96,20 @@ wires:
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
-| `MaxHorizontalSpeedMetersPerSecond` | 5 m/s | `Velocity` 模式的水平速度 |
-| `MaxVerticalSpeedMetersPerSecond` | 2 m/s | 升降速度 |
-| `MaxYawRateDegreesPerSecond` | 90°/s | 偏航角速度 |
-| `MaxTiltDegrees` | 30° | `Angle` 模式的倾角，范围 0 到 60 |
-| `MaxBodyRateDegreesPerSecond` | 220°/s | `Rate` 模式的横滚、俯仰角速度 |
-| `DeadZone` | 0.15 | 摇杆死区，死区边缘重映射为 0，范围 0 到 0.9 |
-| `bTakeControlWhenPossessed` | 开 | 关闭后组件不接管输入 |
+| `Max Horizontal Speed Meters Per Second` | 5 m/s | `Velocity` 模式的水平速度 |
+| `Max Vertical Speed Meters Per Second` | 2 m/s | 升降速度 |
+| `Max Yaw Rate Degrees Per Second` | 90°/s | 偏航角速度 |
+| `Max Tilt Degrees` | 30° | `Angle` 模式的倾角，范围 0 到 60 |
+| `Max Body Rate Degrees Per Second` | 220°/s | `Rate` 模式的横滚、俯仰角速度 |
+| `Dead Zone` | 0.15 | 摇杆死区，死区边缘重映射为 0，范围 0 到 0.9 |
+| `Take Control when Possessed` | 开 | 关闭后组件不接管输入 |
 
 水平两个轴合起来的长度限制为 1，所以斜向不会更快。
 
 ## 输出与事件
 
 - 控制期间组件每帧发一条指令。
-- 控制结束时，`Velocity` 模式发 `Stop Motion`，其余模式发 `Release Attitude Command`：无人机刹停并悬停，物理无人机在后一种情况下按 `CommandLossAction` 处理。
+- 控制结束时，`Velocity` 模式发 `Stop Motion`，其余模式发 `Release Attitude Command`：无人机刹停并悬停，物理无人机在后一种情况下按 `Command Loss Action` 处理。
 - 同时有其他发送方（例如 ROS）时，最后到达的指令生效。
 
 ## 注意事项
@@ -115,7 +117,7 @@ wires:
 - `Angle` 和 `Rate` 模式下，右摇杆向右是向右倾或横滚，向前是机头下俯，偏航轴向右是向右偏航。
 - 导航无人机没有姿态接口，选 `Angle` 或 `Rate` 时日志警告一次。
 - 示例蓝图的相机挂在弹簧臂上：臂长 120 cm，俯仰 −15°，只继承机体的偏航，所以物理无人机倾斜、翻滚时视角不会跟着晃。
-- 要自定义键位，设置 `CustomMappingContext`、`CustomMoveAction`（前、右、上三个轴）和 `CustomYawAction`，映射上下文要映射这两个动作；留空则用内置键位。
+- 要自定义键位，设置 `Custom Mapping Context`、`Custom Move Action`（前、右、上三个轴）和 `Custom Yaw Action`，映射上下文要映射这两个动作；留空则用内置键位。
 
 ## 相关参考
 

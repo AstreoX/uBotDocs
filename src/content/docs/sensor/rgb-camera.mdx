@@ -47,6 +47,8 @@ notes:
 
    选中组件，在「Details」面板的「Camera > Image」里设置分辨率，在「Camera > Projection」里设置水平视场。默认是 640 × 480、90°。
 
+   ![RGB 相机的 Details 面板：Camera 类别下 Image 里是分辨率，Projection 里是 Horizontal Fov Degrees 和 Preview Distance Meters](../../../assets/sensor/rgb-camera.png)
+
 3. **连蓝图**
 
    在「Events」区点 `On Image Frame Ready` 旁的「+」，照上图连线。
@@ -113,6 +115,10 @@ notes:
 ### 预览
 
 - 编辑器视口里选中组件，会画出一个长度为 `Preview Distance Meters` 的视锥，用来检查视野。
+
+  ![编辑器视口里选中 RGB 相机时画出的视锥（示意）](../../../assets/sensor/rgb-camera-frustum.jpg)
+
+  图中只是示意：画面里的视锥长度和视场与默认值不同，数值以设置表为准。
 - `Get Preview Render Target` 返回的是一个普通的 Render Target，可以拿去给材质或 UI 显示相机画面。
 
 ## 注意事项

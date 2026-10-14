@@ -1,5 +1,5 @@
 UUBotMultirotorManualInputComponent:
-  summary: 本地玩家控制（附身）所属多旋翼时，用键盘或手柄驾驶它。输入动作和映射上下文在运行时创建（Enhanced Input），不需要资产；要改按键就设置自己的。控制期间每帧发送一条指令，控制结束时无人机刹车并悬停。
+  summary: 本地玩家控制（附身）所属多旋翼时，用键盘或手柄驾驶它。输入动作和映射上下文在运行时创建（Enhanced Input），不需要资产；要改按键就设置自己的。控制期间每帧发送一条指令。控制结束时，速度模式下刹车悬停；姿态和角速度模式下按 `Command Loss Action` 处理，默认悬停。
   sourceHash: "1988bec920eb"
 
 UUBotMultirotorManualInputComponent.CustomMappingContext:

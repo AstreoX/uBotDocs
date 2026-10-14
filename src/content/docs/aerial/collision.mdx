@@ -40,7 +40,7 @@ wires:
 
 3. **按需调整**
 
-   `ImpactEventMinSpeedMetersPerSecond` 决定多慢的撞击不触发事件；`ContactFriction` 决定沿表面滑动时的损失。
+   `Impact Event Min Speed Meters Per Second` 决定多慢的撞击不触发事件；`Contact Friction` 决定沿表面滑动时的损失。
 
 </Steps>
 
@@ -48,8 +48,8 @@ wires:
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
-| `ImpactEventMinSpeedMetersPerSecond` | 0.3 m/s | 沿表面法线的撞击速度低于它时不触发 `On Impact` |
-| `ContactFriction` | 0.3 | 接触时滑动速度减少撞击速度的这个比例 |
+| `Impact Event Min Speed Meters Per Second` | 0.3 m/s | 沿表面法线的撞击速度低于它时不触发 `On Impact` |
+| `Contact Friction` | 0.3 | 接触时滑动速度减少撞击速度的这个比例 |
 
 ## 输出与事件
 
@@ -66,7 +66,8 @@ wires:
 - 开始时和 `Reset Flight` 之后，无人机都在当前位置悬停，放在地面上也一样。
 - 撞得再重也只触发 `On Impact`，无人机继续飞行，继续接受指令。
 - 每个物理步长，飞行模型沿运动方向扫掠根组件的碰撞形状，忽略无人机自己；旋转不参与扫掠，起点就嵌在几何体里时被推出。
-- 物理无人机的指令不会往最近 50 ms 内接触过的表面里推：在地面上按住下降键后紧接着上升，无人机立刻升起，不会迟钝。
+- 物理无人机的两种指令不会往最近 50 ms 内接触过的表面里推：速度设定值，以及姿态、角速度模式下不带推力的爬升率。在地面上按住下降键后紧接着上升，无人机立刻升起，不会迟钝。
+- 电机指令和带推力的指令不做这个处理。
 - 用 `Set Actor Location` 等从外部移动无人机时，飞行模型在下一帧接管新位姿，速度保持。
 
 ## 相关参考

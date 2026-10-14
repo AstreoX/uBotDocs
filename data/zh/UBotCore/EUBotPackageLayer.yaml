@@ -3,19 +3,19 @@ EUBotPackageLayer:
   sourceHash: "eefbda228b2b"
 
 EUBotPackageLayer.Adapter:
-  summary: 对接外部系统或协议的 Package。
+  summary: 对接外部系统的 Package。
   sourceHash: "e3b0c44298fc"
 
 EUBotPackageLayer.Capability:
-  summary: 提供传感器、动力学等具体能力的 Package。
+  summary: 提供具体功能的 Package。
   sourceHash: "e3b0c44298fc"
 
 EUBotPackageLayer.Content:
-  summary: 提供场景、资产等内容的 Package。
+  summary: 以内容为主的 Package。
   sourceHash: "e3b0c44298fc"
 
 EUBotPackageLayer.Foundation:
-  summary: 被其他 Package 共同依赖的基础 Package。
+  summary: 基础 Package，其他 Package 都依赖它。
   sourceHash: "e3b0c44298fc"
 
 EUBotPackageLayer.Unknown:

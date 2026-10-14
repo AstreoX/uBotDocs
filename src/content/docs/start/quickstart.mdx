@@ -27,6 +27,8 @@ import { Steps } from "@astrojs/starlight/components";
 
    打开 `BP_ImuProbe`，在「Components」面板点「Add」，搜索 `uBot IMU Sensor`，把新组件重命名为 `IMU`。
 
+   ![BP_ImuProbe 的组件树里只有 IMU，Details 面板里展开了 U Bot Sensor 类别：Sensor Id、Frame Id、Update Rate Hz、Auto Start 和 Sensor Enabled](../../../assets/start/imu-probe-component.png)
+
 </Steps>
 
 组件默认在开始运行时自动启动（`Auto Start`），采样频率 100 Hz（`Update Rate Hz`）。
@@ -34,6 +36,8 @@ import { Steps } from "@astrojs/starlight/components";
 ## 在屏幕上打印采样序号
 
 选中 `IMU` 组件，在「Details」面板最下面的「Events」区点 `On Sensor Sampled` 旁的「+」，然后照下图连线：
+
+![IMU 组件的 Details 面板只展开 Events：On Sensor Sampled 等事件，每个旁边有一个「+」按钮](../../../assets/start/imu-probe-events.png)
 
 ```blueprint
 caption: 每次采样时把帧序号打印到屏幕

@@ -45,7 +45,11 @@ notes:
 
 2. **设置视场与线数**
 
-   选中组件，在「Details」面板的「3D LiDAR > Scan」里设置视场（Field of View，FOV）、通道（channel）数和每个通道的射线数。默认是水平 360°、垂直上下各 15°、16 个通道、每个通道 360 条射线。
+   选中组件，在「Details」面板的「3D Li DAR > Scan」里设置视场（Field of View，FOV）、通道（channel）数和每个通道的射线数。默认是水平 360°、垂直上下各 15°、16 个通道、每个通道 360 条射线。
+
+   ![3D LiDAR 的 Details 面板：「3D Li DAR」类别下 Scan 里的量程、水平和垂直视场、Number Of Channels 和 Horizontal Samples](../../../assets/sensor/lidar-3d.png)
+
+   编辑器把类别名里的 `LiDAR` 拆成 `Li DAR`，按截图里显示的找。
 
 3. **连蓝图**
 
@@ -89,7 +93,11 @@ notes:
 
 ### 编辑器预览
 
-在编辑器视口里选中组件，会画出视场的外壳：填色的量程范围、按距离画的圆弧、按角度画的经纬线，以及距离标注。下面的属性在「Details」面板的「3D LiDAR > Editor Preview」里，只用于编辑器，不影响采样：
+在编辑器视口里选中组件，会画出视场的外壳：填色的量程范围、按距离画的圆弧、按角度画的经纬线，以及距离标注。图中是示意：为了让外壳完整可见，量程和视场调小了，数值以设置表为准。
+
+![编辑器视口里选中 3D LiDAR 时画出的视场外壳（示意）](../../../assets/sensor/lidar-3d-visualizer.jpg)
+
+下面的属性在「Details」面板的「3D Li DAR > Editor Preview」里，只用于编辑器，不影响采样：
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |

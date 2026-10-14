@@ -39,7 +39,9 @@ notes:
 
 2. **添加 Sensor Bridge**
 
-   在「Components」面板点「Add」，搜索 `uBot ROS Sensor Bridge`，重命名为 `ROSBridge`。组件只搜索所属 Actor 本身和它的组件，不搜索子 Actor。
+   在「Components」面板点「Add」，搜索 `uBot ROS Sensor Bridge`，重命名为 `ROSBridge`。组件只搜索所属 Actor 本身和它的组件，不搜索子 Actor。属性在「Details」面板的「U Bot ROS」类别下，分为 Identity、Lifecycle、Publishing、TF、Topics 和 QoS 几个子类别：
+
+   ![uBot ROS Sensor Bridge（ROSBridge）的 Details 面板：U Bot ROS 类别下的 Identity、Lifecycle、Publishing、TF、Topics 和 QoS](../../../assets/ros/sensor-bridge.png)
 
 3. **命名机器人（可选）**
 
@@ -48,6 +50,8 @@ notes:
 4. **连事件**
 
    选中 `ROSBridge`，在「Details」面板的「Events」区点 `On ROSBridge Ready` 和 `On ROSBridge Error` 旁的「+」，照上图连线。
+
+   ![ROSBridge 的 Details 面板只展开 Events：On ROSBridge Ready、On ROSBridge Error 等事件，每个旁边有一个「+」按钮](../../../assets/ros/sensor-bridge-events.png)
 
 5. **运行并查看**
 

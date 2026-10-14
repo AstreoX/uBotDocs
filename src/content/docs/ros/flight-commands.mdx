@@ -37,11 +37,13 @@ notes:
 
 1. **装 ROS 2 端的消息包**
 
-   桥需要额外的消息包：`sudo apt install ros-humble-mavros-msgs ros-humble-actuator-msgs`。
+   桥在订阅时才加载消息类型，所以只用其中一个组件时，只需要装对应的消息包：`ros-humble-mavros-msgs`（姿态和角速度）或 `ros-humble-actuator-msgs`（单电机）。两个都用：`sudo apt install ros-humble-mavros-msgs ros-humble-actuator-msgs`。
 
 2. **添加组件**
 
-   在无人机的蓝图上点「Components」面板的「Add」，搜索 `uBot ROS Attitude Command`（姿态和角速度）或 `uBot ROS Motor Command`（单电机），可以两个都加。
+   在无人机的蓝图上点「Components」面板的「Add」，搜索 `uBot ROS Attitude Command`（姿态和角速度）或 `uBot ROS Motor Command`（单电机），可以两个都加。属性在「Details」面板的「U Bot > ROS > Command」下：
+
+   ![复制出来的示例无人机加了 ROSAttitudeCommand 和 ROSMotorCommand 两个组件，选中前者，Details 面板里 U Bot 的 ROS 下是 Command 分类的各项属性](../../../assets/ros/attitude-command.png)
 
 3. **确定话题**
 
@@ -54,7 +56,7 @@ notes:
 5. **从 ROS 2 发指令**
 
    ```bash
-   # 姿态：机头转向 +90°（向左），推力 60%
+   # 姿态：ROS 世界系下的绝对姿态，机头指向 +y（向左），推力 60%
    ros2 topic pub -r 50 /drone/cmd_attitude mavros_msgs/msg/AttitudeTarget "{orientation: {z: 0.7071068, w: 0.7071068}, thrust: 0.6}"
    # 角速度：绕 z 轴 1 rad/s（向左偏航），不给推力（保持高度）
    ros2 topic pub -r 50 /drone/cmd_attitude mavros_msgs/msg/AttitudeTarget "{type_mask: 192, body_rate: {z: 1.0}}"
@@ -68,7 +70,7 @@ notes:
 
 ## 关键属性
 
-两个组件和速度指令组件的属性相同：
+两个组件共有的 5 个属性（来自 `uBot ROS Command Receiver`）与速度指令组件相同。速度指令组件另有 `Max Linear Speed Meters Per Second` 和 `Max Angular Speed Radians Per Second` 两个限速，这两个组件没有：
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
@@ -77,6 +79,8 @@ notes:
 | `Command Topic Override` | 空 | 非空时替代默认话题 |
 | `Target Component` | 空 | 接收指令的组件；空则自动查找 |
 | `Command Timeout Seconds` | 0.5 s | 超过这么久（仿真时间）没有新指令，就释放指令；0 关闭超时 |
+
+![选中 ROSMotorCommand 时的 Details 面板：U Bot 的 ROS 下 Command 分类里的属性与姿态指令组件相同](../../../assets/ros/motor-command.png)
 
 ## 输出与事件
 

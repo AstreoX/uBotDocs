@@ -47,13 +47,15 @@ notes:
 
    在「Details」面板填 `Settings`：恒定风速、阵风的标准差、相关时间和种子。
 
+   ![关卡里 uBot Wind 的 Details 面板：Wind 下有 Enabled 和 Settings 的四项，示例是试飞关卡里关闭着的风](../../../assets/aerial/wind-details.png)
+
 3. **控制是否生效**
 
-   `bEnabled` 决定这个 Actor 的风是否吹。运行时用 `Set Wind Settings` 和 `Set Wind Enabled` 改变。
+   `Enabled` 决定这个 Actor 的风是否吹。运行时用 `Set Wind Settings` 和 `Set Wind Enabled` 改变。
 
 4. **让某架无人机不受风**
 
-   在这架无人机的 `Movement` 组件上关闭 `bEnableWind`。
+   在这架无人机的 `Movement` 组件上关闭 `Enable Wind`。
 
 </Steps>
 
@@ -63,11 +65,11 @@ notes:
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
-| `bEnabled` | 开 | 这个 Actor 的风是否吹 |
-| `Settings.ConstantVelocityMetersPerSecond` | (0, 0, 0) | 恒定风速，世界系，单位 m/s |
-| `Settings.GustStandardDeviationMetersPerSecond` | (0, 0, 0) | 每个世界轴阵风的标准差，单位 m/s；0 关闭阵风 |
-| `Settings.GustCorrelationTimeSeconds` | 2 s | 阵风的典型持续时间，越长越平缓，不小于 0.05 s |
-| `Settings.Seed` | 0 | 阵风的种子 |
+| `Enabled` | 开 | 这个 Actor 的风是否吹 |
+| `Settings` 下的 `Constant Velocity Meters Per Second` | (0, 0, 0) | 恒定风速，世界系，单位 m/s |
+| `Settings` 下的 `Gust Standard Deviation Meters Per Second` | (0, 0, 0) | 每个世界轴阵风的标准差，单位 m/s；0 关闭阵风 |
+| `Settings` 下的 `Gust Correlation Time Seconds` | 2 s | 阵风的典型持续时间，越长越平缓，不小于 0.05 s |
+| `Settings` 下的 `Seed` | 0 | 阵风的种子 |
 
 ## 输出与事件
 
@@ -82,8 +84,10 @@ notes:
 
 ## 注意事项
 
-- 导航无人机把风当作有界的扰动：恒定风被补偿，不产生位移；风速变化时先随风漂移，再按 `WindRejectionTimeConstantSeconds`（默认 1 s）补偿，漂移速度是风速变化的 `WindResponse`（默认 0.5）倍。
-- 物理和裸机无人机按相对空气的速度计算阻力。悬停时内置飞控的位置保持把无人机拉回，机体向来风方向倾斜。
+- 导航无人机把风当作有界的扰动：恒定风被补偿，不产生位移；风速变化时先随风漂移，再按 `Wind Rejection Time Constant Seconds`（默认 1 s）补偿，漂移速度是风速变化的 `Wind Response`（默认 0.5）倍。
+- 物理和裸机无人机按相对空气的速度计算阻力，机体向来风方向倾斜。
+- 内置飞控的位置保持只在两种情况下把无人机拉回：没有指令，或者 `Stop Motion`（以及 `Hover` 的指令丢失动作）之后。
+- 发零速度的速度指令不锁定位置，风吹出的位移不会被拉回。例如 `Velocity` 模式下松开摇杆，或者 ROS 的 `cmd_vel` 为 0。
 - `uBot Wind` 在 `BeginPlay` 时向风子系统登记。
 
 ## 相关参考
