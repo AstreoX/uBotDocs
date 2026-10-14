@@ -23,43 +23,6 @@ This repository is the source of the documentation site for the uBot plugins for
 - The sidebar, the dependency graph and the search filter read the uBot package index, so a new plugin needs data and pages, not code.
 - A daily workflow opens a pull request when the package index or the exported API data change.
 
-## Run it locally
-
-Requires Node.js 24 (see `.nvmrc`).
-
-```bash
-npm ci          # install the exact versions from package-lock.json
-npm run dev     # local server with live reload at http://localhost:4321
-npm test        # unit tests
-npm run check   # validate data, Chinese summaries, Blueprint blocks and writing rules
-npm run build   # build dist/ with the search index and validate links
-```
-
-## How it is organized
-
-| Path | Contents |
-| --- | --- |
-| `src/content/docs/` | The pages; its `reference/` folder is generated and not committed |
-| `data/` | Package index, exported API data, Chinese summaries, engine node lists |
-| `lib/` | Package registry, sidebar, reference generator, Blueprint graph renderer |
-| `src/components/` | Astro components such as the package list and the dependency graph |
-| `scripts/` | Checks, sync and onboarding commands; `export-api.ps1` needs Windows and UE 5.5 |
-| `vendor/` | Plugin repositories as git submodules, for reading source only |
-
-The full layout is in [CLAUDE.md](CLAUDE.md).
-
-## Contributing
-
-- Each page is written from one issue and sent as one pull request.
-- Every pull request must pass `npm test`, `npm run check` and `npm run build`; CI runs the same three.
-- Do not edit `src/content/docs/reference/` (generated) or `data/api/` (written by the exporter) by hand.
-- [CLAUDE.md](CLAUDE.md) (in English) has the writing rules, page kinds and templates, Blueprint block syntax, and the steps for adding a new uBot package.
-
-## Deployment
-
-Every push to `main` runs the [Pages workflow](.github/workflows/pages.yml), which builds the site with `BASE_PATH=/uBotDocs` and publishes it to GitHub Pages.
-The [deploy workflow](.github/workflows/deploy.yml) also uploads `main` to a self-hosted server over SSH when its secrets are set; see [deploy/README.md](deploy/README.md).
-
 ## uBot family
 
 | Repository | What it is |
