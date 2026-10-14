@@ -220,9 +220,11 @@ overlap and stay inside the canvas, also in 500 random graphs.
 The GitHub link in the header (and in the mobile menu) is `src/components/SocialIcons.astro`, which replaces
 Starlight's `social` links; the config has no `social` entry. It points at the repository of the page being read
 (`repositoryForPage()` in `lib/repositories.mjs`, covered by `test/repositories.test.mjs`): the plugin of a released
-plugin's manual or reference pages (the index's `repository`), uBot Manager under `/manager/`, and this site's
-repository (uBotDocs) for every other page, placeholders of planned plugins included. Never link the profile page
-of the owner. uBot Manager and uBotDocs are not in the index; they are fixed in `lib/repositories.mjs`.
+plugin's manual or reference pages (the index's `repository`), uBot Manager under `/manager/`, the public GitHub
+Project "uBot Roadmap" on the home page, and this site's repository (uBotDocs) for every other page, placeholders
+of planned plugins included. It is a rounded rectangle with a sentence ("在 GitHub 查看 uBotSensor 仓库"), not a
+bare icon. Never link the profile page of the owner. uBot Manager, uBotDocs and the Project are not in the index;
+they are fixed in `lib/repositories.mjs`.
 
 ## Writing style
 

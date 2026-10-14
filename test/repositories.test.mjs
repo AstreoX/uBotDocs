@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createPackageRegistry, parseGitHubRepository } from "../lib/packages.mjs";
-import { DOCS_REPOSITORY, MANAGER_REPOSITORY, repositoryForPage, repositoryOverview } from "../lib/repositories.mjs";
+import { DOCS_REPOSITORY, MANAGER_REPOSITORY, ROADMAP_PROJECT, repositoryForPage, repositoryOverview } from "../lib/repositories.mjs";
 import { repoPackages } from "./helpers.mjs";
 
 const PROFILE = "https://github.com/AstreoX";
@@ -77,8 +77,21 @@ test("a plugin that is not hosted on GitHub has no repository to link: this site
   assert.equal(urlOf("reference/ubotelsewhere"), DOCS_REPOSITORY.url);
 });
 
+test("the home page links to the roadmap Project, which is not a repository and not the profile page", () => {
+  for (const page of ["index", "", "/", "index.mdx"]) {
+    const r = repositoryForPage(page, sampleRegistry());
+    assert.equal(r.url, "https://github.com/users/AstreoX/projects/2", `"${page}"`);
+    assert.equal(r.url, ROADMAP_PROJECT.url);
+    assert.equal(r.kind, "project");
+    assert.equal(r.noun, "项目");
+    assert.equal(r.label, "在 GitHub 上查看 uBot Roadmap 项目");
+    assert.notEqual(r.url, PROFILE);
+  }
+  assert.equal(repositoryForPage("start/introduction", sampleRegistry()).noun, "仓库", "every other target is a repository");
+});
+
 test("cross-cutting pages link to this site's repository", () => {
-  for (const page of ["index", "", "/", "start/introduction", "start/install", "concepts/frame-header", "develop/cpp", "appendix/glossary", "404", "mujoco"]) {
+  for (const page of ["start/introduction", "start/install", "concepts/frame-header", "develop/cpp", "appendix/glossary", "404", "mujoco"]) {
     const r = repositoryForPage(page, sampleRegistry());
     assert.equal(r.url, "https://github.com/AstreoX/uBotDocs", `"${page}"`);
     assert.equal(r.label, "在 GitHub 上查看 uBotDocs 仓库");
@@ -99,9 +112,10 @@ test("the link never points at the owner's profile page, for any page of the rep
     ...registry.list().flatMap((p) => [p.docsSlug, `${p.docsSlug}/index`, `${p.docsSlug}/anything`, `reference/${p.slug}`, `reference/${p.slug}/anything`]),
   ];
   for (const page of pages) {
-    const url = repositoryForPage(page, registry).url;
-    assert.notEqual(url, PROFILE, page);
-    assert.ok(parseGitHubRepository(url)?.repo, `${page}: ${url} is a repository`);
+    const r = repositoryForPage(page, registry);
+    assert.notEqual(r.url, PROFILE, page);
+    if (r.kind === "project") assert.equal(page, "index", "only the home page links to the Project");
+    else assert.ok(parseGitHubRepository(r.url)?.repo, `${page}: ${r.url} is a repository`);
   }
 });
 
