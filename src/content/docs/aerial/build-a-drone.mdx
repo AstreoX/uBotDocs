@@ -69,7 +69,7 @@ wires:
 | `Rotor Index`（`uBot Rotor`） | 这个桨叶跟随的电机序号，按机架转子的顺序 |
 | `Visual Spin Scale`（`uBot Rotor`） | 显示转速相对真实转速的比例，默认 0.04，避免在帧率下混叠 |
 | `Airframe`（`uBot Multirotor Dynamics`） | 机架：质量、转动惯量、阻力系数和每个转子的位置、旋向、推力系数 |
-| `Make Quad X Airframe` | 按臂长（m）和质量（kg）生成四旋翼 X 机架，转动惯量按 (质量 / 1.5) × (臂长 / 0.225)² 缩放，其余参数保持默认 |
+| `Make Quad X Airframe` | 按臂长（m）和质量（kg）生成四旋翼 X 机架，转动惯量按（质量 / 1.5）×（臂长 / 0.225）² 缩放，其余参数保持默认 |
 | `Get Rotor Layout` | 返回按电机序号排列的转子位置（m，机体系，UE 轴）和旋向 |
 
 默认机架的臂长是 0.225 m，转子位于 (±D, ±D)，D = 0.225 / √2 ≈ 0.159 m。机体受到与转子旋向相反的反扭矩。
