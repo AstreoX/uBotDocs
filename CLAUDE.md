@@ -82,6 +82,7 @@ src/scripts/scrollables.js  client: tab stop and scroll hint for tables and diag
 scripts/                    gen-reference, check, sync-index, sync-api, sync-branch, add-package, export-api.ps1 (Windows + UE only), zh, find-node, rebase-links
 vendor/<folder>/            plugin repositories as git submodules, for reading source only
 deploy/                     server setup (nginx, SSH gate), see deploy/README.md
+README.md, README.zh-CN.md  landing pages (English, Chinese) with the same structure and facts: change both together
 ```
 
 GitHub Pages: `.github/workflows/pages.yml` publishes every push to main at

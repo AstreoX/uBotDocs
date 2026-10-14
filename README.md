@@ -1,75 +1,57 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="src/assets/ubot-mark-light.svg">
-  <img alt="uBot" src="src/assets/ubot-mark-dark.svg" height="72">
-</picture>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="src/assets/ubot-mark-light.svg">
+    <img alt="uBot" src="src/assets/ubot-mark-dark.svg" height="72">
+  </picture>
+</p>
+<h1 align="center">uBot Docs</h1>
+<p align="center"><b>The documentation site of the uBot plugin family for Unreal Engine 5.5.</b></p>
+<p align="center">
+  <a href="https://github.com/AstreoX/uBotDocs/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AstreoX/uBotDocs/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/AstreoX/uBotDocs/actions/workflows/pages.yml"><img alt="Pages" src="https://github.com/AstreoX/uBotDocs/actions/workflows/pages.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/AstreoX/uBotDocs/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/AstreoX/uBotDocs"></a>
+</p>
+<p align="center">
+  <img alt="Unreal Engine 5.5" src="https://img.shields.io/badge/Unreal%20Engine-5.5-0E1128?logo=unrealengine&logoColor=white">
+  <img alt="Astro Starlight" src="https://img.shields.io/badge/Astro-Starlight-BC52EE?logo=astro&logoColor=white">
+  <img alt="Node.js 24" src="https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white">
+  <img alt="Docs language: Simplified Chinese" src="https://img.shields.io/badge/docs-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-blue">
+</p>
+<p align="center">
+  <a href="https://astreox.github.io/uBotDocs/">Live site</a> ·
+  <a href="https://github.com/AstreoX/uBotDocs/issues">Issues</a> ·
+  <a href="https://github.com/users/AstreoX/projects/2">Roadmap</a>
+</p>
 
-# uBot 文档
+**English** | [简体中文](README.zh-CN.md)
 
-uBot 插件的中文文档站，基于 Astro Starlight。蓝图示例以 UE 编辑器的样式绘制，参考页面由插件的反射数据自动生成。
+## What it is
 
-有哪些插件由 `data/index.json`（uBot 包索引的副本）决定：参考页面、侧边栏、依赖图、搜索的插件过滤和检查都从它读取。新增插件只需要数据和页面，不需要改代码，步骤见下面的“新增一个 uBot 插件”。
+This repository is the source of the documentation site for the uBot plugins for Unreal Engine 5.5. The site is written in Simplified Chinese and built with Astro Starlight. It has a manual for each plugin, an API reference generated from the data the plugins export, and a dependency graph of the plugins.
 
-## 本地开发
+- **Blueprint graphs from text.** Examples are written as text blocks and drawn as Unreal-style node graphs at build time.
+- **Generated API reference.** Pages for classes, structs, enums and nodes come from each plugin's exported `docs/api.json` plus Chinese summaries.
+- **Driven by the package index.** The sidebar, the dependency graph and the search filter read the uBot package index, so a new plugin needs data and pages, not code.
+- **In step with the plugins.** A daily workflow opens a pull request when the package index or the exported API data change.
 
-需要 Node.js 24（见 `.nvmrc`）。
+## On the site
 
-```bash
-npm ci            # 依赖从 npm 官方源安装；想走镜像时：npm ci --registry=https://registry.npmmirror.com
-npm run dev        # http://localhost:4321
-npm test           # 单元测试
-npm run check      # 检查 API 数据、中文摘要、蓝图代码块、页面类型和写作规范（还没写的页面是警告）
-npm run check -- --no-stubs   # 同上，但还没写的页面算错误
-npm run build      # 构建到 dist/，同时生成搜索索引并校验站内链接
-```
+| Section | What you find |
+| --- | --- |
+| [Get started](https://astreox.github.io/uBotDocs/start/introduction/) | Introduction, installation, a five-minute quickstart, choosing a recipe |
+| [Core concepts](https://astreox.github.io/uBotDocs/concepts/frame-header/) | Frame header, simulation clock, coordinates and units, identity, how plugins connect |
+| Plugin manuals: [uBotCore](https://astreox.github.io/uBotDocs/core/) · [uBotSensor](https://astreox.github.io/uBotDocs/sensor/) · [uBotROS](https://astreox.github.io/uBotDocs/ros/) · [uBotAerial](https://astreox.github.io/uBotDocs/aerial/) | One manual per plugin, with Blueprint graphs |
+| [uBot Manager](https://astreox.github.io/uBotDocs/manager/) | Interface tour, installing and updating packages, recipes, settings, the `ubot` command line |
+| [API reference](https://astreox.github.io/uBotDocs/reference/) | Classes, structs, enums and nodes, a node index, engine nodes |
+| [Developers](https://astreox.github.io/uBotDocs/develop/cpp/) | Sensors and interfaces from C++, ROS publishers, writing a package, migration |
 
-写页面的规则（目录、frontmatter、`blueprint` 代码块语法、写作规范）见 [CLAUDE.md](CLAUDE.md)。
+## uBot family
 
-## 页面结构
-
-侧边栏的顺序是：开始、核心概念、每个插件一项（已发布的在前，规划中的带“规划中”标记）、uBot Manager、开发者、参考、附录。每个插件有自己的文件夹（`core/`、`sensor/`、`ros/`、`vehicles/` ……，文件夹名是包名去掉 `UBot` 前缀后的小写）：已发布的插件放手册，规划中的插件只有一个占位页，发布后在同一个文件夹里扩写，网址不变。插件之间的关系用简介页的依赖图表示，文档里不讲分层。
-
-每个页面在 frontmatter 里写 `pageKind`：`overview`（手册概述）、`feature`（功能页，要有蓝图图）、`concept`（概念页）、`guide`（教程或导览页，章节自己安排，最后一节是“下一步”）、`settings`（设置页）、`faq`（常见问题）、`placeholder`（占位页）。每种页面的章节和顺序在 `docs-templates/` 里各有一个示例文件，复制过去改就行，不会被发布。
-
-骨架里的页面先建成“桩页面”：只有 frontmatter 和 `{/* STUB */}` 标记，加一段要写的章节清单。写完一页就删掉标记和清单；`npm run check` 会列出还没写的页面。
-
-## 数据从哪里来
-
-| 路径 | 内容 | 怎么更新 |
-| --- | --- | --- |
-| `data/index.json` | uBot 包索引（格式 2）：插件、版本、依赖、组合 | `npm run sync-index`，逐字节复制 uBotCore 的 `Index/index.json` |
-| `data/api/<插件>.json` | 类、节点、属性、结构体、枚举（格式 1） | `npm run sync-api -- --from-github`，或在装有 UE 5.5 的 Windows 上运行 `scripts/export-api.ps1` |
-| `data/engine-nodes/<领域>.txt` | 文档用到的 UE 引擎节点清单（`core.txt` 等） | 手工维护，导出时合并写入 `data/api/engine.json` |
-| `data/zh/<插件>/<类名>.yaml` | 中文摘要，每个类、结构体、枚举一个文件 | 手工维护，`npm run zh -- todo <插件或类名>` 列出缺的条目 |
-| `src/content/docs/reference/` | 参考页面 | `npm run dev` / `npm run build` 前自动生成，不提交 |
-
-`export-api.ps1` 从 `data/index.json` 读取已发布的插件，先检查 DevHost 工程是否启用了这些插件和所需的引擎插件（缺什么就打印要加的内容），再对每个插件运行两次 `UBotDocExport` commandlet（`zh-Hans` 和 `en`，合并中文标题），结果写到插件仓库的 `docs/api.json`，再由 `scripts/sync-api.mjs` 复制到 `data/api/`；`data/engine-nodes/*.txt` 合并成一份清单后同样导出两次，写入 `data/api/engine.json`。
-
-插件仓库提交了 `docs/api.json` 之后，不需要 UE 也能更新：`npm run sync-api -- --from-github` 按各插件最新发布的 tag 下载（tag 里没有时改用默认分支并说明），`npm run sync-api` 则从 `vendor/` 子模块复制。工作流 `sync-packages.yml` 每天自动做这件事，测试、检查、构建通过后在 `bot/sync-packages` 分支上开或更新一个 PR；数据没变时不推送，分支上有人提交的修改不会被覆盖。
-
-`data/api/` 里的文件都由导出器生成，不要手改；`"generator"` 不是 `UBotDocExport <n>` 的文件会让 `npm run check` 给出警告。
-
-## 新增一个 uBot 插件
-
-插件仓库：
-
-1. 在 DevHost 工程（`UBotDev.uproject`）里启用插件（`"Enabled": true`，或经 `AdditionalPluginDirectories` 找到），以及它需要的引擎插件。
-2. 在插件的 `.gitattributes` 里加一行 `docs/api.json text eol=lf`。
-3. 在本仓库运行 `scripts/export-api.ps1 -Plugins <插件名>`，打 tag 发布之前提交插件的 `docs/api.json`。
-
-包索引（uBotCore 的 `Index/index.json`）：加上插件条目，写好 `description`（`en`、`zh-CN`）、`repository`、`versions`（`ref` 为 tag）、`requires`、`enginePlugins`、`provides`（索引里的 `layer` 给 uBot Manager 用，文档不显示）。
-
-文档仓库：
-
-1. `npm run sync-index`，然后 `npm run add-package -- <插件名>`：建 `data/zh/<插件名>/`、加 `vendor/` 子模块（只用来读插件源码，构建不需要，`--no-submodule` 可跳过），并列出剩下的步骤。
-2. `npm run sync-api -- --from-github --package <插件名>`（或等同步工作流的 PR）得到 `data/api/<插件名>.json`。
-3. 插件的文件夹是 `src/content/docs/<包名去掉 UBot 后的小写>/`。规划中的插件只放一个占位页 `index.mdx`（见 `docs-templates/placeholder.mdx`）；发布后把它改成手册概述，加上 `_group.yml`（`label:` 写 `uBotXxx`，`packages: [<插件名>]`），再写功能页、设置项和常见问题。
-4. 页面要用引擎插件的节点时，写进 `data/engine-nodes/<领域>.txt` 再导出一次。
-5. `npm test`、`npm run check`、`npm run build` 全部通过。
-
-参考页面（`/reference/<插件名小写>/`）、侧边栏分组、依赖图、节点索引和搜索过滤都会自动出现。规划中的插件出现在侧边栏（带“规划中”标记）、依赖图和参考概览页的“规划中”表格里，都指向它的占位页。
-
-新增插件只改数据和页面，不改代码和测试：`npm test` 里的 `test/new-package.test.mjs` 会在仓库副本里模拟一次发布（让规划中的插件发布，再加一个新插件），副本必须通过全部测试、检查和参考页面生成。
-
-## 部署
-
-`main` 分支的每次推送都会构建并通过 SSH 部署到自己的服务器，服务器的准备步骤见 [deploy/README.md](deploy/README.md)。
+| Repository | What it is |
+| --- | --- |
+| [uBotCore](https://github.com/AstreoX/uBotCore) | Simulation clock, frame header, shared interfaces, package management |
+| [uBotSensor](https://github.com/AstreoX/uBotSensor) | Pose, IMU, odometry, 2D/3D lidar, RGB and depth cameras |
+| [uBotROS](https://github.com/AstreoX/uBotROS) | ROS 2 over a TCP bridge: sensors, TF, /clock, cmd_vel |
+| [uBotAerial](https://github.com/AstreoX/uBotAerial) | Multirotor drones: simplified flight, rigid-body dynamics, wind |
+| [uBotManager](https://github.com/AstreoX/uBotManager) | Desktop app and CLI to install, update and build uBot packages |
+| **[uBotDocs](https://github.com/AstreoX/uBotDocs)** | **Documentation site: https://astreox.github.io/uBotDocs/** |
