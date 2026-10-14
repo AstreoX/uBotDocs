@@ -11,7 +11,7 @@ FUBotMediumCell.Density:
   sourceHash: "6527247a5bbe"
 
 FUBotMediumCell.EdgeFactor:
-  summary: 范围 0 到 1，越靠近介质边缘，对 Density 的衰减越大。
+  summary: 范围 0 到 1，默认 1。有效密度 = `Density` × `Edge Factor`，值越小衰减越强，用来让靠近介质边缘的单元变淡。
   sourceHash: "6e34e1b36b0d"
 
 FUBotMediumCell.RadiusCentimeters:
