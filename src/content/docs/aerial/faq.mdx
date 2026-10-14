@@ -20,7 +20,7 @@ uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说
 
 ### 示例无人机放在地面上，怎么起飞？
 
-不需要起飞：地面只是碰撞面，直接按方向键就贴着地面移动，按 Space 立刻上升。见 [碰撞](/aerial/collision/)。
+不需要起飞：地面只是碰撞面，直接按 W / A / S / D 就贴着地面移动，按 Space 立刻上升。见 [碰撞](/aerial/collision/)。
 
 ## 控制
 
@@ -30,7 +30,7 @@ uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说
 
 ### 为什么指令返回 `false`？
 
-有四种常见原因：这种指令被 `bAcceptVelocityCommands` 等属性关闭，裸机级无人机不接受速度和姿态指令；指令含 NaN；电机指令的个数不等于电机数；姿态四元数的长度接近 0。见 [物理无人机的指令与控制模式](/aerial/dynamics/#注意事项)。
+有四种常见原因：这种指令被 `Accept Velocity Commands` 等属性关闭，裸机级无人机不接受速度和姿态指令；指令含 NaN；电机指令的个数不等于电机数；姿态四元数的长度接近 0。见 [物理无人机的指令与控制模式](/aerial/dynamics/#注意事项)。
 
 ### 物理无人机在风里越飘越远，怎么让它停在原地？
 
@@ -38,7 +38,7 @@ uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说
 
 ### Blueprint 写的飞控太慢怎么办？
 
-蓝图控制器每个物理步（默认 1 kHz）都经过蓝图虚拟机运行。写成 C++ 子类，或调大 `ControllerRateDivider`。见 [自己写飞控](/aerial/flight-controller/#注意事项)。
+蓝图控制器每个物理步（默认 1 kHz）都经过蓝图虚拟机运行。写成 C++ 子类，或调大 `Controller Rate Divider`。见 [自己写飞控](/aerial/flight-controller/#注意事项)。
 
 ## 行为
 
@@ -48,7 +48,7 @@ uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说
 
 ### 导航无人机加速时，挂在根组件上的传感器为什么不倾斜？
 
-默认 `TiltMode` 是 `Visual`，只有外观倾斜，根组件始终水平。要让根组件倾斜，把 `TiltMode` 设为 `Body`。见 [用速度指令飞导航无人机](/aerial/simple-flight/#注意事项)。
+默认 `Tilt Mode` 是 `Visual`，只有外观倾斜，根组件始终水平。要让根组件倾斜，把 `Tilt Mode` 设为 `Body`。见 [用速度指令飞导航无人机](/aerial/simple-flight/#注意事项)。
 
 ### 运行中改了 `Airframe` 为什么没有效果？
 
@@ -56,4 +56,4 @@ uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说
 
 ### 日志提示一帧需要的物理步数超过上限是什么意思？
 
-一帧太长，需要的物理步数超过了 `MaxStepsPerFrame`（默认 250），多出的时间被跳过。调大 `MaxStepsPerFrame` 或降低 `PhysicsRateHz`。
+一帧太长，需要的物理步数超过了 `Max Steps Per Frame`（默认 250），多出的时间被跳过。调大 `Max Steps Per Frame` 或降低 `Physics Rate Hz`。
