@@ -1,6 +1,6 @@
 ---
 title: uBotROS 概述与架构
-description: uBotROS 经 TCP 桥接 ROS 2：能做什么、怎么搭起来，以及 UE、桥和 ROS 2 之间的架构。
+description: uBotROS 经 TCP 桥接 ROS 2：发布传感器数据，接收速度、姿态和电机指令，以及 UE、桥和 ROS 2 之间的架构。
 pageKind: overview
 sidebar:
   order: 10
@@ -8,13 +8,13 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-uBotROS 把 uBot 传感器、TF 和仿真时钟发布到 ROS 2，并把 ROS 2 的 `cmd_vel` 速度指令交给 UE 里的执行器。
+uBotROS 把 uBot 传感器、TF 和仿真时钟发布到 ROS 2，并把 ROS 2 的速度、姿态和电机指令交给 UE 里的执行器。
 
 <figure class="not-content" style={{ margin: "1.25rem 0" }}>
   <div data-scrollable="架构图" style={{ overflowX: "auto", border: "1px solid var(--sl-color-gray-5)", borderRadius: "0.6rem", background: "var(--sl-color-gray-6)", padding: "0.75rem 0.5rem 0.5rem" }}>
     <svg viewBox="0 0 600 186" role="img" aria-labelledby="ros-arch-title ros-arch-desc" style={{ display: "block", width: "100%", minWidth: "480px", maxWidth: "720px", height: "auto", fontFamily: "var(--__sl-font)" }}>
       <title id="ros-arch-title">UE、TCP、ubot_ros_bridge 和 ROS 2 的关系</title>
-      <desc id="ros-arch-desc">UE 里的 UBotROS 插件是 TCP 客户端，经默认端口 8268 的一条 TCP 连接连到 ubot_ros_bridge。传感器、TF 和 /clock 的 CDR 字节从 UE 经桥发布到 ROS 2 话题；ROS 2 的 cmd_vel 经桥转发回 UE。</desc>
+      <desc id="ros-arch-desc">UE 里的 UBotROS 插件是 TCP 客户端，经默认端口 8268 的一条 TCP 连接连到 ubot_ros_bridge。传感器、TF 和 /clock 的 CDR 字节从 UE 经桥发布到 ROS 2 话题；ROS 2 的 cmd_vel、姿态和电机指令经桥转发回 UE。</desc>
       <defs>
         <marker id="ros-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
           <path d="M0 0 L10 5 L0 10 Z" fill="var(--sl-color-accent)" />
@@ -31,7 +31,7 @@ uBotROS 把 uBot 传感器、TF 和仿真时钟发布到 ROS 2，并把 ROS 2 �
       <rect x="10" y="60" width="124" height="24" rx="5" fill="var(--sl-color-gray-6)" stroke="var(--sl-color-gray-5)" />
       <text x="72" y="76" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-2)">Sensor Bridge</text>
       <rect x="10" y="90" width="124" height="24" rx="5" fill="var(--sl-color-gray-6)" stroke="var(--sl-color-gray-5)" />
-      <text x="72" y="106" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-2)">Velocity Command</text>
+      <text x="72" y="106" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-2)">指令组件</text>
       <rect x="10" y="120" width="124" height="24" rx="5" fill="var(--sl-color-gray-6)" stroke="var(--sl-color-gray-5)" />
       <text x="72" y="136" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-2)">Bridge Subsystem</text>
 
@@ -55,7 +55,7 @@ uBotROS 把 uBot 传感器、TF 和仿真时钟发布到 ROS 2，并把 ROS 2 �
       <rect x="466" y="90" width="124" height="24" rx="5" fill="var(--sl-color-gray-6)" stroke="var(--sl-color-gray-5)" />
       <text x="528" y="106" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-2)">传感器话题</text>
       <rect x="466" y="120" width="124" height="24" rx="5" fill="var(--sl-color-gray-6)" stroke="var(--sl-color-gray-5)" />
-      <text x="528" y="136" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-2)">cmd_vel</text>
+      <text x="528" y="136" text-anchor="middle" font-size="11.5" fill="var(--sl-color-gray-2)">指令话题</text>
 
       <text x="186" y="60" text-anchor="middle" font-size="10.5" fill="var(--sl-color-gray-3)">PUBLISH</text>
       <path d="M148 68 H224" stroke="var(--sl-color-accent)" stroke-width="2" fill="none" marker-end="url(#ros-arrow-a)" />
@@ -76,7 +76,7 @@ uBotROS 把 uBot 传感器、TF 和仿真时钟发布到 ROS 2，并把 ROS 2 �
   </div>
 </figure>
 
-UE 是 TCP 客户端，桥是 TCP 服务器：蓝色箭头是 UE 发给 ROS 2 的数据，灰色箭头是 ROS 2 发给 UE 的 `cmd_vel`。UE 侧不依赖 TempoROS、rclcpp 或其他第三方库，插件自己把消息编码成 ROS 2 的 CDR 字节。
+UE 是 TCP 客户端，桥是 TCP 服务器：蓝色箭头是 UE 发给 ROS 2 的数据，灰色箭头是 ROS 2 发给 UE 的速度（`cmd_vel`）、姿态和电机指令。UE 侧不依赖 TempoROS、rclcpp 或其他第三方库，插件自己把消息编码成 ROS 2 的 CDR 字节。
 
 桥是一个很小的 rclpy 节点，把收到的字节原样发布到 ROS 2 话题，并把 UE 订阅的话题原样转发回 UE。UE 可以在 Windows 上，桥和 ROS 2 在 WSL 或另一台 Linux 机器上，两边只靠这一条连接相连。
 

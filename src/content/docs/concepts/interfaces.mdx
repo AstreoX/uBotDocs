@@ -34,7 +34,7 @@ uBot 的插件通过接口对接，而不是互相依赖对方的类，这些接
 | 接口 | 谁实现 | 谁使用 |
 | --- | --- | --- |
 | `UBot Sensor` | uBotSensor 的全部传感器组件，也可以是你自己的 | uBotROS 的 `uBot ROS Sensor Bridge` 用它找出 Actor 上的传感器并发布 |
-| `UBot Actuator` | 已发布的插件里还没有现成的实现 | 已发布的插件还没有用到它 |
+| `UBot Actuator` | uBotAerial 的 `uBot Multirotor Movement`（`uBot Simple Flight` 和 `uBot Multirotor Dynamics` 都是它的子类），也可以是你自己的 | 已发布的插件还没有用到它 |
 | `UBot Velocity Commandable` | 你自己的车辆、无人机等，Actor 或组件均可；uBotAerial 的 `uBot Simple Flight` 和 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Velocity Command` 把 `cmd_vel` 交给它；uBotAerial 的 `uBot Multirotor Manual Input` |
 | `UBot Attitude Commandable` | uBotAerial 的 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Attitude Command`；uBotAerial 的 `uBot Multirotor Manual Input`（`Angle`、`Rate` 模式） |
 | `UBot Motor Commandable` | uBotAerial 的 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Motor Command` |
