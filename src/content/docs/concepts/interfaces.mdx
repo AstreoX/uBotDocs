@@ -9,7 +9,7 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-uBot 的插件通过接口对接，而不是互相依赖对方的类，这些接口在蓝图里也可以实现。
+uBot 的插件通过接口对接，而不是互相依赖对方的类，除了 `IUBotBodyStateSource`，这些接口在蓝图里也可以实现。
 
 | 接口 | 描述的是 |
 | --- | --- |
@@ -19,6 +19,7 @@ uBot 的插件通过接口对接，而不是互相依赖对方的类，这些接
 | `UBot Attitude Commandable` | 接受姿态指令和角速度指令的飞行器（0.1.2 起） |
 | `UBot Motor Commandable` | 接受单个电机指令的飞行器（0.1.2 起） |
 | `UBot Perception Medium` | 影响感知的介质，比如烟、雾 |
+| `IUBotBodyStateSource` | 推动一个物体并知道它真实状态的对象，只能在 C++ 里实现（0.1.3 起） |
 
 每个接口有几个函数，在蓝图里是调用这些节点：
 
@@ -94,6 +95,48 @@ wires:
 - RGB 相机：像素向介质的颜色混合。
 
 介质 Actor 不需要知道有哪些传感器，传感器也不需要知道介质是谁做的。实现一个介质见[感知介质](/sensor/medium/)。
+
+## 刚体状态源（0.1.3 起）
+
+uBotCore 0.1.3 起提供刚体状态源（Body State Source）接口 `IUBotBodyStateSource`，让传感器直接读到物体的真实速度和加速度，不必再对位姿做差分。
+
+:::note[尚未发布]
+uBotCore 0.1.3 还没有发布，已发布的是 0.1.2。这个接口是实验性的，小版本之间可能变化。
+:::
+
+实现它的是推动一个物体、并知道它真实状态的对象，比如物理后端的绑定，或者载具自己的积分器。接口只能在 C++ 里实现，没有蓝图节点：
+
+| 函数 | 作用 |
+| --- | --- |
+| `ProvidesBodyState(Body)` | 这个对象是否移动 `Body`（写它的变换）并能报告它的状态 |
+| `GetBodyState(Body, OutState)` | 取 `Body` 的最新状态；`Body` 不归它提供，或者还没有状态时返回 false |
+
+提供一个物体同时也是认领它：别的对象不应该再移动这个物体。状态 `FUBotBodyState` 是 C++ 结构体，用 UE 的世界轴和 SI 单位：
+
+| 字段 | 内容 |
+| --- | --- |
+| `PositionMeters` | 物体原点，米 |
+| `Orientation` | 物体到世界的四元数 |
+| `LinearVelocityMetersPerSecond` | 世界系线速度，m/s |
+| `AngularVelocityRadiansPerSecond` | 世界系角速度，rad/s，UE 的旋转方向（+Z 是向右偏航） |
+| `LinearAccelerationMetersPerSecondSquared` | 原点的运动学加速度，m/s²，不含重力；`bHasLinearAcceleration` 为 true 时有效 |
+| `AngularAccelerationRadiansPerSecondSquared` | 世界系角加速度，rad/s²；`bHasAngularAcceleration` 为 true 时有效 |
+| `TimestampSeconds` | 状态所属的仿真时间，不晚于当前仿真时间 |
+| `Source` | 谁模拟了这个物体，比如物理后端的名字 |
+
+读状态的一方用 `UBot::BodyState` 命名空间里的三个函数找到来源：
+
+| 函数 | 作用 |
+| --- | --- |
+| `FindSource(Body)` | 找出提供 `Body` 的对象：先问 `Body` 所属的 Actor（它实现了接口的话），再按 `GetComponents` 的顺序问它的组件，第一个 `ProvidesBodyState(Body)` 为 true 的胜出，没有则返回 `nullptr` |
+| `FindSourceInParents(Component, OutBody)` | 从 `Component` 起沿附着父级往上找，返回找到的第一个来源，`OutBody` 是它提供的物体 |
+| `GetNearestBodyState(Component, OutState, OutBody)` | 取 `Component` 或它的附着父级里最近一个被提供的物体的状态；只有返回 true 时才写 `OutState` |
+
+使用它的插件都还没有发布：
+
+- uBotPhysics 的绑定为被绑定的组件提供状态，见 [uBotPhysics](/physics/)。
+- uBotAerial 0.1.1 起，无人机的 `Movement` 组件是一个状态源，见[无人机的刚体状态](/aerial/body-state/)。
+- uBotSensor 0.1.2 起，位姿、里程计和 IMU 读它，见[读取刚体状态](/sensor/body-state/)。
 
 ## 在蓝图里实现接口
 

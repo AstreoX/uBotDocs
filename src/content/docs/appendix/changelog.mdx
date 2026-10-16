@@ -14,17 +14,28 @@ sidebar:
 
 | 名称 | 版本 | 日期 | UE 5.5 Win64 预编译包 |
 | --- | --- | --- | --- |
+| uBotCore | 0.1.2 | 2026-10-13 | 有 |
 | uBotCore | 0.1.1 | 2026-10-10 | 有 |
 | uBotCore | 0.1.0 | 2026-10-10 | 无 |
 | uBotSensor | 0.1.1 | 2026-10-10 | 有 |
 | uBotSensor | 0.1.0 | 2026-10-10 | 无 |
+| uBotROS | 0.1.2 | 2026-10-13 | 有 |
 | uBotROS | 0.1.1 | 2026-10-10 | 有 |
 | uBotROS | 0.1.0 | 2026-10-10 | 无 |
+| uBotAerial | 0.1.0 | 2026-10-13 | 有 |
 | uBot Manager | 0.1.0 | 2026-10-10 | 不适用 |
 
 更新已装的插件见[安装、更新、移除插件](/manager/packages/)。预编译包是什么，见[安装 uBot](/start/install/)。
 
 ## uBotCore
+
+### 0.1.2
+
+- 新增两个接口：`UBot Attitude Commandable` 接受姿态指令和角速度指令，`UBot Motor Commandable` 接受单个电机指令，供飞行器实现。新增三种指令结构体：`UBot Attitude Command`、`UBot Body Rate Command` 和 `UBot Motor Command`，见[插件之间怎么对接](/concepts/interfaces/)。
+- 约定：会倾斜的接收者（比如多旋翼）按航向坐标系解释速度指令，X、Y 沿当前航向，Z 朝上。
+- 新增 commandlet `UBotDocExport`，把插件的蓝图 API 导出成文档站使用的 `api.json`。这是给维护者用的，使用者用不到。
+- 包索引新增 uBotROS 0.1.2 和 uBotAerial 0.1.0 的条目，并列出规划中的 uBotMuJoCo。
+- 提供 UE 5.5 Win64 的预编译包。
 
 ### 0.1.1
 
@@ -65,6 +76,16 @@ sidebar:
 
 ## uBotROS
 
+### 0.1.2
+
+- 新增 `uBot ROS Attitude Command` 组件：订阅 `/<namespace>/cmd_attitude`（`mavros_msgs/msg/AttitudeTarget`），把姿态指令或角速度指令交给实现了 `UBot Attitude Commandable` 的对象。
+- 新增 `uBot ROS Motor Command` 组件：订阅 `/<namespace>/cmd_motors`（`actuator_msgs/msg/Actuators`），把电机指令交给实现了 `UBot Motor Commandable` 的对象。
+- 两个组件的目标、超时（`Command Timeout Seconds`，默认 0.5 s）和错误事件与 `uBot ROS Velocity Command` 相同。超过超时没有新指令时，目标收到一次释放，由飞行器自己兜底，比如悬停。用法见[从 ROS 2 发飞行指令](/ros/flight-commands/)。
+- ROS 桥新增运行依赖 `mavros_msgs` 和 `actuator_msgs`，在 ROS 一侧安装 `ros-humble-mavros-msgs` 和 `ros-humble-actuator-msgs`。
+- 依赖改为 uBotCore 0.1.2 或更新的 0.1.x。
+- 与 ROS 桥握手时报告的 UE 端版本现在是 `uBot UE 0.1.2`。
+- 提供 UE 5.5 Win64 的预编译包。
+
 ### 0.1.1
 
 - 插件图标换成 uBot 标志。
@@ -83,6 +104,24 @@ sidebar:
 - 项目设置保存在 `Config/DefaultUBotROS.ini`。
 - 相对旧版有几处有意的修正，比如角速度符号、`LaserScan` 的镜像、`PointCloud2` 增加 `intensity` 字段、相机图像改用光学坐标系、里程计不再发布静态 TF。
 - 默认的命名空间来自 `uBot Identity`，不再是固定的 `robot`。
+
+## uBotAerial
+
+### 0.1.0
+
+首个版本，建立在 uBotCore 0.1.2 之上，另需引擎插件 Enhanced Input。
+
+- 三个示例无人机蓝图，在插件内容的 `/UBotAerial/Examples/` 下，由插件的组件拼成：`BP_UBotNavigationDrone`（导航、规划、感知，接收速度和偏航角速度）、`BP_UBotPhysicsDrone`（需要真实动力学，接收速度、姿态、角速度和单电机）和 `BP_UBotBareAirframeDrone`（研究飞控，接收角速度和单电机）。见[示例无人机与试飞关卡](/aerial/examples/)。
+- 演示地图 `/UBotAerial/Maps/L_UBotAerialDemo`，三架示例无人机并排放在里面。
+- `uBot Simple Flight`：导航级飞行模型，速度按一阶响应逼近指令，见[用速度指令飞导航无人机](/aerial/simple-flight/)。
+- `uBot Multirotor Dynamics`：物理级飞行模型，多旋翼刚体动力学，带内置的串级飞控 `uBot Cascaded Flight Controller`，见[物理无人机的指令与控制模式](/aerial/dynamics/)。自己写飞控时继承 `uBot Flight Controller`，见[自己写飞控](/aerial/flight-controller/)。
+- `uBot Rotor` 桨叶组件，随电机转速旋转。
+- `uBot Multirotor Manual Input`：键盘和手柄手动飞行，见[键盘和手柄手动飞行](/aerial/manual-flight/)。
+- 风：关卡里放置的 `uBot Wind` 和汇总所有风源的 `uBot Wind Subsystem`，见[风](/aerial/wind/)。
+- 无人机会撞上地面、墙和其他物体，见[碰撞](/aerial/collision/)。
+- 无人机通过 uBotCore 的速度、姿态和电机指令接口接收指令，uBotROS 0.1.2 的指令组件可以直接驱动它，见[插件之间怎么对接](/concepts/interfaces/)。
+- 示例无人机的模型来自 Fab 上的 Animated Drone（CC BY 4.0）。
+- 提供 UE 5.5 Win64 的预编译包。
 
 ## uBot Manager
 

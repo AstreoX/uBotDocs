@@ -33,9 +33,9 @@ Chaos 仍是默认的物理引擎，不会被替换：MuJoCo 只负责交给它�
 | --- | --- |
 | 后端 | uBotMuJoCo 是 uBotPhysics 的一个物理后端：在 uBotPhysics 声明的扩展点 `UBotPhysics.Backend` 注册，使用时在绑定组件 `uBot Physics Binding` 的 `Backend` 里选它。一个组件只归一个后端 |
 | 步进 | 由 uBotPhysics 按 uBotCore 的[仿真时钟](/concepts/clock-and-scheduling/)驱动，MuJoCo 用自己的固定步长追赶仿真时间，一帧可能跑几步。暂停时不步进，恢复后不补跑 |
-| 每帧顺序 | 时钟推进 → MuJoCo 步进 → 位姿写回 UE 组件 → Chaos 模拟其余物体 → 传感器采样，传感器读到的总是这一帧算完的状态 |
+| 每帧顺序 | 时钟推进 → 场景更新（后端接收场景时）→ MuJoCo 步进 → 位姿写回 UE 组件 → Chaos 模拟其余物体 → 传感器采样，传感器读到的总是这一帧算完的状态 |
 | 写回 UE | 由 MuJoCo 计算的组件不再由 Chaos 模拟，只接收位姿；保留查询用的碰撞，相机和激光雷达照常看得到 |
-| 场景 | uBotPhysics 第一版不把 UE 的场景几何交给后端：MuJoCo 里的物体只和 MuJoCo 模型里的东西接触，UE 里的地面和墙不会自动出现在 MuJoCo 里 |
+| 场景 | uBotPhysics 0.1.0 把关卡里其余的碰撞体交给声明了场景能力的后端：Mobility 为 `Static` 或 `Stationary` 的是静态碰撞体，`Movable` 的是运动学物体，每帧更新位姿。uBotMuJoCo 声明这项能力后，MuJoCo 里的物体就能和 UE 里的地面、墙和桌子接触；地形、实例化静态网格和蒙皮网格不会交出，见 [uBotPhysics](/physics/#场景几何) |
 | 坐标 | MuJoCo 是右手系、Z 轴朝上、单位米，模型的 X 轴朝前时与 ROS 的 FLU 相同。所以直接用 uBotCore 中立的坐标约定（`UBot::RightHanded`，蓝图是 `UE To Right-Handed …` 节点），不经过 ROS，见[坐标系与单位](/concepts/coordinates-and-units/) |
 | 模型 | 从 MJCF 或 URDF 导入，同时生成 UE 里的显示模型和 MuJoCo 模型 |
 
@@ -44,7 +44,7 @@ Chaos 仍是默认的物理引擎，不会被替换：MuJoCo 只负责交给它�
 - 会互相碰撞的物体要交给同一个后端。比如机械臂和它要抓的物体都交给 MuJoCo；跨引擎只有单向作用：交给 MuJoCo 的物体在 Chaos 里是运动学体，能推动 Chaos 里的物体，反过来不行。
 - UE 里一次仍然只运行一个场景，大规模并行训练放在纯 MuJoCo 里做。同一份 MJCF 模型在 MuJoCo 里训练、在 UE 里加上画面和传感器验证，两边用的是同一个模型。
 
-尚未确定：组件和蓝图类的名称与属性，关节级指令（位置、速度、力矩）的接口，MuJoCo 里的地面和桌子怎么提供，支持的 MuJoCo 版本。
+尚未确定：组件和蓝图类的名称与属性，关节级指令（位置、速度、力矩）的接口，uBotMuJoCo 是否声明场景能力、直接用 UE 里的地面和桌子作为 MuJoCo 的碰撞体，还是只用 MJCF 模型自带的，以及支持的 MuJoCo 版本。
 
 ## 与现有插件的关系
 
