@@ -1,7 +1,7 @@
 {
   "format": 1,
   "plugin": "UBotAerial",
-  "version": "0.1.1",
+  "version": "0.1.0",
   "engine": "5.5",
   "repository": "https://github.com/AstreoX/uBotAerial",
   "generator": "UBotDocExport 1",
@@ -979,7 +979,7 @@
       "module": "UBotAerial",
       "header": "Source/UBotAerial/Public/UBotMultirotorMovementComponent.h",
       "category": "uBot",
-      "tooltip": "Base of the multirotor flight models. Moves the root component (the updated component) in fixed\nphysics steps on uBot sim time, sweeps its collision shape through the world and slides along what\nit touches (the ground is a surface like any other), and presents the pose extrapolated to the\ncurrent sim time every frame. Accepts velocity commands\n(IUBotVelocityCommandable) in the heading frame: X forward and Y right along the current heading,\nZ up; only the Z angular velocity (yaw rate) is used.\n\nImplements IUBotBodyStateSource for its updated component: the state is the integrator's at the latest\nphysics step (the component shows it extrapolated to the current sim time), so sensors can read it, and\nno physics backend can bind the same body.",
+      "tooltip": "Base of the multirotor flight models. Moves the root component (the updated component) in fixed\nphysics steps on uBot sim time, sweeps its collision shape through the world and slides along what\nit touches (the ground is a surface like any other), and presents the pose extrapolated to the\ncurrent sim time every frame. Accepts velocity commands\n(IUBotVelocityCommandable) in the heading frame: X forward and Y right along the current heading,\nZ up; only the Z angular velocity (yaw rate) is used.",
       "flags": {
         "abstract": true,
         "blueprintType": true,
