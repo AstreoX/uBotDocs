@@ -102,7 +102,8 @@ notes:
 | `Teleport Distance Meters` | 5 | 相邻两个样本间位移超过它，判为瞬移，单位 m |
 | `Teleport Angle Degrees` | 120 | 相邻两个样本间转角超过它，判为瞬移，单位度 |
 | `Minimum Valid Delta Seconds` | 0.0001 | 样本间隔小于它，样本无效，单位 s |
-| `Maximum Valid Delta Seconds` | 0.5 | 样本间隔大于它，样本无效，单位 s |
+| `Maximum Valid Delta Seconds` | 0.5 | 样本间隔大于它，样本无效，单位 s；状态模式下状态的年龄超过它也无效 |
+| `Use Body State` | true | 0.1.2 起。被跟踪组件的刚体有状态源时，速度读状态，关闭后总是差分，见[读取刚体状态](/sensor/body-state/)。在「Odometry」类别的「Motion」子类别里 |
 
 ## 输出与事件
 
@@ -126,6 +127,7 @@ notes:
 - `Sample Odometry`：立即采样一次，样本为 `Valid` 时返回 true。
 - `Reset Odometry`：把起点设为被跟踪组件现在的位姿，清零漂移，并按 `Random Seed` 重置随机序列；下一个样本是 `Warming Up`。
 - `Get Tracked Component`：返回正在跟踪的组件。
+- `Is Using Body State`、`Get Body State Age Seconds`（0.1.2 起）：最新样本是否取自刚体状态，以及状态的年龄，单位 s。
 
 ### 协方差
 
@@ -144,9 +146,9 @@ notes:
 
 | `Status` | `Valid` | 什么时候 |
 | --- | --- | --- |
-| `Warming Up` | false | 启动或 `Reset Odometry` 之后的第一个样本，没有速度 |
+| `Warming Up` | false | 启动或 `Reset Odometry` 之后的第一个样本，没有速度；0.1.2 起，模式切换后的第一个样本，以及刚体有状态源但还没有状态时也是 |
 | `Valid` | true | 位移、转角和间隔都正常 |
-| `Invalid Delta Time` | false | 与上一个样本的间隔小于 `Minimum Valid Delta Seconds` 或大于 `Maximum Valid Delta Seconds` |
+| `Invalid Delta Time` | false | 与上一个样本的间隔小于 `Minimum Valid Delta Seconds` 或大于 `Maximum Valid Delta Seconds`；状态模式下状态的年龄不在 [-1e-6 s, `Maximum Valid Delta Seconds`] 内也是 |
 | `Teleport Detected` | false | 相邻样本间位移超过 `Teleport Distance Meters`，或转角超过 `Teleport Angle Degrees` |
 | `Error` | false | 没有可跟踪的组件；同时触发 `On Sensor Error` |
 | `Disabled` | false | `Sensor Enabled` 为 false；只触发 `On Sensor Sampled` |
@@ -159,7 +161,7 @@ notes:
 - 采样间隔不能超过 `Maximum Valid Delta Seconds`（0.5 s）。`Update Rate Hz` 低于 2 Hz 时每个样本都无效，起点每次都被重设；要低频采样就同时调大它。
 - 自动采样运行时不要再手动调用 `Sample Odometry`。它和自动样本在同一仿真时刻时，间隔小于 `Minimum Valid Delta Seconds`，起点会被重设。
 - 瞬移的判据是相邻两个样本的位移和转角，不是速度。30 Hz 时 5 m 对应 150 m/s，高速载具要调大阈值。
-- 速度由相邻样本的位置差分得到，是被跟踪组件的本地轴向，不是世界轴向。
+- 速度默认由相邻样本的位置差分得到。被跟踪组件的刚体有状态源时，0.1.2 起速度读状态，并换算到被跟踪组件所在的点。两种模式的速度都是被跟踪组件的本地轴向，不是世界轴向。位置和朝向始终取自组件变换。
 - 被跟踪组件的世界缩放不是 1 时，`Position Meters` 会被缩放，不再是真实的米数。
 - 数据保持 UE 的轴向，位置从厘米换算成米。需要 ROS 约定时，见[坐标系与单位](/concepts/coordinates-and-units/)。
 - 所有属性在蓝图里只读，要在「Details」面板里设置。
@@ -168,5 +170,6 @@ notes:
 
 - [uBot Odometry Sensor](/reference/ubotsensor/uubotodometrysensorcomponent/)：全部节点和属性。
 - [UBot Odometry Sensor Data](/reference/ubotsensor/structs/fubotodometrysensordata/)：每个字段的含义。
+- [读取刚体状态](/sensor/body-state/)：状态模式的规则、年龄和暖机。
 - [帧头与采样状态](/concepts/frame-header/)：`Valid` 和状态码。
 - [传感器通用用法](/sensor/basics/)：启动、停止、手动采样和通用事件。

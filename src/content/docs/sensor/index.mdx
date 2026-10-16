@@ -24,7 +24,7 @@ uBotSensor 给 Actor 装上仿真传感器，在蓝图里读取位姿、里程�
 | [RGB 相机](/sensor/rgb-camera/) | `BGRA8` 图像，像素按需读回 CPU | `On Image Frame Ready` | 30 Hz |
 | [深度相机](/sensor/depth-camera/) | `Depth32FC1` 深度图（m），0 表示无效 | `On Image Frame Ready` | 30 Hz |
 
-所有传感器共用同一套启动、停止、通用事件和帧头，见[传感器通用用法](/sensor/basics/)。另有两项功能：[相机采集协调器](/sensor/capture-coordinator/)让多个相机在同一时刻采集，[感知介质](/sensor/medium/)让烟雾干扰激光雷达和相机。
+所有传感器共用同一套启动、停止、通用事件和帧头，见[传感器通用用法](/sensor/basics/)。位姿、里程计和 IMU 在机体有刚体状态源时直接读它的真值，见[读取刚体状态](/sensor/body-state/)（0.1.2 起）。另有两项功能：[相机采集协调器](/sensor/capture-coordinator/)让多个相机在同一时刻采集，[感知介质](/sensor/medium/)让烟雾干扰激光雷达和相机。
 
 ## 依赖与安装
 

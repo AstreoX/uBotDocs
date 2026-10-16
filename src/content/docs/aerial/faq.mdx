@@ -50,6 +50,14 @@ uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说
 
 默认 `Tilt Mode` 是 `Visual`，只有外观倾斜，根组件始终水平。要让根组件倾斜，把 `Tilt Mode` 设为 `Body`。见 [用速度指令飞导航无人机](/aerial/simple-flight/#注意事项)。
 
+### 无人机上的传感器读到的速度是哪来的？
+
+0.1.1 起，`Movement` 组件为根组件提供刚体状态，uBotSensor 0.1.2 的位姿、里程计和 IMU 直接读它，而不是对位姿差分。见[无人机的刚体状态](/aerial/body-state/)。
+
+### 为什么无人机不能绑定到物理后端？
+
+`Movement` 已经驱动根组件，`Bind` 会被拒绝。见[无人机的刚体状态](/aerial/body-state/#不能绑定给物理后端)。
+
 ### 运行中改了 `Airframe` 为什么没有效果？
 
 机架的改动在下一次 `Reset Flight` 生效。见 [自己拼一架无人机](/aerial/build-a-drone/#注意事项)。

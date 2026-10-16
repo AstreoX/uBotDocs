@@ -1,6 +1,6 @@
 ---
 title: uBotPhysics
-description: uBotPhysics（规划中）：同一个关卡里，不同的物体由不同的物理后端计算，Chaos 仍是默认。
+description: uBotPhysics（规划中）：让不同的物体由不同的物理后端计算，并把场景的静态和运动学碰撞体交给后端。
 pageKind: placeholder
 sidebar:
   order: 70
@@ -8,50 +8,60 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-uBotPhysics 是规划中的物理后端编排插件，目前尚未发布。
+uBotPhysics 是规划中的物理后端插件，目前尚未发布。
 
 <PackageStatus name="UBotPhysics" />
 
 ## 定位
 
-一个关卡里可能同时需要 UE 自带的 Chaos 和别的物理引擎，比如用 MuJoCo 计算机械臂。uBotPhysics 自己不带物理引擎，它只决定哪个物体归哪个后端：交给后端的物体由后端计算，没有交出的物体仍归 Chaos。
+同一个关卡里，不同的物体可以由不同的物理后端计算。Chaos 仍是默认，没有绑定的物体都归它；绑定的物体交给指定的后端，后端按 uBot 仿真时间以自己的固定步长推进，结果写回对应的 UE 组件。
 
-后端按 uBotCore 的[仿真时钟](/concepts/clock-and-scheduling/)以自己的固定步长推进，每帧把结果写回对应的 UE 组件。画面、传感器和 ROS 2 照常工作。
-
-在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+uBotPhysics 自己不带物理引擎，只提供后端接口、绑定组件、所有权规则和场景几何；后端是依赖它的独立插件。被绑定的组件仍是原来的网格或碰撞体，传感器、射线检测和动画照常使用它。
 
 ## 计划提供的能力
 
+0.1.0 的内容：
+
 | 能力标签 | 含义 |
 | --- | --- |
-| `Physics.Backends` | 扩展点 `UBotPhysics.Backend`：后端插件在这里注册一个工厂，名字就是绑定时填的后端名 |
-| `Physics.BodyBinding` | 绑定组件 `uBot Physics Binding`：加在 Actor 上，选后端，把这个 Actor 的组件交给它 |
+| `Physics.Backends` | 后端在扩展点 `UBotPhysics.Backend` 注册工厂，名字就是绑定组件里 `Backend` 填的名字 |
+| `Physics.BodyBinding` | 加 `uBot Physics Binding` 组件，选后端，播放时自动绑定；全部成功，或全部回滚 |
+| `Physics.SceneGeometry` | 关卡里其余的碰撞体按静态和运动学两类交给后端，后端的物体可以和它们接触 |
 
-计划的工作方式：
+### 场景几何
 
-| 环节 | 做法 |
+后端声明了 `bStaticSceneGeometry` 或 `bKinematicForeignBodies` 才会收到场景；两项都没有的后端什么也收不到。
+
+| 项目 | 规则 |
 | --- | --- |
-| 后端 | 后端是独立的插件，各自依赖 uBotPhysics。蓝图里可以查询已注册的后端和它们的能力 |
-| 绑定 | 播放时自动绑定，也可以手动绑定和解绑。一个组件最多属于一个后端；绑定要么全部成功，要么全部回滚，失败原因可以在蓝图里读到 |
-| 步进 | 按仿真时钟推进。暂停时不步进，恢复后不补跑；一帧需要的步数太多时丢弃多出的步，并计数 |
-| 写回 | 每帧在物理模拟之前，所有后端步进完之后，把被绑定组件的位姿写回 UE。组件变成运动学体，Chaos 不再模拟它，碰撞设置不变，射线检测和传感器照常使用 |
-| 刚体状态 | 绑定组件实现 uBotCore 的刚体状态源接口（实验性），传感器可以读到后端给出的真实速度，不必靠位姿差分 |
+| 哪些组件算场景 | 已注册的 Primitive 组件，碰撞带物理（`Query and Physics` 或 `Physics Only`），能导出碰撞形状 |
+| 静态与运动学 | Mobility 为 `Static` 或 `Stationary` 的是静态物体，加入时发一次；`Movable` 的是运动学物体，每帧发位姿 |
+| 排除 | 给组件或它的 Actor 加标签 `UBotPhysics.NoScene`；绑定给这个后端的组件，以及附着在它们下面的组件，对这个后端不是场景 |
+| 导出的形状 | Body Setup 里的球、盒、胶囊和凸包；只有碰撞复杂度是 `Use Complex Collision As Simple` 且三角网格已建好时才导出三角网格。单位是米，世界缩放已计入 |
+| 不导出 | 地形高度场、实例化静态网格和蒙皮网格整个不导出；锥形胶囊和水平集形状被略过。没能导出的组件计入 `SkippedComponents` |
+| 单向 | 场景里的 Chaos 物体和别的后端的物体对后端是运动学物体：后端的物体能撞上它们，它们不会被推动 |
 
-使用时有几条限制：
+形状在导出时读取一次，原地修改同一个 Body Setup 里的形状不会被发现；需要重新导出时切一下碰撞或缩放。
 
-- 后端的物体和 Chaos 的物体之间只有单向作用：被绑定的物体能推动 Chaos 里的物体，反过来不行。需要互相动态接触的物体要交给同一个后端。
-- 第一版不把 UE 的场景几何交给后端，后端的物体只和后端自己模型里的东西接触。
-- 控制不属于后端接口：后端自己的组件实现 uBotCore 的执行器接口，把指令直接送给自己的求解器。
-- 给后端作者的 C++ 接口是实验性的，小版本之间可能变化。
+用蓝图节点 `Get Physics Scene Stats` 查看一个后端现在看到的场景：静态物体数、运动学物体数、形状总数，以及没能导出的组件数；后端在这个世界里没有求解器时返回 `false`。
+
+### 给后端作者
+
+后端接口是实验性的，只能在 C++ 里实现，小版本之间可能变化：
+
+- `IUBotPhysicsBackendFactory` 声明能力（`FUBotPhysicsCapabilities`）并为每个世界创建求解器；`IUBotPhysicsSolver` 实现 `AddBody`、`RemoveBody`、`Step`、`GetBodyState`。
+- 可选的 `UpdateScene` 收到 `FUBotPhysicsSceneUpdate`：`Removed` 先于 `Added` 处理，`Added` 是新进入场景的物体（ID、静态还是运动学、变换、形状、摩擦和弹性），`KinematicPoses` 是所有运动学物体当前的位姿。
+- `UBot::Physics::GetCollisionShapes` 用同一套导出规则，给后端取自己物体的形状。
+- 每帧在 `TG_PrePhysics`：先扫描场景，再对每个求解器依次 `UpdateScene` 和补步，最后统一写回位姿。
 
 ## 与现有插件的关系
 
-- uBotCore：依赖 uBotCore 0.1.3 或更新的 0.1.x，那里提供仿真时钟、固定步长调度、刚体状态源接口和扩展点注册表。
-- uBotSensor、uBotROS、uBotAerial：不依赖，也不知道 uBotPhysics。传感器和 ROS 读到的是写回后的组件位姿，装在被绑定组件上不用改。
-- [uBotMuJoCo](/mujoco/)：规划中的物理后端插件，依赖 uBotPhysics，在 `UBotPhysics.Backend` 注册自己的工厂。
+- uBotCore：依赖 0.1.3 或更新，用它的仿真时钟、固定步长调度器、扩展点注册表和刚体状态源接口。
+- uBotSensor：无依赖。被绑定的刚体提供刚体状态，位姿、里程计和 IMU 直接读后端给出的速度，见[读取刚体状态](/sensor/body-state/)。
+- uBotAerial：无依赖。无人机的 `Movement` 组件已经驱动机体，所以无人机根组件不能绑定给后端，见[无人机的刚体状态](/aerial/body-state/)。
+- uBotMuJoCo：规划中的物理后端，见 [uBotMuJoCo](/mujoco/)。
 
 ## 发布前可以先怎么做
 
-- 现在所有物体都由 Chaos 计算。用 Physics Asset 和 Physics Constraint 搭机器人，把控制写在实现了 `UBot Velocity Commandable` 的对象上，见[插件之间怎么对接](/concepts/interfaces/)。
-- 传感器照常装在机器人的组件上，见[传感器通用用法](/sensor/basics/)。以后物体交给后端时，传感器读到的仍是组件的位姿。
-- 要写后端插件的开发者，可以先读 [uBotPhysics 仓库](https://github.com/AstreoX/uBotPhysics)的 README，里面有后端接口的约定。
+- 现在用 Chaos 搭场景和机器人，物体由哪个后端计算对传感器和 ROS 端没有影响，它们只读组件的位姿。
+- 不想让后端看到的物体，提前规划好用 `UBotPhysics.NoScene` 标签标出来。
