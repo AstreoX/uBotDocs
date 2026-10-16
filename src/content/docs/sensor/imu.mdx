@@ -133,13 +133,14 @@ wires:
 | `Max Angular Velocity` | 50 | 角速度大小的上限，单位 rad/s |
 | `Teleport Distance Meters` | 5 | 相邻两个样本间位移超过它，判为瞬移 |
 | `Teleport Angle Degrees` | 120 | 相邻两个样本间转角超过它，判为瞬移 |
-| `Max Sample Delta Seconds` | 0.5 | 相邻两个样本的间隔超过它，样本无效 |
+| `Max Sample Delta Seconds` | 0.5 | 相邻两个样本的间隔超过它，样本无效；状态模式下状态的年龄超过它也无效 |
+| `Use Body State` | true | 0.1.2 起。机体有刚体状态源时读它的真值，关闭后总是差分，见[读取刚体状态](/sensor/body-state/)。在「IMU」类别的「Motion」子类别里 |
 
 通用属性（`Auto Start`、`Sensor Id` 等）见[传感器通用用法](/sensor/basics/)。
 
 ### 噪声、偏置、滤波和限幅
 
-IMU 先由相邻样本的差分算出无噪声的角速度和比力，再按下表依次处理：
+IMU 先得到无噪声的角速度和比力（差分模式由相邻样本的位姿差分，0.1.2 起的状态模式直接读刚体状态），再按下表依次处理，两种模式用同一段代码：
 
 | 顺序 | 处理 | 相关属性 |
 | --- | --- | --- |
@@ -167,17 +168,18 @@ IMU 先由相邻样本的差分算出无噪声的角速度和比力，再按下�
 - `On Imu Data Updated`：每次采样都触发，引脚 `Data`，包括 `Warming Up` 等无效样本。
 - `Get Latest IMUData`：返回最近一次样本，不会触发采样。
 - `Sample IMU`：立即采样一次，样本为 `Valid` 时返回 true。
-- `Reset IMUBias`、`Reset IMUHistory`：恢复偏置；清空差分用的历史，之后的两个样本是 `Warming Up`，第三个起恢复 `Valid`。
+- `Reset IMUBias`、`Reset IMUHistory`：恢复偏置；清空历史（状态模式的历史也一起清空），之后差分模式的前两个样本是 `Warming Up`，第三个起恢复 `Valid`；状态模式只有第一个样本是 `Warming Up`。
+- `Is Using Body State`、`Get Body State Age Seconds`（0.1.2 起）：最新样本是否取自刚体状态，以及状态的年龄，单位 s。
 
 ### 状态码
 
-IMU 靠相邻样本的位置和姿态差分，所以刚开始的样本不能用：
+差分模式的 IMU 靠相邻样本的位置和姿态差分，所以刚开始的样本不能用。状态模式（0.1.2 起，见[读取刚体状态](/sensor/body-state/)）只有第一个样本是 `Warming Up`：
 
 | `Status` | `Valid` | 什么时候 |
 | --- | --- | --- |
-| `Warming Up` | false | 启动或 `Reset IMUHistory` 之后的前两个样本；100 Hz 时第三个样本最早在启动后 0.02 s |
+| `Warming Up` | false | 差分模式：启动或 `Reset IMUHistory` 之后的前两个样本，100 Hz 时第三个样本最早在启动后 0.02 s。状态模式：第一个样本；状态不带加速度、状态时刻还没前进时继续；刚体还没有状态时；模式切换后的第一个样本 |
 | `Valid` | true | 历史已经填满 |
-| `Invalid Delta Time` | false | 与上一个样本的仿真时间差为 0，或超过 `Max Sample Delta Seconds` |
+| `Invalid Delta Time` | false | 与上一个样本的仿真时间差为 0，或超过 `Max Sample Delta Seconds`；状态模式下状态的年龄不在 [-1e-6 s, `Max Sample Delta Seconds`] 内也是 |
 | `Teleport Detected` | false | 相邻样本间位移超过 `Teleport Distance Meters`，或转角超过 `Teleport Angle Degrees` |
 | `Disabled` | false | `Sensor Enabled` 为 false；只触发 `On Sensor Sampled`，没有 `On Imu Data Updated` |
 
@@ -191,12 +193,14 @@ IMU 靠相邻样本的位置和姿态差分，所以刚开始的样本不能用�
 - 自动采样运行时不要再手动调用 `Sample IMU`。如果它和自动样本在同一仿真时刻，时间差为 0，会得到 `Invalid Delta Time` 并清空历史。
 - 白噪声和偏置随机游走都用三个均匀随机数相加近似高斯分布，0.1.1 里每个轴的实际标准差约为设定值的 0.7 倍。方差字段报告的是设定值的平方，并且 `Noise Enabled` 关闭时也照样填写。
 - 低通滤波的状态从 0 开始，开启后最初几个有效样本会被拉向 0，静止时的比力要几个样本后才升到 9.8 m/s² 左右。
+- 机体有刚体状态源（例如无人机）时，IMU 从 0.1.2 起读状态里的真值，传感器装在会自己运动的部件上（云台）时关闭 `Use Body State`。传感器相对刚体的位置（杠杆臂）会计入速度和加速度。
 - 噪声、滤波、限幅和瞬移阈值在蓝图里只读，要在「Details」面板里设置；运行中只能改 `Set Update Rate Hz` 和调用两个重置节点。
 
 ## 相关参考
 
 - [uBot IMU Sensor](/reference/ubotsensor/uubotimusensorcomponent/)：全部节点和属性。
 - [UBot Imu Sensor Data](/reference/ubotsensor/structs/fubotimusensordata/)：每个字段的含义和单位。
+- [读取刚体状态](/sensor/body-state/)：状态模式的规则、年龄和暖机。
 - [帧头与采样状态](/concepts/frame-header/)：`Valid` 和状态码。
 - [传感器通用用法](/sensor/basics/)：启动、停止、手动采样和通用事件。
 - [坐标系与单位](/concepts/coordinates-and-units/)：UE 与右手系之间的换算。

@@ -41,3 +41,15 @@ UUBotPoseSensorComponent.UpdateRateHz:
 UUBotPoseSensorComponent.bIncludeVelocity:
   summary: 为 true 时，用相邻样本差分计算线速度和角速度；启动后的第一个样本没有速度。
   sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.GetBodyStateAgeSeconds:
+  summary: 最新样本的年龄：取样时刻减去所用刚体状态的时刻（物理步落后取样多久），单位 s；没有用到状态时为 0。
+  sourceHash: "622fe636a5b1"
+
+UUBotPoseSensorComponent.IsUsingBodyState:
+  summary: 最新样本的运动量是否取自刚体状态源。
+  sourceHash: "3d201dc3cd11"
+
+UUBotPoseSensorComponent.bUseBodyState:
+  summary: 机体由刚体状态源（物理后端的绑定、载具自己的积分器）驱动时，速度和加速度读它的状态，而不是对位姿差分；机体到传感器之间的部分按刚性连接处理。传感器装在会自己运动的部件上（例如云台）时关闭。仅在 `World` 参考系下生效，`Parent` 和 `Custom Component` 参考系总是差分相对位姿。
+  sourceHash: "0c9f15544e18"

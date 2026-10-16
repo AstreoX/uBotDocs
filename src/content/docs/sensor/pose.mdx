@@ -69,7 +69,8 @@ notes:
 | `Reference Frame` | `World` | 位姿相对谁来表示，见下表 |
 | `Custom Reference Component` | 空 | `Reference Frame` 为 `Custom Component` 时使用的组件 |
 | `Reference Frame Id` | `world` | 写入输出的参考系名；为空时按参考系自动取名 |
-| `Include Velocity` | true | 是否用相邻样本差分计算速度 |
+| `Include Velocity` | true | 是否输出速度。差分模式用相邻样本差分计算 |
+| `Use Body State` | true | 0.1.2 起。`Reference Frame` 为 `World` 且机体有刚体状态源时，速度读状态，关闭后总是差分，见[读取刚体状态](/sensor/body-state/)。在「Pose Sensor」类别里 |
 | `Update Rate Hz` | 30 | 采样频率，单位 Hz |
 | `Sensor Id`、`Frame Id` | `pose_sensor` | 写入帧头的标识 |
 
@@ -100,6 +101,7 @@ notes:
 - `On Pose Data Updated`：每次采样都触发，引脚 `Data`。参考系无效时也会触发，此时 `Header` 的 `Status` 是 `Error`，其余字段为默认值。
 - `Get Latest Pose Data`：返回最近一次的数据，不会触发采样。
 - `Sample Pose`：立即采样一次，样本为 `Valid` 时返回 true。
+- `Is Using Body State`、`Get Body State Age Seconds`（0.1.2 起）：最新样本的速度是否取自刚体状态，以及状态的年龄，单位 s。
 
 ### 状态码
 
@@ -113,7 +115,8 @@ notes:
 
 ## 注意事项
 
-- 速度由相邻两个样本差分得到，所以启动后的第一个样本没有速度。`Include Velocity` 关闭，或两个样本的仿真时间相同，也没有速度。
+- 差分模式下速度由相邻两个样本差分得到，所以启动后的第一个样本没有速度。`Include Velocity` 关闭，或两个样本的仿真时间相同，也没有速度。
+- 0.1.2 起，`Reference Frame` 为 `World` 且机体有刚体状态源（例如无人机）时，速度读状态，从第一个样本起就有；刚体有状态源但还没有状态时，位姿有效但没有速度。`Parent` 和 `Custom Component` 参考系总是差分。位姿传感器不检查状态的年龄。
 - 速度的轴向是参考系的轴向，不是传感器的本地轴向。IMU 和里程计的速度才是本地轴向。
 - 位姿传感器不做瞬移检测：Actor 被瞬间移走时，下一个样本的速度会很大。
 - `Noise Enabled` 对位姿传感器无效，输出始终是真值。
@@ -127,4 +130,5 @@ notes:
 - [UBot Pose Sensor Data](/reference/ubotsensor/structs/fubotposesensordata/)：每个字段的含义。
 - [EUBot Pose Reference Frame](/reference/ubotsensor/enums/eubotposereferenceframe/)：参考系枚举。
 - [UBot Conventions Library](/reference/ubotcore/uubotconventionslibrary/)：UE 与右手系之间的换算节点。
+- [读取刚体状态](/sensor/body-state/)：状态模式的规则和年龄。
 - [传感器通用用法](/sensor/basics/)：启动、停止、手动采样和通用事件。

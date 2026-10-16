@@ -50,7 +50,7 @@ Chaos 仍是默认的物理引擎，不会被替换：MuJoCo 只负责交给它�
 
 - uBotPhysics：按包索引，它依赖 uBotPhysics 0.1.x。“物理后端”扩展点 `UBotPhysics.Backend`、绑定组件、按仿真时钟步进和位姿写回都由 uBotPhysics 提供，uBotMuJoCo 只负责 MuJoCo 这一个后端；以后别的物理引擎也接在同一个扩展点，见 [uBotPhysics](/physics/)。
 - uBotCore：按包索引，它依赖 uBotCore 0.1.3 或更新的 0.1.x，用到里面的仿真时钟、执行器接口和坐标约定。
-- uBotSensor：传感器从组件位姿计算速度和加速度，不读物理引擎，所以装在 MuJoCo 机器人上的传感器不用改。计划再加一个可选的数据来源，让 IMU 直接读 MuJoCo 算出的加速度。
+- uBotSensor：传感器默认从组件位姿计算速度和加速度，所以装在 MuJoCo 机器人上的传感器不用改。uBotSensor 0.1.2 起，位姿、里程计和 IMU 可以读刚体状态源给出的真值，见[读取刚体状态](/sensor/body-state/)。
 - uBotROS：机器人实现 `UBot Velocity Commandable` 后，ROS 2 的 `cmd_vel` 就能驱动它，uBotROS 不用改，见[接收 cmd_vel](/ros/cmd-vel/)。
 - uBotLearning：Learning Agents 在 UE 里训练；uBotMuJoCo 走的是另一条路，在纯 MuJoCo 里训练，在 UE 里验证。
 

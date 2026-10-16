@@ -31,7 +31,7 @@ sidebar:
 | `Status` | 什么时候出现 |
 | --- | --- |
 | `Valid` | 正常样本，数据可以直接使用 |
-| `Warming Up` | IMU 和里程计要靠相邻样本的差分算速度，刚启动或刚被重置时历史不够，这几次采样是预热样本 |
+| `Warming Up` | IMU 和里程计要靠相邻样本的差分算速度，刚启动或刚被重置时历史不够，这几次采样是预热样本；读刚体状态时（见[读取刚体状态](/sensor/body-state/)）预热更短 |
 | `Invalid Delta Time` | 与上次采样的间隔不合理，历史被清空：IMU 为 0 或超过 `Max Sample Delta Seconds`；里程计小于 `Minimum Valid Delta Seconds`（默认 0.0001 s）或超过 `Maximum Valid Delta Seconds`；两个上限默认都是 0.5 s |
 | `Teleport Detected` | 两次采样间的位移或转角超过阈值（IMU 和里程计默认 5 m 或 120°），视为瞬移，历史被清空 |
 | `Disabled` | `Sensor Enabled` 为 false 时手动调用 `Sample Sensor` 得到的样本 |

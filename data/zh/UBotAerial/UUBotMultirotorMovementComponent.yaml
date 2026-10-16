@@ -1,6 +1,6 @@
 UUBotMultirotorMovementComponent:
-  summary: 多旋翼飞行模型的基类。它按 uBot 仿真时间以固定物理步移动根组件（被更新的组件），用碰撞体扫过世界并沿接触面滑动（地面和其他表面一样），每帧显示外推到当前仿真时间的姿态。接受航向坐标系下的速度指令（`IUBotVelocityCommandable`）：X 沿当前朝向向前，Y 向右，Z 向上，只用 Z 方向的角速度（偏航角速度）。
-  sourceHash: "9255bd065af0"
+  summary: 多旋翼飞行模型的基类。它按 uBot 仿真时间以固定物理步移动根组件（被更新的组件），用碰撞体扫过世界并沿接触面滑动（地面和其他表面一样），每帧显示外推到当前仿真时间的姿态。接受航向坐标系下的速度指令（`IUBotVelocityCommandable`）：X 沿当前朝向向前，Y 向右，Z 向上，只用 Z 方向的角速度（偏航角速度）。它也是根组件的刚体状态源（`IUBotBodyStateSource`）：状态是最近一个物理步的积分器状态，不是外推后的呈现位姿，所以传感器可以读到真值，物理后端也不能再绑定同一个机体。
+  sourceHash: "0e605edabaa9"
 
 UUBotMultirotorMovementComponent.ActuatorId:
   summary: 向 uBot 报告的执行器 ID。为空时使用所属 Actor 的机器人 ID（其 uBot Identity，否则用它的名字）。
