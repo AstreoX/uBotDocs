@@ -58,9 +58,9 @@ sidebar:
 
 ## 名字的净化
 
-默认的 `Namespace` 要用作 ROS 名称，所以要先净化（sanitize）。`Sanitize ROS Name` 按下面的规则处理名字：
+默认的 `Namespace` 要用作 ROS 名称，所以要先净化（sanitize）。uBotCore 用 `UBot::Identity::SanitizeNameToken` 处理名字，得到的名字可以直接用作 ROS 名称、C 标识符和文件名。规则如下：
 
-- 只保留字母、数字和下划线，其余字符换成 `_`。
+- 只保留字母、数字和下划线，其余字符（包括中文）换成 `_`。
 - 连续的下划线合并成一个。
 - 首字符是数字时，前面加 `_`。
 - 输入为空时返回 `ubot`。
@@ -71,6 +71,11 @@ sidebar:
 | `my robot` | `my_robot` |
 | `a__b` | `a_b` |
 | `1st` | `_1st` |
+| `4WD Rover #1` | `_4WD_Rover_1` |
+| `机器人` | `_` |
+| 空字符串 | `ubot` |
+
+`SanitizeNameToken` 是 C++ 函数，没有蓝图节点。uBotROS 的蓝图节点 `Sanitize ROS Name`（类别 `uBot|ROS|Conventions`）规则相同；uBotCore 里同名的旧节点已弃用。
 
 你自己填写的 `Namespace`，`uBot Identity` 只去掉首尾的空白和 `/`。uBotROS 拿它做话题前缀时，会再把以 `/` 分隔的每一段净化一遍。
 

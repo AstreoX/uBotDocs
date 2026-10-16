@@ -56,7 +56,7 @@ notes:
 | 属性 | 默认值 | 留空或无效时 |
 | --- | --- | --- |
 | `Robot Id` | 空 | 用所属 Actor 的名字；首尾的空白会被去掉 |
-| `Namespace` | 空 | 用净化后的机器人 ID，规则同 `Sanitize ROS Name`；填写的值只去掉首尾的空白和 `/`，不会净化 |
+| `Namespace` | 空 | 用净化后的机器人 ID（`UBot::Identity::SanitizeNameToken`，规则见[标识与命名](/concepts/identity/)）；填写的值只去掉首尾的空白和 `/`，不会净化 |
 | `Base Frame Id` | `base_link` | 用 `base_link` |
 | `Base Component` | 空 | 用所属 Actor 的根组件 |
 
@@ -91,5 +91,4 @@ Actor 的名字是 `AActor::GetName()` 的结果，不是「Outliner」里显示
 ## 相关参考
 
 - [uBot Identity](/reference/ubotcore/uubotidentitycomponent/)：全部节点和属性。
-- [标识与命名](/concepts/identity/)：Sensor Id、Frame Id 和命名建议。
-- [UE/ROS 约定库](/core/conventions/)：`Sanitize ROS Name` 的规则。
+- [标识与命名](/concepts/identity/)：Sensor Id、Frame Id、名字的净化规则和命名建议。

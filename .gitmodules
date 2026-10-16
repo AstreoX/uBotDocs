@@ -14,3 +14,7 @@
 	path = vendor/uBotAerial
 	url = https://github.com/AstreoX/uBotAerial.git
 	shallow = true
+[submodule "vendor/uBotPhysics"]
+	path = vendor/uBotPhysics
+	url = https://github.com/AstreoX/uBotPhysics.git
+	shallow = true

@@ -1,0 +1,57 @@
+---
+title: uBotPhysics
+description: uBotPhysics（规划中）：同一个关卡里，不同的物体由不同的物理后端计算，Chaos 仍是默认。
+pageKind: placeholder
+sidebar:
+  order: 70
+---
+
+import PackageStatus from "../../../components/PackageStatus.astro";
+
+uBotPhysics 是规划中的物理后端编排插件，目前尚未发布。
+
+<PackageStatus name="UBotPhysics" />
+
+## 定位
+
+一个关卡里可能同时需要 UE 自带的 Chaos 和别的物理引擎，比如用 MuJoCo 计算机械臂。uBotPhysics 自己不带物理引擎，它只决定哪个物体归哪个后端：交给后端的物体由后端计算，没有交出的物体仍归 Chaos。
+
+后端按 uBotCore 的[仿真时钟](/concepts/clock-and-scheduling/)以自己的固定步长推进，每帧把结果写回对应的 UE 组件。画面、传感器和 ROS 2 照常工作。
+
+在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+
+## 计划提供的能力
+
+| 能力标签 | 含义 |
+| --- | --- |
+| `Physics.Backends` | 扩展点 `UBotPhysics.Backend`：后端插件在这里注册一个工厂，名字就是绑定时填的后端名 |
+| `Physics.BodyBinding` | 绑定组件 `uBot Physics Binding`：加在 Actor 上，选后端，把这个 Actor 的组件交给它 |
+
+计划的工作方式：
+
+| 环节 | 做法 |
+| --- | --- |
+| 后端 | 后端是独立的插件，各自依赖 uBotPhysics。蓝图里可以查询已注册的后端和它们的能力 |
+| 绑定 | 播放时自动绑定，也可以手动绑定和解绑。一个组件最多属于一个后端；绑定要么全部成功，要么全部回滚，失败原因可以在蓝图里读到 |
+| 步进 | 按仿真时钟推进。暂停时不步进，恢复后不补跑；一帧需要的步数太多时丢弃多出的步，并计数 |
+| 写回 | 每帧在物理模拟之前，所有后端步进完之后，把被绑定组件的位姿写回 UE。组件变成运动学体，Chaos 不再模拟它，碰撞设置不变，射线检测和传感器照常使用 |
+| 刚体状态 | 绑定组件实现 uBotCore 的刚体状态源接口（实验性），传感器可以读到后端给出的真实速度，不必靠位姿差分 |
+
+使用时有几条限制：
+
+- 后端的物体和 Chaos 的物体之间只有单向作用：被绑定的物体能推动 Chaos 里的物体，反过来不行。需要互相动态接触的物体要交给同一个后端。
+- 第一版不把 UE 的场景几何交给后端，后端的物体只和后端自己模型里的东西接触。
+- 控制不属于后端接口：后端自己的组件实现 uBotCore 的执行器接口，把指令直接送给自己的求解器。
+- 给后端作者的 C++ 接口是实验性的，小版本之间可能变化。
+
+## 与现有插件的关系
+
+- uBotCore：依赖 uBotCore 0.1.3 或更新的 0.1.x，那里提供仿真时钟、固定步长调度、刚体状态源接口和扩展点注册表。
+- uBotSensor、uBotROS、uBotAerial：不依赖，也不知道 uBotPhysics。传感器和 ROS 读到的是写回后的组件位姿，装在被绑定组件上不用改。
+- [uBotMuJoCo](/mujoco/)：规划中的物理后端插件，依赖 uBotPhysics，在 `UBotPhysics.Backend` 注册自己的工厂。
+
+## 发布前可以先怎么做
+
+- 现在所有物体都由 Chaos 计算。用 Physics Asset 和 Physics Constraint 搭机器人，把控制写在实现了 `UBot Velocity Commandable` 的对象上，见[插件之间怎么对接](/concepts/interfaces/)。
+- 传感器照常装在机器人的组件上，见[传感器通用用法](/sensor/basics/)。以后物体交给后端时，传感器读到的仍是组件的位姿。
+- 要写后端插件的开发者，可以先读 [uBotPhysics 仓库](https://github.com/AstreoX/uBotPhysics)的 README，里面有后端接口的约定。
