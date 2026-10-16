@@ -36,7 +36,7 @@ notes:
 
 用到角度的逻辑接在事件的执行引脚后面。[`Break Rotator`](/reference/engine/#UKismetMathLibrary-BreakRotator) 输出 `X (Roll)`、`Y (Pitch)` 和 `Z (Yaw)`，单位都是度：Roll 和 Yaw 在 -180 到 180 之间，Pitch 在 -90 到 90 之间。
 
-这是组件在 UE 世界坐标系下的姿态。需要 ROS 约定的四元数时，用 [`UE To ROS Rotation`](/reference/ubotcore/uubotconventionslibrary/#RotationUEToROS) 换算。
+这是组件在 UE 世界坐标系下的姿态。需要右手系（ROS、MuJoCo 等用的坐标系）的四元数时，用 `UE To Right-Handed Rotation` 换算，见[坐标约定库](/core/conventions/)。
 
 ### 在自己的时机读取
 
@@ -199,4 +199,4 @@ IMU 靠相邻样本的位置和姿态差分，所以刚开始的样本不能用�
 - [UBot Imu Sensor Data](/reference/ubotsensor/structs/fubotimusensordata/)：每个字段的含义和单位。
 - [帧头与采样状态](/concepts/frame-header/)：`Valid` 和状态码。
 - [传感器通用用法](/sensor/basics/)：启动、停止、手动采样和通用事件。
-- [坐标系与单位](/concepts/coordinates-and-units/)：UE 与 ROS 之间的换算。
+- [坐标系与单位](/concepts/coordinates-and-units/)：UE 与右手系之间的换算。

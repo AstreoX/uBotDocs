@@ -1,6 +1,6 @@
 ---
 title: uBotCore 概述
-description: uBotCore 能做什么：帧头、仿真时钟、UE 与 ROS 约定、通用接口和 Package 管理。
+description: uBotCore 能做什么：帧头、仿真时钟、UE 与右手系的坐标约定、通用接口和 Package 管理。
 pageKind: overview
 sidebar:
   order: 10
@@ -8,16 +8,16 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-uBotCore 放着所有 uBot 插件共用的东西：传感器帧头（Frame Header）、仿真时钟（Clock）、UE 与 ROS 的换算、机器人命名，以及 Package 的查询和编辑器面板。
+uBotCore 放着所有 uBot 插件共用的东西：传感器帧头（Frame Header）、仿真时钟（Clock）、UE 与右手系（ROS、MuJoCo 等用的坐标系）的坐标换算、机器人命名，以及 Package 的查询和编辑器面板。
 
-它只依赖 UE 引擎，不包含 ROS 代码。
+它只依赖 UE 引擎，不包含 ROS 代码：只有 ROS 才有的换算（相机光学系、ROS 时间、ROS 名称）在 [uBotROS](/ros/) 里。
 
 ## 能做什么
 
 | 功能 | 做什么 | 页面 |
 | --- | --- | --- |
 | 仿真时钟 | 读取仿真时间，设置固定步长，暂停和单步 | [仿真时钟](/core/clock/) |
-| UE/ROS 约定库 | 在蓝图里转换时间、位置、旋转和角速度，净化 ROS 名称 | [UE/ROS 约定库](/core/conventions/) |
+| 坐标约定库 | 在蓝图里把位置、旋转、角速度和变换在 UE 与右手系（FLU，国际单位制）之间换算 | [坐标约定库](/core/conventions/) |
 | Identity 组件 | 给机器人起名：`Robot Id`、`Namespace`、`Base Frame Id` | [Identity 组件](/core/identity/) |
 | Package 查询与 uBot 面板 | 在编辑器、蓝图和命令行里查看已安装的 uBot Package | [Package 查询与编辑器面板](/core/packages/) |
 | 设置项 | 项目设置「uBot Core」和编辑器偏好「uBot」 | [uBotCore 设置项](/core/settings/) |
@@ -36,7 +36,7 @@ uBotCore 放着所有 uBot 插件共用的东西：传感器帧头（Frame Heade
 | 组件 | 作用 | 参考 |
 | --- | --- | --- |
 | `UBot Clock Subsystem` | 仿真时间，固定步长，暂停与单步 | [UBot Clock Subsystem](/reference/ubotcore/uubotclocksubsystem/) |
-| `UBot Conventions Library` | UE 与 ROS 之间的时间、坐标和名称换算节点 | [UBot Conventions Library](/reference/ubotcore/uubotconventionslibrary/) |
+| `UBot Conventions Library` | UE 与右手系之间的坐标换算节点（`UE To Right-Handed …`） | [UBot Conventions Library](/reference/ubotcore/uubotconventionslibrary/) |
 | `uBot Identity` | 加在机器人 Actor 上的命名组件 | [uBot Identity](/reference/ubotcore/uubotidentitycomponent/) |
 | `UBot Package Library` | 在蓝图里查询已安装的 Package 和扩展点 | [UBot Package Library](/reference/ubotcore/uubotpackagelibrary/) |
 | `uBot Core` | 项目设置 | [uBot Core](/reference/ubotcore/uubotcoresettings/) |

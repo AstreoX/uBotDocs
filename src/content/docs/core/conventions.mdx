@@ -1,6 +1,6 @@
 ---
-title: UE/ROS 约定库
-description: 用 UE/ROS 约定库在蓝图里转换时间和坐标，净化名称。
+title: 坐标约定库
+description: 用坐标约定库在蓝图里把位置、旋转、角速度和变换在 UE 与右手系（FLU，国际单位制）之间换算。
 pageKind: feature
 sidebar:
   order: 30
@@ -8,30 +8,32 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-用 UBot Conventions Library 在蓝图里转换 UE 和 ROS 之间的位置、旋转、角速度、时间，并净化（Sanitize）ROS 名称。
+用 `UBot Conventions Library` 在蓝图里把位置、旋转、角速度和变换在 UE（左手系，厘米）与右手系（FLU，国际单位制）之间互相换算。
 
-UE 的单位是厘米，ROS 的单位是米，两边的 Y 轴方向也相反（REP-103），所以数据在两边传递时都要换算。
+ROS（REP-103）用的就是这个右手系，MuJoCo 等 Z 轴朝上的右手系引擎在模型的 X 轴朝前时也一样，所以节点名里不带协议的名字：`UE To Right-Handed …` 和 `Right-Handed To UE …`。UE 的单位是厘米，右手系的单位是米，两边的 Y 轴方向也相反，数据在两边传递时都要换算。
 
 ## 快速用法
 
-下面把 Actor 的 UE 位置（厘米）换算成 ROS 位置（米），并打印到屏幕：
+下面把 Actor 的 UE 位置（厘米）换算成右手系的位置（米），并打印到屏幕：
 
 ```blueprint
-caption: 每帧打印 Actor 的 ROS 位置
+caption: 每帧打印 Actor 在右手系里的位置
 nodes:
   A: AActor.ReceiveTick
   G: AActor.K2_GetActorLocation
   C: UUBotConventionsLibrary.PositionUEToROS
   V: UKismetStringLibrary.Conv_VectorToString
-  P: { ref: UKismetSystemLibrary.PrintString, set: { Key: ros_position } }
+  P: { ref: UKismetSystemLibrary.PrintString, set: { Key: right_handed_position } }
 wires:
   - A.then -> P.execute
   - G.ReturnValue -> C.UECentimeters
   - C.ReturnValue -> V.InVec
   - V.ReturnValue -> P.InString
 notes:
-  C: 反方向用 `ROS To UE Position`。
+  C: 图里是旧名称 `UE To ROS Position`，0.1.3 起请用 `UE To Right-Handed Position`，结果相同。
 ```
+
+反方向用 `Right-Handed To UE Position`。
 
 ## 步骤
 
@@ -39,17 +41,31 @@ notes:
 
 1. **找到数据对应的节点**
 
-   在节点菜单里搜索 `UE To ROS` 或 `ROS To UE`，按数据的种类选节点，对应关系见“关键属性”。
+   在节点菜单里搜索 `Right-Handed`，按数据的种类选节点，对应关系见“关键属性”。搜索 `ROS` 也能找到它们。
 
 2. **选对方向**
 
-   把 UE 里的数据交给 ROS 一侧用 `UE To ROS …`，从 ROS 一侧收到的数据用 `ROS To UE …`。
+   把 UE 里的数据交给右手系一侧用 `UE To Right-Handed …`，从右手系一侧收到的数据用 `Right-Handed To UE …`。
 
 3. **检查输入的单位**
 
    位置和变换会换算单位。线性量、角速度和航向角不换算，输入必须已经是 m/s、rad/s 或弧度。
 
 </Steps>
+
+### ROS 专属的节点
+
+相机光学系、ROS 时间和 ROS 名称只对 ROS 有意义。它们从 uBotCore 0.1.3 起移到了 uBotROS，在类别 `uBot|ROS|Conventions`（`UUBotROSConventionsLibrary`）下，名字和显示名不变：
+
+| 节点 | 作用 |
+| --- | --- |
+| `Camera Link To Optical Rotation` | 相机光学系（z 前、x 右、y 下）相对相机 link 系的旋转，ROS 约定 |
+| `Get Optical Frame Suffix` | 光学系 frame id 的后缀 `_optical` |
+| `Seconds To ROS Time` | 把秒拆成 `builtin_interfaces/Time` 的 `Sec` 和 `Nanosec` |
+| `ROS Time To Seconds` | 把 `Sec` 和 `Nanosec` 合回秒 |
+| `Sanitize ROS Name` | 把任意文字变成合法的 ROS 名字片段 |
+
+uBotCore 里的同名节点已弃用，行为不变，旧蓝图照常运行。要用新位置的节点，项目里需要启用 uBotROS。
 
 ### 时间转换
 
@@ -72,46 +88,41 @@ wires:
   - C.ReturnValue -> P.InString
 notes:
   S: 搜索 `Get UBotClockSubsystem` 取到它，用法见“仿真时钟”页。
-  R: "`Nanosec` 是秒的小数部分，单位 ns，这里没有接线。"
+  R: "图里是 uBotCore 里已弃用的节点，uBotROS 里的同名节点用法相同；`Nanosec` 没有接线。"
 ```
 
 例如 12.5 s 拆成 `Sec` 为 12、`Nanosec` 为 500000000。
 
 ### 名称净化
 
-`Sanitize ROS Name` 把任意文字变成合法的 ROS 名字片段，用来拼话题、命名空间和 frame id：
-
-| 输入 | 输出 |
-| --- | --- |
-| `My Robot 01` | `My_Robot_01` |
-| `4WD Rover #1` | `_4WD_Rover_1` |
-| 空字符串 | `ubot` |
-| `机器人` | `_` |
-
-规则：只保留 `A-Z`、`a-z`、`0-9` 和下划线，其余字符（包括中文）换成下划线；连续的下划线合并为一个；首字符是数字时前面加一个下划线；只有输入为空时才返回 `ubot`，全是中文这类非 ASCII 字符的输入会变成 `_`。
+`Sanitize ROS Name` 的规则与 uBotCore 的 `UBot::Identity::SanitizeNameToken` 相同，输入输出的例子见[标识与命名](/concepts/identity/)。
 
 ## 关键属性
 
-这个库没有可设置的属性，下表是节点和转换规则。ROS 转 UE 的公式与 UE 转 ROS 相同，只是位置的单位反过来换算（米到厘米，乘 100）。
+这个库没有可设置的属性，下表是节点和转换规则。右手系转 UE 的公式与 UE 转右手系相同，只是位置的单位反过来换算（米到厘米，乘 100）。
 
-| 数据 | 节点 | UE 转 ROS |
+| 数据 | 节点 | UE 转右手系 |
 | --- | --- | --- |
-| 位置（cm 到 m） | `UE To ROS Position`、`ROS To UE Position` | `(x, -y, z) / 100` |
-| 线性量（线速度、加速度、已是米的点） | `UE To ROS Vector`、`ROS To UE Vector` | `(x, -y, z)` |
-| 角速度、力矩（rad/s） | `UE To ROS Angular Velocity`、`ROS To UE Angular Velocity` | `(-x, y, -z)` |
-| 旋转四元数 | `UE To ROS Rotation`、`ROS To UE Rotation` | `(x, y, z, w)` 变为归一化的 `(-x, y, -z, w)` |
-| 刚体变换 | `UE To ROS Transform`、`ROS To UE Transform` | 旋转同上，平移从 cm 换成 m，缩放丢弃 |
-| 航向角、扫描角、偏航角速度（rad、rad/s） | `UE To ROS Yaw`、`ROS To UE Yaw` | `ROS = -UE` |
-| 相机光学系 | `Camera Link To Optical Rotation`、`Get Optical Frame Suffix` | 光学系相对 link 系的旋转为 `(x=-0.5, y=0.5, z=-0.5, w=0.5)`，frame id 后缀为 `_optical` |
-| 时间 | `Seconds To ROS Time`、`ROS Time To Seconds` | 秒与 (`Sec`, `Nanosec`) 互转 |
-| 名称 | `Sanitize ROS Name` | 见上一节 |
+| 位置（cm 到 m） | `UE To Right-Handed Position`、`Right-Handed To UE Position` | `(x, -y, z) / 100` |
+| 线性量（线速度、加速度、已是米的点） | `UE To Right-Handed Vector`、`Right-Handed To UE Vector` | `(x, -y, z)` |
+| 角速度、力矩（rad/s） | `UE To Right-Handed Angular Velocity`、`Right-Handed To UE Angular Velocity` | `(-x, y, -z)` |
+| 旋转四元数 | `UE To Right-Handed Rotation`、`Right-Handed To UE Rotation` | `(x, y, z, w)` 变为归一化的 `(-x, y, -z, w)` |
+| 刚体变换 | `UE To Right-Handed Transform`、`Right-Handed To UE Transform` | 旋转同上，平移从 cm 换成 m，缩放丢弃 |
+| 航向角、扫描角、偏航角速度（rad、rad/s） | `UE To Right-Handed Yaw`、`Right-Handed To UE Yaw` | `右手系 = -UE` |
+
+### 已弃用的旧节点
+
+uBotCore 0.1.2 及更早的版本里，这 12 个节点叫 `UE To ROS …` 和 `ROS To UE …`。0.1.3 起它们已弃用，结果与新节点完全相同，编译时会提示换成对应的新节点。
+
+新名字就是把旧名字里的 `ROS` 换成 `Right-Handed`：`UE To ROS Position` 对应 `UE To Right-Handed Position`，`ROS To UE Yaw` 对应 `Right-Handed To UE Yaw`。
 
 ## 输出与事件
 
-所有节点都是纯函数，没有执行引脚，也没有事件。接上输入就能得到输出，位置和变换的输出单位是米（UE 转 ROS）或厘米（ROS 转 UE）。
+所有节点都是纯函数，没有执行引脚，也没有事件。接上输入就能得到输出，位置和变换的输出单位是米（UE 转右手系）或厘米（右手系转 UE）。
 
 ## 注意事项
 
+- 这些节点只做数学换算，不依赖 ROS，也不需要 uBotROS。
 - 变换的缩放被丢弃，输出的缩放恒为 1。
 - 四元数转换后会归一化；退化的输入（零长度）得到单位四元数。
 - `Seconds To ROS Time` 遇到负数或非有限值，输出 `(0, 0)`；秒数超出 int32 范围时，`Sec` 取 2147483647，`Nanosec` 取 999999999。
@@ -121,5 +132,6 @@ notes:
 ## 相关参考
 
 - [UBot Conventions Library](/reference/ubotcore/uubotconventionslibrary/)：全部节点和引脚。
-- [坐标系与单位](/concepts/coordinates-and-units/)：UE 和 ROS 坐标系的区别，以及 uBot 输出用的单位。
+- [坐标系与单位](/concepts/coordinates-and-units/)：UE 与右手系坐标系的区别，以及 uBot 输出用的单位。
+- [标识与命名](/concepts/identity/)：名字净化的规则。
 - [TF 与 /clock](/ros/tf-and-clock/)：uBotROS 发布 TF 和时间的方式。

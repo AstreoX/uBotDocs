@@ -118,7 +118,7 @@ notes:
 - 位姿传感器不做瞬移检测：Actor 被瞬间移走时，下一个样本的速度会很大。
 - `Noise Enabled` 对位姿传感器无效，输出始终是真值。
 - 参考组件的缩放不是 1 时，相对位置也会被缩放。尽量选没有缩放的组件作参考。
-- 数据保持 UE 的轴向，位置从厘米换算成米。需要 ROS 约定时，用 `UE To ROS Vector`、`UE To ROS Rotation` 和 `UE To ROS Angular Velocity`，见[坐标系与单位](/concepts/coordinates-and-units/)。
+- 数据保持 UE 的轴向，位置从厘米换算成米。需要右手系（ROS、MuJoCo 等用的坐标系）时，用 `UE To Right-Handed Vector`、`UE To Right-Handed Rotation` 和 `UE To Right-Handed Angular Velocity`，见[坐标约定库](/core/conventions/)。
 - 所有属性在蓝图里只读，要在「Details」面板里设置。
 
 ## 相关参考
@@ -126,5 +126,5 @@ notes:
 - [uBot Pose Sensor](/reference/ubotsensor/uubotposesensorcomponent/)：全部节点和属性。
 - [UBot Pose Sensor Data](/reference/ubotsensor/structs/fubotposesensordata/)：每个字段的含义。
 - [EUBot Pose Reference Frame](/reference/ubotsensor/enums/eubotposereferenceframe/)：参考系枚举。
-- [UBot Conventions Library](/reference/ubotcore/uubotconventionslibrary/)：UE 与 ROS 之间的换算节点。
+- [UBot Conventions Library](/reference/ubotcore/uubotconventionslibrary/)：UE 与右手系之间的换算节点。
 - [传感器通用用法](/sensor/basics/)：启动、停止、手动采样和通用事件。

@@ -16,7 +16,7 @@ uBotMuJoCo 是规划中的物理插件，目前尚未发布。
 
 UE 自带的 Chaos 是游戏物理，接触、摩擦和关节的精度不够做抓取这类任务。uBotMuJoCo 让 MuJoCo 计算机器人的物理，算完把位姿写回 UE，画面、传感器和 ROS 2 照常工作。
 
-Chaos 仍是默认的物理引擎，不会被替换：MuJoCo 只负责交给它的物体，场景里其他物体还由 Chaos 计算。用的是原版 UE 5.5，不需要改引擎。
+Chaos 仍是默认的物理引擎，不会被替换：MuJoCo 只负责交给它的物体，场景里其他物体还由 Chaos 计算。交给谁、何时步进由 [uBotPhysics](/physics/) 负责，用的是原版 UE 5.5，不需要改引擎。
 
 在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
 
@@ -31,23 +31,25 @@ Chaos 仍是默认的物理引擎，不会被替换：MuJoCo 只负责交给它�
 
 | 环节 | 做法 |
 | --- | --- |
-| 步进 | 跟随 uBotCore 的[仿真时钟](/concepts/clock-and-scheduling/)，每个 UE 帧跑几个 MuJoCo 子步。暂停时不步进，单步时推进一帧 |
-| 每帧顺序 | 时钟推进 → 写入控制指令 → MuJoCo 子步 → 位姿写回 UE 组件 → 传感器采样，传感器读到的总是这一帧算完的状态 |
+| 后端 | uBotMuJoCo 是 uBotPhysics 的一个物理后端：在 uBotPhysics 声明的扩展点 `UBotPhysics.Backend` 注册，使用时在绑定组件 `uBot Physics Binding` 的 `Backend` 里选它。一个组件只归一个后端 |
+| 步进 | 由 uBotPhysics 按 uBotCore 的[仿真时钟](/concepts/clock-and-scheduling/)驱动，MuJoCo 用自己的固定步长追赶仿真时间，一帧可能跑几步。暂停时不步进，恢复后不补跑 |
+| 每帧顺序 | 时钟推进 → MuJoCo 步进 → 位姿写回 UE 组件 → Chaos 模拟其余物体 → 传感器采样，传感器读到的总是这一帧算完的状态 |
 | 写回 UE | 由 MuJoCo 计算的组件不再由 Chaos 模拟，只接收位姿；保留查询用的碰撞，相机和激光雷达照常看得到 |
-| 场景同步 | 静止的物体（地面、墙、桌子）复制一份碰撞体给 MuJoCo；Chaos 里移动的物体作为运动学物体同步过去，它能推动 MuJoCo 里的物体，自己不受反作用 |
-| 坐标 | MuJoCo 和 ROS 一样是右手系、Z 轴朝上、单位米，沿用 uBotCore 现有的 UE 与 ROS 转换，见[坐标系与单位](/concepts/coordinates-and-units/) |
+| 场景 | uBotPhysics 第一版不把 UE 的场景几何交给后端：MuJoCo 里的物体只和 MuJoCo 模型里的东西接触，UE 里的地面和墙不会自动出现在 MuJoCo 里 |
+| 坐标 | MuJoCo 是右手系、Z 轴朝上、单位米，模型的 X 轴朝前时与 ROS 的 FLU 相同。所以直接用 uBotCore 中立的坐标约定（`UBot::RightHanded`，蓝图是 `UE To Right-Handed …` 节点），不经过 ROS，见[坐标系与单位](/concepts/coordinates-and-units/) |
 | 模型 | 从 MJCF 或 URDF 导入，同时生成 UE 里的显示模型和 MuJoCo 模型 |
 
 使用时有两条限制：
 
-- 会互相碰撞的物体要放在同一个物理引擎里。比如机械臂和它要抓的物体都交给 MuJoCo；跨引擎的接触只能单向近似，不在计划之内。
+- 会互相碰撞的物体要交给同一个后端。比如机械臂和它要抓的物体都交给 MuJoCo；跨引擎只有单向作用：交给 MuJoCo 的物体在 Chaos 里是运动学体，能推动 Chaos 里的物体，反过来不行。
 - UE 里一次仍然只运行一个场景，大规模并行训练放在纯 MuJoCo 里做。同一份 MJCF 模型在 MuJoCo 里训练、在 UE 里加上画面和传感器验证，两边用的是同一个模型。
 
-尚未确定：组件和蓝图类的名称与属性，关节级指令（位置、速度、力矩）的接口，支持的 MuJoCo 版本。
+尚未确定：组件和蓝图类的名称与属性，关节级指令（位置、速度、力矩）的接口，MuJoCo 里的地面和桌子怎么提供，支持的 MuJoCo 版本。
 
 ## 与现有插件的关系
 
-- uBotCore：按包索引，它只依赖 uBotCore 0.1.x。计划在 uBotCore 的扩展点注册机制里声明一个“物理后端”扩展点，以后别的物理引擎也接在这里。
+- uBotPhysics：按包索引，它依赖 uBotPhysics 0.1.x。“物理后端”扩展点 `UBotPhysics.Backend`、绑定组件、按仿真时钟步进和位姿写回都由 uBotPhysics 提供，uBotMuJoCo 只负责 MuJoCo 这一个后端；以后别的物理引擎也接在同一个扩展点，见 [uBotPhysics](/physics/)。
+- uBotCore：按包索引，它依赖 uBotCore 0.1.3 或更新的 0.1.x，用到里面的仿真时钟、执行器接口和坐标约定。
 - uBotSensor：传感器从组件位姿计算速度和加速度，不读物理引擎，所以装在 MuJoCo 机器人上的传感器不用改。计划再加一个可选的数据来源，让 IMU 直接读 MuJoCo 算出的加速度。
 - uBotROS：机器人实现 `UBot Velocity Commandable` 后，ROS 2 的 `cmd_vel` 就能驱动它，uBotROS 不用改，见[接收 cmd_vel](/ros/cmd-vel/)。
 - uBotLearning：Learning Agents 在 UE 里训练；uBotMuJoCo 走的是另一条路，在纯 MuJoCo 里训练，在 UE 里验证。

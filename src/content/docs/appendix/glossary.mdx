@@ -50,10 +50,11 @@ sidebar:
 
 | 中文 | English | 说明 | 详见 |
 | --- | --- | --- | --- |
-| 左手系、右手系 | Left-handed、right-handed | UE 是左手系，ROS 是右手系 | [坐标系与单位](/concepts/coordinates-and-units/) |
+| 左手系、右手系 | Left-handed、right-handed | UE 是左手系；ROS、MuJoCo 等外部世界多用右手系 | [坐标系与单位](/concepts/coordinates-and-units/) |
+| FLU | Forward-Left-Up | 右手系的一种取法：X 前、Y 左、Z 上，单位米。uBotCore 的坐标约定（`UBot::RightHanded`）换算到的就是它 | [坐标系与单位](/concepts/coordinates-and-units/) |
 | REP-103 | REP-103 | ROS 的坐标和单位约定：右手系，X 前、Y 左、Z 上，单位米 | [坐标系与单位](/concepts/coordinates-and-units/) |
 | 机体系 | Body frame | 固定在机体上的坐标系，速度指令在机体系下给出 | [插件之间怎么对接](/concepts/interfaces/) |
-| 光学系 | Optical frame | 相机图像用的坐标系：z 前、x 右、y 下，frame id 带后缀 `_optical` | [坐标系与单位](/concepts/coordinates-and-units/) |
+| 光学系 | Optical frame | 相机图像用的坐标系：z 前、x 右、y 下，frame id 带后缀 `_optical`；换算节点在 uBotROS | [坐标系与单位](/concepts/coordinates-and-units/) |
 | 极向量、轴向量 | Polar vector、axial vector | 位置、速度是极向量，角速度、力矩是轴向量，镜像时变换规则不同 | [坐标系与单位](/concepts/coordinates-and-units/) |
 | 四元数 | Quaternion | 表示旋转的四个分量 `(x, y, z, w)` | [坐标系与单位](/concepts/coordinates-and-units/) |
 | 比力 | Specific force | IMU 输出的线加速度，静止时约为 +9.8 m/s²（World 的重力加速度），方向是世界向上 | [IMU 传感器](/sensor/imu/) |
@@ -63,7 +64,7 @@ sidebar:
 | 机器人 id | Robot Id | `uBot Identity` 组件里机器人的名字，留空时用 Actor 名 | [标识与命名](/concepts/identity/) |
 | 命名空间 | Namespace | ROS 话题的前缀，留空时由 `Robot Id` 净化得到 | [标识与命名](/concepts/identity/) |
 | 基坐标系 | Base frame | 机体坐标系的名字，默认 `base_link` | [标识与命名](/concepts/identity/) |
-| 净化 | Sanitize | 把名字改成合法的 ROS 名称，只保留字母、数字和下划线（`Sanitize ROS Name`） | [标识与命名](/concepts/identity/) |
+| 净化 | Sanitize | 把名字改成合法的名字片段，只保留字母、数字和下划线（C++ 是 `UBot::Identity::SanitizeNameToken`，ROS 里的蓝图节点是 `Sanitize ROS Name`） | [标识与命名](/concepts/identity/) |
 
 ## 接口与组件
 
@@ -74,7 +75,7 @@ sidebar:
 | 速度指令 | Velocity command | 机体系下的线速度和角速度请求（`UBot Velocity Command`） | [插件之间怎么对接](/concepts/interfaces/) |
 | 感知介质 | Perception medium | 烟、雾等影响感知的介质，由若干球形单元组成 | [感知介质](/sensor/medium/) |
 | Identity 组件 | uBot Identity | 给机器人命名的组件，所有字段可选 | [Identity 组件](/core/identity/) |
-| 物理后端 | Physics backend | 为物体计算物理的引擎。默认是 UE 自带的 Chaos；规划中的 uBotMuJoCo 用 MuJoCo 计算一部分物体，再把位姿写回 UE | [uBotMuJoCo](/mujoco/) |
+| 物理后端 | Physics backend | 为物体计算物理的引擎，在 uBotPhysics 声明的扩展点 `UBotPhysics.Backend` 注册。默认是 UE 自带的 Chaos；被绑定的物体交给指定的后端，后端算完把位姿写回 UE | [uBotPhysics](/physics/) |
 
 ## 传感器
 
