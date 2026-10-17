@@ -1,0 +1,129 @@
+---
+title: 绑定与所有权
+description: 把 Actor 自己的组件交给物理后端：怎样绑定、哪些组件可以绑定、绑定的检查顺序和状态，以及解绑后物体的去向。
+pageKind: feature
+sidebar:
+  order: 20
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+用 [`uBot Physics Binding`](/reference/ubotphysics/uubotphysicsbindingcomponent/) 把 Actor 自己的组件交给某个物理后端，并在蓝图里读取绑定是否成功。
+
+## 快速用法
+
+绑定把一个或几个 UE 组件交给某个后端：从绑定到解绑，这些组件由后端模拟，Chaos 不再模拟它们。默认在播放开始时自动绑定；关掉 `Bind on Begin Play` 后，在合适的时机自己调用 [`Bind Physics Bodies`](/reference/ubotphysics/uubotphysicsbindingcomponent/#Bind)，失败时用 [`Get Physics Binding Status`](/reference/ubotphysics/uubotphysicsbindingcomponent/#GetBindingStatus) 和 [`Get Physics Binding Error`](/reference/ubotphysics/uubotphysicsbindingcomponent/#GetBindingError) 查原因：
+
+```blueprint
+caption: 关掉 Bind on Begin Play 后自己绑定，失败时在屏幕上提示
+nodes:
+  A: AActor.ReceiveBeginPlay
+  V: { var: PhysicsBinding, class: UUBotPhysicsBindingComponent }
+  B: UUBotPhysicsBindingComponent.Bind
+  C: K2Node_IfThenElse
+  P: { ref: UKismetSystemLibrary.PrintString, set: { InString: 绑定失败 } }
+  S: UUBotPhysicsBindingComponent.GetBindingStatus
+wires:
+  - A.then -> B.execute
+  - V.PhysicsBinding -> B.Target
+  - B.then -> C.execute
+  - B.ReturnValue -> C.Condition
+  - C.False -> P.execute
+  - V.PhysicsBinding -> S.Target
+notes:
+  S: 返回一个枚举：`Unbound`、`Bound`、`BackendMissing` 或 `Rejected`，用引擎的 `Switch on EUBot Physics Binding Status` 分支。
+```
+
+### 哪些组件可以绑定
+
+| 规则 | 说明 |
+| --- | --- |
+| 一个组件只归一个后端 | 没有绑定的组件归 Chaos；同一个组件不能出现在两个绑定里，也不能在同一个绑定里列两次 |
+| 只能绑定自己 Actor 的组件 | 绑定组件所在 Actor 的 Primitive 组件（网格、盒体、胶囊体等）。别的 Actor 的组件会被拒绝；要交出它们，给那个 Actor 自己加一个绑定组件 |
+| 必须是 `Movable` | 组件的 Mobility 要设为 `Movable` |
+| 已被别的状态源驱动的不能绑定 | 例如机体由载具自己的积分器驱动，并且实现了刚体状态源接口，如无人机的根组件 |
+| 全部成功，或全部回滚 | 任何一步失败，都不会有一个组件被交出 |
+
+只交出自己 Actor 的组件，是因为刚体状态源按组件所属的 Actor 和这个 Actor 的组件查找：绑定组件在同一个 Actor 上，传感器等才找得到它。
+
+## 步骤
+
+<Steps>
+
+1. **添加绑定组件**
+
+   在要交给后端的 Actor 蓝图里，点「Components」面板的「Add」，在「uBot」分类下选 `uBot Physics Binding`。
+
+2. **选后端和组件**
+
+   在「Details」面板里把 `Backend` 设为后端的名字，`Bodies` 留空（用 Actor 的根组件）或逐个选择要交出的组件。可用的名字用 [`Get uBot Physics Backend Names`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsBackendNames) 查询。
+
+3. **播放**
+
+   点「Play」。`Bind on Begin Play` 默认开启，播放开始时自动绑定；绑定成功后，这个组件由后端模拟，Chaos 不再模拟它。
+
+4. **检查结果**
+
+   用 `Get Physics Binding Status` 读状态；不是 `Bound` 时，`Get Physics Binding Error` 给出原因。绑定失败还会显示在 uBot Manager 和编辑器 uBot 面板的「Problems」里。
+
+</Steps>
+
+## 关键属性
+
+| 属性 | 默认值 | 作用 |
+| --- | --- | --- |
+| `Backend` | `None` | 模拟这些物体的后端名，调用 `Bind Physics Bodies` 时读取 |
+| `Bodies` | 空 | 要交出的组件，每一项是一个 [`UBot Physics Body Binding`](/reference/ubotphysics/structs/fubotphysicsbodybinding/)：`Component` 选组件，`Body Name` 是它在后端模型里的名字（`None` 由后端自己决定）。留空表示 Actor 的根组件，它必须是 Primitive 组件 |
+| `Bind on Begin Play` | 开 | 关闭后自己调用 `Bind Physics Bodies`，例如等后端的模型准备好之后 |
+
+## 输出与事件
+
+绑定组件没有事件，下面的节点都在 `uBot Physics Binding` 或 [`uBot Physics Library`](/reference/ubotphysics/uubotphysicslibrary/) 上：
+
+| 节点 | 作用 |
+| --- | --- |
+| [`Bind Physics Bodies`](/reference/ubotphysics/uubotphysicsbindingcomponent/#Bind) | 把所有物体交给后端，要么全部成功要么全部不交；已经绑定时直接返回 `true` |
+| [`Unbind Physics Bodies`](/reference/ubotphysics/uubotphysicsbindingcomponent/#Unbind) | 取回物体并恢复 Chaos 模拟；同时清除失败的绑定状态和对应的运行时问题 |
+| [`Get Physics Binding Status`](/reference/ubotphysics/uubotphysicsbindingcomponent/#GetBindingStatus) | 返回 [`EUBot Physics Binding Status`](/reference/ubotphysics/enums/eubotphysicsbindingstatus/)：`Unbound`、`Bound`、`BackendMissing` 或 `Rejected` |
+| [`Get Physics Binding Error`](/reference/ubotphysics/uubotphysicsbindingcomponent/#GetBindingError) | 最近一次绑定失败的原因；其他情况为空 |
+| [`Get Bound Physics Components`](/reference/ubotphysics/uubotphysicsbindingcomponent/#GetBoundComponents) | 已交出的组件，未绑定时为空 |
+| [`Get Body Physics Backend`](/reference/ubotphysics/uubotphysicslibrary/#GetBodyPhysicsBackend) | 模拟某个组件的后端名（`uBot Physics Library`）；`None` 表示 Chaos |
+
+绑定状态：
+
+| 状态 | 含义 |
+| --- | --- |
+| `Unbound` | 没有绑定：还没调用过 `Bind Physics Bodies`，或已经 `Unbind Physics Bodies` |
+| `Bound` | 每个物体都已交给后端 |
+| `BackendMissing` | 最近一次绑定失败：没有这个名字的后端，或后端在绑定后被注销 |
+| `Rejected` | 最近一次绑定失败：某个组件或后端拒绝了，没有任何物体被交出 |
+
+## 注意事项
+
+### 绑定的检查顺序
+
+绑定按下面的顺序检查，失败时不会留下半截结果：
+
+| 顺序 | 检查 | 失败时的状态 |
+| --- | --- | --- |
+| 1 | 后端的工厂已注册 | `BackendMissing`，错误里列出已注册的后端名 |
+| 2 | 每个组件都是自己 Actor 的 Primitive 组件，是 `Movable`，没有被别的绑定占用，没有别的刚体状态源在驱动，也没有重复列出 | `Rejected`，错误说明是哪个组件、为什么 |
+| 3 | 后端为这个世界创建求解器，固定步长在 0.0001 s 到 100 s 之间 | `Rejected` |
+| 4 | 求解器逐个接受组件：先关掉组件的物理模拟，再交给求解器 | `Rejected`；已交出的全部取回，模拟开关恢复原样 |
+
+失败还会作为运行时问题（`physicsBindingFailed`，级别 Warning）显示在 uBot Manager 里，也列在编辑器 uBot 面板的「Problems」里，见 [Package 查询与编辑器面板](/core/packages/)。下一次成功的绑定、解绑或结束播放时，问题被清除。
+
+### 绑定之后
+
+- 被绑定的组件在 Chaos 里是运动学体：物理模拟关闭，碰撞设置不变。射线检测、传感器和 Chaos 的接触仍然能看到它，它也能推动 Chaos 里的动态物体。
+- 解绑后，原来由 Chaos 模拟的组件重新开启模拟，并带上后端最后一步的线速度和角速度；原来就不模拟的保持不模拟。结束播放、销毁绑定组件和世界结束时也会自动解绑。
+- 后端被注销（后端插件卸载，或换成另一个同名的工厂）时，它的物体按解绑的方式回到 Chaos，绑定状态变为 `BackendMissing`；后端重新注册后再调用 `Bind Physics Bodies`。
+- 后端的物体和 Chaos 的物体之间只有单向作用：后端的物体能推动 Chaos 的物体，反过来不行。需要互相动态接触的物体要交给同一个后端。
+- 后端什么时候步进、位姿什么时候写回组件，见[每帧时序与步进](/physics/stepping/)。
+
+## 相关参考
+
+- [uBot Physics Binding](/reference/ubotphysics/uubotphysicsbindingcomponent/) 和 [uBot Physics Library](/reference/ubotphysics/uubotphysicslibrary/)：全部节点和属性。
+- [UBot Physics Body Binding](/reference/ubotphysics/structs/fubotphysicsbodybinding/) 和 [EUBot Physics Binding Status](/reference/ubotphysics/enums/eubotphysicsbindingstatus/)：`Bodies` 的一项和绑定状态。
+- [绑定物体的刚体状态](/physics/body-state/)：绑定组件怎样向传感器提供状态。
+- [无人机的刚体状态](/aerial/body-state/)：为什么无人机的根组件不能绑定给后端。

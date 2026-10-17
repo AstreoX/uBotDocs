@@ -1,0 +1,151 @@
+---
+title: 给后端作者
+description: 用 C++ 写一个物理后端：在扩展点 UBotPhysics.Backend 注册工厂，实现求解器，声明能力并接收场景几何，以及回调的调用约定。
+pageKind: feature
+graph: false
+sidebar:
+  order: 60
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+用 C++ 写一个物理后端：在扩展点 `UBotPhysics.Backend` 注册一个工厂，让绑定组件按名字把物体交给你的求解器。
+
+后端是依赖 uBotCore 和 uBotPhysics 的独立插件，uBotPhysics 自己不带物理引擎。接口是实验性的，只能在 C++ 里实现，在小版本之间可能变化。
+
+## 步骤
+
+<Steps>
+
+1. **声明依赖**
+
+   在后端模块的 `Build.cs` 里加入 `UBotCore` 和 `UBotPhysics`，并在 `.uplugin` 里依赖这两个插件。`.uplugin` 怎么写见[编写自己的 uBot Package](/develop/package-authoring/)。
+
+   ```csharp
+   PublicDependencyModuleNames.AddRange(new[]
+   {
+       "Core", "CoreUObject", "Engine", "UBotCore", "UBotPhysics"
+   });
+   ```
+
+2. **实现工厂**
+
+   工厂实现 `IUBotPhysicsBackendFactory`：`GetExtensionName` 给出后端名，`GetCapabilities` 声明能力，`CreateSolver` 为每个世界创建求解器。后端不能在这个世界运行时，`CreateSolver` 返回 `nullptr`，并自己写日志。
+
+   ```cpp
+   class FMyBackendFactory final : public IUBotPhysicsBackendFactory
+   {
+   public:
+       virtual FName GetExtensionName() const override { return TEXT("MyBackend"); }   // 绑定组件里 Backend 填的名字
+       virtual FUBotPhysicsCapabilities GetCapabilities() const override;
+       virtual TSharedPtr<IUBotPhysicsSolver> CreateSolver(UWorld& World) override;
+   };
+   ```
+
+3. **实现求解器**
+
+   求解器是后端在一个世界里的模拟，实现 `IUBotPhysicsSolver`。`UpdateScene` 是可选的，默认什么也不做。
+
+   ```cpp
+   class FMySolver final : public IUBotPhysicsSolver
+   {
+   public:
+       virtual int32 AddBody(const FUBotPhysicsBodyDesc& Desc, FText& OutError) override;
+       virtual void RemoveBody(int32 BodyHandle) override;
+       virtual double GetStepSeconds() const override;
+       virtual void Step(double StepEndTimeSeconds) override;
+       virtual bool GetBodyState(int32 BodyHandle, FUBotBodyState& OutState) const override;
+       virtual void UpdateScene(const FUBotPhysicsSceneUpdate& Update) override;
+   };
+   ```
+
+4. **注册和注销**
+
+   注册和注销写在后端模块的启动和关闭函数里。第二个参数是后端插件的名字，后端名由工厂的 `GetExtensionName` 给出：
+
+   ```cpp
+   void FMyBackendModule::StartupModule()
+   {
+       FUBotExtensionRegistry::Get().RegisterExtension(
+           UBot::Physics::BackendExtensionPoint, TEXT("MyBackend"), MakeShared<FMyBackendFactory>());
+   }
+
+   void FMyBackendModule::ShutdownModule()
+   {
+       FUBotExtensionRegistry::Get().UnregisterAllFromPackage(TEXT("MyBackend"));
+   }
+   ```
+
+5. **需要场景时声明能力**
+
+   后端想收到关卡里其余的碰撞体，就在 `GetCapabilities` 里把 `bStaticSceneGeometry`（静态物体）或 `bKinematicForeignBodies`（运动学物体）设为 true，并实现 `UpdateScene`。哪些组件会交给后端，见[场景几何](/physics/scene/)。
+
+</Steps>
+
+## 关键属性
+
+| 接口 | 作用 |
+| --- | --- |
+| 扩展点 `UBotPhysics.Backend` | C++ 里是 `UBot::Physics::BackendExtensionPoint`；工厂的扩展名就是后端名，绑定组件的 `Backend` 填的就是它 |
+| `IUBotPhysicsBackendFactory` | `GetExtensionName` 给出后端名，`GetCapabilities` 声明能力，`CreateSolver(UWorld&)` 为每个世界创建求解器 |
+| `IUBotPhysicsSolver` | 后端在一个世界里的模拟：`AddBody`、`RemoveBody`、`GetStepSeconds`、`Step`、`GetBodyState`，以及可选的 `UpdateScene` |
+| [`FUBotPhysicsCapabilities`](/reference/ubotphysics/structs/fubotphysicscapabilities/) | 后端声明自己真的支持的能力，默认全是 `false`，字段只会追加；`bStaticSceneGeometry` 和 `bKinematicForeignBodies` 决定它是否收到场景几何 |
+| `UBot::Physics::GetCollisionShapes` | 后端给自己的物体取形状，规则与场景几何的导出相同 |
+| `UBot::Physics::FindBackendFactory`、`GetBackendNames` | 查询已注册的后端 |
+| `UBot::Physics::NoSceneTag` | 标签 `UBotPhysics.NoScene`，加在组件或 Actor 上就不会进入任何后端的场景 |
+
+能力字段对应蓝图里 `UBot Physics Capabilities` 的 12 个布尔值，蓝图用 [`Get uBot Physics Backend Capabilities`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsBackendCapabilities) 查询，已注册的后端名用 [`Get uBot Physics Backend Names`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsBackendNames) 查询。
+
+## 输出与事件
+
+求解器的回调都在游戏线程上被子系统调用：
+
+| 回调 | 约定 |
+| --- | --- |
+| `AddBody` | 返回大于等于 0 的句柄，或返回 `INDEX_NONE` 并设置 `OutError`，错误会出现在绑定的错误里。`FUBotPhysicsBodyDesc` 带组件、`Body Name`、发起绑定的绑定组件（可以转成后端自己的子类读模型设置）和组件在交出时的世界变换（UE 世界，厘米）。交给求解器时，组件已经是运动学体 |
+| `RemoveBody` | 释放一个物体，它的句柄随即失效 |
+| `GetStepSeconds` | 固定步长，求解器生命期内不变，范围 0.0001 s 到 100 s；超出范围的求解器在创建时被拒绝 |
+| `Step` | 前进一步。`StepEndTimeSeconds` 是这一步结束时的 uBot 仿真时间，从不晚于当前仿真时间 |
+| `GetBodyState` | 最近一步结束时的状态，UE 世界轴、SI 单位；第一步之前或句柄未知时返回 `false`。子系统把 `TimestampSeconds` 设为这一步结束的时间，求解器没有设置 `Source` 时设为后端名 |
+| `UpdateScene` | 只有能力声明了场景才会被调用，每帧最多一次，在这一帧的 `Step` 之前 |
+
+`FUBotPhysicsSceneUpdate` 的字段：
+
+| 字段 | 内容 |
+| --- | --- |
+| `SimTimeSeconds` | 这一帧的仿真时间 |
+| `Removed` | 离开这个求解器场景的物体 ID，先于 `Added` 处理 |
+| `Added` | 新进入场景的物体：ID、组件、静态还是运动学、物体坐标系在世界里的变换、形状、摩擦和弹性 |
+| `KinematicPoses` | 更新之后这个求解器场景里所有运动学物体（刚加入的也在内）当前的位姿 |
+
+- ID 只指向一个组件的一次导出：组件的 Body Setup、世界缩放或 Mobility 变了，旧 ID 先随 `Removed` 离开，新的导出带新 ID 加入。
+- 后端自己的物体不会出现在它的场景里，附着在它们下面的组件也不会。
+- 后端被注销后重新注册，新的求解器第一次更新带整个场景。
+
+形状 `FUBotPhysicsShape` 的单位是米，轴是 UE 世界轴，已经含组件的世界缩放，变换里没有缩放：
+
+| 类型 | 字段 |
+| --- | --- |
+| `Sphere` | `Size.X` 是半径 |
+| `Box` | `Size` 是半边长 |
+| `Capsule` | `Size.X` 是半径，`Size.Z` 是两个球心距离的一半，轴是形状自己的 Z |
+| `Convex` | `Vertices` 是凸包的点集 |
+| `TriangleMesh` | `Vertices` 和 `Indices`（每三个下标一个三角形） |
+
+`LocalTransform` 是形状相对物体坐标系的变换，凸包和三角网格是单位变换。
+
+## 注意事项
+
+- 所有调用都在游戏线程。求解器由世界子系统持有，世界结束时释放。能力在创建求解器时从工厂读取一次，要换能力就注册一个新的工厂。
+- 工厂和求解器的回调不能同步地绑定或解绑物体，也不能注册或注销后端，直接调用和经由你调用的代码间接触发都一样。子系统对几种已知情况做了兜底，但这不是约定，行为没有保证；需要时等回调返回后再做，例如放到之后某一帧的 Tick 里。
+- 注销工厂要在 `ShutdownModule` 里做，不要让工厂比它的代码活得更久。注销时子系统会取回这个后端的所有物体，对每个物体调用 `GetBodyState` 和 `RemoveBody`，所以那时后端的代码必须还在。
+- 后端内部用右手系时，用 uBotCore 的 `UBot::RightHanded` 换算，见[坐标系与单位](/concepts/coordinates-and-units/)。
+- 控制不在这个接口里。后端自己的组件实现 uBotCore 的执行器接口（速度、姿态、电机等指令），把指令直接送给自己的求解器，见[插件之间怎么对接](/concepts/interfaces/)。
+
+## 相关参考
+
+- [uBotPhysics 仓库](https://github.com/AstreoX/uBotPhysics)：完整的接口说明在 `docs/BACKENDS.md`，公开头文件是 `UBotPhysicsBackend.h`、`UBotPhysicsScene.h` 和 `UBotPhysicsTypes.h`。
+- [UBot Physics Capabilities](/reference/ubotphysics/structs/fubotphysicscapabilities/)：12 个能力字段。
+- [编写自己的 uBot Package](/develop/package-authoring/)：后端插件的 `.uplugin` 怎么写。
+- [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/)：同样用扩展点的例子。
+- [绑定与所有权](/physics/binding/) 和 [每帧时序与步进](/physics/stepping/)：子系统怎样绑定物体、怎样步进你的求解器。

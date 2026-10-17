@@ -1,0 +1,97 @@
+---
+title: uBotPhysics 常见问题
+description: uBotPhysics 的常见问题，按主题分组，每题给出答案和链接。
+pageKind: faq
+sidebar:
+  order: 70
+---
+
+uBotPhysics 的常见问题按主题分组，每题给出简短回答和详细说明的链接。
+
+## 安装与使用
+
+### 装了 uBotPhysics，物体为什么还是由 Chaos 模拟？
+
+没有绑定的物体都归 Chaos，uBotPhysics 自己不带物理引擎。给 Actor 加 `uBot Physics Binding` 并选一个后端后，物体才由后端计算。见[绑定与所有权](/physics/binding/)。
+
+### 没有后端插件会怎样？
+
+绑定会失败，状态是 `BackendMissing`，物体仍由 Chaos 模拟。目前还没有已发布的后端插件，uBotMuJoCo 等后端仍在规划中；要自己写后端，见[给后端作者](/physics/backend-authors/)。
+
+### 传感器和 ROS 要改吗？
+
+不用。传感器和 ROS 端只读组件的位姿，物体由哪个后端计算对它们没有影响。见 [uBotPhysics 概述](/physics/#与其他插件的关系)。
+
+## 绑定
+
+### 状态是 `BackendMissing` 怎么办？
+
+`Backend` 没填或拼错，或后端插件没有启用。错误里列出了已注册的后端名，用 [`Get uBot Physics Backend Names`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsBackendNames) 也能查。见[绑定的检查顺序](/physics/binding/#绑定的检查顺序)。
+
+### 状态是 `Rejected`，错误说不是 `Movable`？
+
+被绑定的组件的 Mobility 必须是 `Movable`。见[哪些组件可以绑定](/physics/binding/#哪些组件可以绑定)。
+
+### 错误说组件属于另一个 Actor？
+
+绑定组件只能交出自己 Actor 的组件。给那个 Actor 自己加一个绑定组件。见[哪些组件可以绑定](/physics/binding/#哪些组件可以绑定)。
+
+### 错误说组件已经被别的状态源驱动？
+
+这个组件已经由别的刚体状态源驱动，例如无人机的根组件，不能再交给后端。见[无人机的刚体状态](/aerial/body-state/)。
+
+### 错误说根组件不是 Primitive 组件？
+
+`Bodies` 为空时用的是根组件，它必须是网格、盒体之类的 Primitive 组件；或者在 `Bodies` 里指定别的组件。见[绑定与所有权](/physics/binding/#关键属性)。
+
+### 错误里有后端自己的原因？
+
+求解器的 `AddBody` 拒绝了这个物体，例如它的模型里没有 `Body Name` 这个名字。见[给后端作者](/physics/backend-authors/)。
+
+### 错误说该后端的求解器还在创建？
+
+后端自己的 `CreateSolver` 里调用了绑定。回调里不能重入，等它返回之后再绑定，见[给后端作者](/physics/backend-authors/#注意事项)。
+
+### 绑定成功但物体不动？
+
+后端的第一步在时钟启动后一个步长处结束，游戏暂停时也不步进。再看后端自己的指令是否送达。见[每帧时序与步进](/physics/stepping/#步进)。
+
+### 解绑后物体飞走？
+
+解绑会把后端最后一步的速度交给 Chaos，这是预期的。要让物体停下，先让后端停下再解绑。见[绑定之后](/physics/binding/#绑定之后)。
+
+## 步进与状态
+
+### `Get Dropped Physics Steps` 在增长怎么办？
+
+一帧需要的步数超过每帧上限：帧太长，或后端的步长太短。见[丢步](/physics/stepping/#丢步)。
+
+### 日志提示后端的状态不是有限值？
+
+后端的求解发散了。这个物体的位姿不会写回，组件停在上一个位姿。见[位姿回写](/physics/stepping/#位姿回写)。
+
+### Chaos 的物体为什么撞不动后端的物体？
+
+作用是单向的：后端的物体能推动 Chaos 的物体，反过来不行。需要互相动态接触的物体要交给同一个后端。见[绑定之后](/physics/binding/#绑定之后)。
+
+### 传感器读到的速度是差分还是真值？
+
+绑定的刚体提供刚体状态，uBotSensor 0.1.2 起位姿、里程计和 IMU 读真值。见[读取刚体状态](/sensor/body-state/)。
+
+## 场景
+
+### 后端为什么收不到场景更新？
+
+后端的能力要声明 `Static Scene Geometry` 或 `Kinematic Foreign Bodies`，求解器要持有至少一个物体，场景里要有符合条件的组件或运动学物体。见[场景几何](/physics/scene/)。
+
+### 某个组件为什么没有出现在后端的场景里？
+
+看它是否有物理碰撞、是否带 `UBotPhysics.NoScene` 标签、是不是这个后端自己的物体或附着在它下面，以及是不是不支持的类型（骨骼网格、实例化静态网格、地形）。有物理碰撞却没能导出的会计入 `Skipped Components`。见[场景几何](/physics/scene/#关键属性)。
+
+### 怎样不让后端看到某个物体？
+
+给组件的 `Component Tags`，或 Actor 的 `Tags`，加上标签 `UBotPhysics.NoScene`。见[场景几何](/physics/scene/)。
+
+### 运行中改了碰撞盒的大小，后端的场景为什么没变？
+
+形状在导出时只读取一次。切一下碰撞或缩放，让它重新导出。见[导出的形状](/physics/scene/#导出的形状)。

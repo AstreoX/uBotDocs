@@ -75,6 +75,7 @@ sidebar:
 | 速度指令 | Velocity command | 机体系下的线速度和角速度请求（`UBot Velocity Command`） | [插件之间怎么对接](/concepts/interfaces/) |
 | 感知介质 | Perception medium | 烟、雾等影响感知的介质，由若干球形单元组成 | [感知介质](/sensor/medium/) |
 | Identity 组件 | uBot Identity | 给机器人命名的组件，所有字段可选 | [Identity 组件](/core/identity/) |
+| 刚体状态源 | Body State Source | 移动一个物体并知道它真实状态的对象，比如无人机的 `Movement` 组件或物理后端的绑定；传感器据此直接读速度和加速度，不必对位姿做差分。接口 `IUBotBodyStateSource` 只能在 C++ 里实现 | [插件之间怎么对接](/concepts/interfaces/) |
 | 物理后端 | Physics backend | 为物体计算物理的引擎，在 uBotPhysics 声明的扩展点 `UBotPhysics.Backend` 注册。默认是 UE 自带的 Chaos；被绑定的物体交给指定的后端，后端算完把位姿写回 UE | [uBotPhysics](/physics/) |
 
 ## 传感器

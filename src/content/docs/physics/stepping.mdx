@@ -1,0 +1,63 @@
+---
+title: 每帧时序与步进
+description: 后端在每帧的什么时候按仿真时钟步进、位姿什么时候写回组件，以及一帧需要的步数超过上限时会发生什么。
+pageKind: concept
+sidebar:
+  order: 30
+---
+
+了解后端的步进和位姿回写在每帧的什么时候发生，以及一帧需要的步数太多时会怎样。
+
+后端的步进和位姿回写发生在每帧的 `TG_PrePhysics`，游戏暂停时不运行：
+
+| 阶段 | 发生了什么 |
+| --- | --- |
+| `TG_PrePhysics` | 需要时扫描场景；每个求解器先收到场景的变化，再按自己的步长补到不超过当前仿真时间；所有求解器都步进完之后，把被绑定物体的位姿写回对应的组件 |
+| `TG_DuringPhysics` | Chaos 模拟其余的物体，被绑定的组件作为运动学体推动它们 |
+| `TG_PostPhysics` | 传感器采样、ROS 发布 |
+
+## 步进
+
+每个求解器有自己的固定步长，范围 0.0001 s 到 100 s。
+
+- 求解器的时钟在第一次有物体、且子系统第一次运行时启动，第一步在启动时间加一个步长处结束，之后的步都落在这条网格上。
+- 所以求解器的时间从不超过仿真时间；暂停期间不步进，恢复后也不补跑，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- 一个求解器的物体都解绑后不再步进，下一次有物体绑定时时钟重新启动。
+- 一帧可以走好几步，也可以一步都不走（帧比步长短）。这一帧没有步进时，位姿照样写回，场景更新也照常发送。
+
+## 丢步
+
+一帧需要的步数超过每帧上限（默认 1000）时，最早的步照常执行，其余的被跳过且不补跑。跳过的步数用 [`Get Dropped Physics Steps`](/reference/ubotphysics/uubotphysicslibrary/#GetDroppedPhysicsSteps) 查询，大于 0 就说明物体的运动比仿真时间慢了。
+
+```blueprint
+caption: 每个 Tick 显示某个后端累计丢弃的步数
+nodes:
+  T: AActor.ReceiveTick
+  G: { ref: UUBotPhysicsLibrary.GetDroppedPhysicsSteps, set: { Backend: MyBackend } }
+  S: UKismetStringLibrary.Conv_Int64ToString
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - T.then -> P.execute
+  - G.ReturnValue -> S.InInt
+  - S.ReturnValue -> P.InString
+notes:
+  G: "`Backend` 填后端名，这里的 `MyBackend` 只是示例。"
+```
+
+- 丢步的原因是帧太长，或后端的步长太短。
+- 丢步的计数在世界里累计，不清零。
+- 每帧上限在 C++ 里用 `UUBotPhysicsSubsystem` 的 `GetMaxStepsPerFrame` 和 `SetMaxStepsPerFrame` 读写，默认 1000，至少为 1。
+
+## 位姿回写
+
+- 位姿回写以步为单位，不做外推：没有丢步时，组件的位姿落后仿真时间最多一个步长。
+- 丢步之后这一点不再成立：被跳过的步不会补跑，物体的运动比仿真时间慢，差距是丢弃的步数乘以步长，直到这个求解器的时钟重新启动。
+- 回写时附着父级在前、子级在后，跨后端也一样，所以父子两个组件都被绑定时，子组件落在自己求解器给出的位姿上。
+- 后端给出的状态不是有限值时，这个物体的位姿不会写回，组件停在上一个位姿。
+
+## 相关页面
+
+- [绑定与所有权](/physics/binding/)：绑定、解绑和绑定状态。
+- [场景几何](/physics/scene/)：每帧步进之前发给后端的场景。
+- [仿真时钟与采样调度](/concepts/clock-and-scheduling/)：固定步长调度器和暂停时的行为。
+- [给后端作者](/physics/backend-authors/)：`GetStepSeconds` 和 `Step` 的约定。

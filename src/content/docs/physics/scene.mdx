@@ -1,0 +1,160 @@
+---
+title: 场景几何
+description: 后端怎样收到关卡里其余的碰撞体：哪些组件和形状会交给它、静态和运动学的区别，以及怎样用蓝图查看后端现在看到的场景。
+pageKind: feature
+sidebar:
+  order: 40
+---
+
+import { Steps } from "@astrojs/starlight/components";
+
+让后端的物体和 UE 关卡里其余的碰撞体接触：了解哪些组件会按静态和运动学两类交给后端，并用蓝图查看后端现在看到的场景。
+
+## 快速用法
+
+后端只和自己模型里的东西接触；UE 场景里其余的碰撞体，由 uBotPhysics 按静态和运动学两类交给它，它自己的物体因此能和场景接触。后端现在看到什么，用 [`Get Physics Scene Stats`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsSceneStats) 查询，后端在这个世界里没有求解器时它返回 `false`：
+
+```blueprint
+caption: 每个 Tick 显示后端没能导出的组件数
+nodes:
+  T: AActor.ReceiveTick
+  G: { ref: UUBotPhysicsLibrary.GetPhysicsSceneStats, set: { Backend: MyBackend } }
+  C: K2Node_IfThenElse
+  B: { ref: Break:FUBotPhysicsSceneStats, hideUnconnected: true }
+  S: UKismetStringLibrary.Conv_IntToString
+  P: UKismetSystemLibrary.PrintString
+wires:
+  - T.then -> C.execute
+  - G.ReturnValue -> C.Condition
+  - G.Stats -> B.UBotPhysicsSceneStats
+  - B.SkippedComponents -> S.InInt
+  - S.ReturnValue -> P.InString
+  - C.True -> P.execute
+notes:
+  G: "`Backend` 填后端名，这里的 `MyBackend` 只是示例。"
+```
+
+### 后端收到什么
+
+后端要在能力里声明想收哪一类：
+
+| 能力 | 收到什么 |
+| --- | --- |
+| `Static Scene Geometry`（C++ 里是 `bStaticSceneGeometry`） | 静态物体 |
+| `Kinematic Foreign Bodies`（C++ 里是 `bKinematicForeignBodies`） | 运动学物体 |
+
+两项都没有声明的后端什么也收不到。后端的能力用 [`Get uBot Physics Backend Capabilities`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsBackendCapabilities) 查询，结果是 [`UBot Physics Capabilities`](/reference/ubotphysics/structs/fubotphysicscapabilities/)：
+
+```blueprint
+caption: 开始播放时检查后端会不会收到静态物体
+nodes:
+  A: AActor.ReceiveBeginPlay
+  G: { ref: UUBotPhysicsLibrary.GetPhysicsBackendCapabilities, set: { Backend: MyBackend } }
+  B: { ref: Break:FUBotPhysicsCapabilities, hideUnconnected: true }
+  C: K2Node_IfThenElse
+  P: { ref: UKismetSystemLibrary.PrintString, set: { InString: 后端会收到静态物体 } }
+wires:
+  - A.then -> C.execute
+  - G.Capabilities -> B.UBotPhysicsCapabilities
+  - B.bStaticSceneGeometry -> C.Condition
+  - C.True -> P.execute
+```
+
+## 步骤
+
+<Steps>
+
+1. **选一个声明了场景能力的后端**
+
+   用 `Get uBot Physics Backend Capabilities` 确认 `Static Scene Geometry` 或 `Kinematic Foreign Bodies` 为 true。
+
+2. **绑定物体**
+
+   把自己的物体绑定给这个后端，见[绑定与所有权](/physics/binding/)。后端的求解器持有至少一个物体后，才会收到场景。
+
+3. **排除不想让后端看到的物体**
+
+   给组件的 `Component Tags`，或 Actor 的 `Tags`，加上标签 `UBotPhysics.NoScene`。
+
+4. **查看结果**
+
+   用 `Get Physics Scene Stats` 看后端收到了多少物体，有物理碰撞却没能导出的组件有多少。
+
+</Steps>
+
+## 关键属性
+
+子系统检查所有已加载关卡中每个 Actor 的每个 Primitive 组件，同时满足下面这些的才算场景：
+
+1. 已注册，自己和所属 Actor 都不在销毁中。
+2. 碰撞带物理：`Collision Enabled` 是 `Query and Physics` 或 `Physics Only`。只有查询碰撞或没有碰撞的不算。
+3. 组件和它的 Actor 都没有标签 `UBotPhysics.NoScene`（组件的 `Component Tags`，或 Actor 的 `Tags`）。不想让后端看到的物体加上它。
+4. 能导出碰撞形状，见[导出的形状](#导出的形状)。
+
+满足的组件按 Mobility 分成两类：
+
+| Mobility | 类别 | 怎么发给后端 |
+| --- | --- | --- |
+| `Static`、`Stationary` | 静态物体 | 加入时发一次，之后不再发送 |
+| `Movable` | 运动学物体 | 每帧发它的位姿 |
+
+运动学物体包括 Chaos 模拟的物体、别的后端的物体、被别的刚体状态源驱动的物体，以及被游戏代码移动的可移动组件。
+
+## 输出与事件
+
+[`Get Physics Scene Stats`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsSceneStats) 给出一个后端现在看到的场景，结果是 [`UBot Physics Scene Stats`](/reference/ubotphysics/structs/fubotphysicsscenestats/)，用 [`Break UBot Physics Scene Stats`](/reference/ubotphysics/structs/fubotphysicsscenestats/#Break) 拆开：
+
+| 输出 | 含义 |
+| --- | --- |
+| `Static Bodies` | 交给它的静态物体数 |
+| `Kinematic Bodies` | 交给它的运动学物体数 |
+| `Shapes` | 这些物体的形状总数 |
+| `Skipped Components` | 世界里有物理碰撞却没能导出的组件数，取自最近一次扫描 |
+| `Return Value` | 后端在这个世界里没有求解器时为 `false`，此时其余输出都是 0 |
+
+有物理碰撞却没能导出的组件（没有 Body Setup、只有不支持的形状，或属于不支持的类型）计入 `Skipped Components`。
+
+## 注意事项
+
+### 自己的物体不在场景里
+
+- 绑定给某个后端的组件，以及附着在它们下面的组件，对这个后端是它自己的物体，所以不交给它；别的后端仍把它们当作运动学物体。
+- 解绑之后，它们在这个后端的下一次更新里加入，ID 不变。
+- 场景里的 Chaos 物体和别的后端的物体，对后端是运动学物体：后端的物体能撞上它们，它们不会被推动。
+
+### 什么时候发，位姿是哪一刻的
+
+- 每帧在步进之前，只要有求解器持有物体且声明了场景能力，就扫描一次世界的组件，开销与组件数成正比。
+- 有变化，或者有运动学物体时，才把更新发给后端。
+- 位姿是这一帧开始步进时各组件显示的样子：Chaos 物体落后一个物理帧，别的后端的物体是上一帧写回的位姿。
+
+每帧的整体顺序见[每帧时序与步进](/physics/stepping/)。
+
+### 导出的形状
+
+形状和 Chaos 模拟的一样，取自组件 Body Setup 里的简单形状：
+
+| 形状 | 说明 |
+| --- | --- |
+| 球（Sphere）、盒（Box）、胶囊（Capsule）、凸包（Convex） | Body Setup 里的简单形状 |
+| 三角网格（TriangleMesh） | 只有碰撞复杂度是 `Use Complex Collision As Simple` 且三角网格已建好时才导出，此时导出的是三角网格，不是简单形状 |
+
+- 形状在物体自己的坐标系里，单位是米，轴是 UE 世界轴；组件的世界缩放已计入，物体的变换里没有缩放。镜像缩放会调换三角形的绕向。
+- 碰撞设置（通道、响应）不看，有物理碰撞就导出。摩擦和弹性取组件的简单物理材质，没有就取引擎的默认材质。
+- 形状在导出时读取一次。运行中原地修改同一个 Body Setup 里的形状（例如改盒体碰撞的 `Box Extent`）不会被发现，需要重新导出时切一下碰撞或缩放。
+
+### 不导出的
+
+| 不导出 | 说明 |
+| --- | --- |
+| 地形高度场 | 整个组件不导出 |
+| 实例化静态网格（Instanced Static Mesh、Hierarchical Instanced Static Mesh） | 整个组件不导出 |
+| 蒙皮网格（骨骼网格） | 整个组件不导出 |
+| 锥形胶囊（Tapered Capsule）和水平集（Level Set）形状 | 被略过，同一个组件上的其余形状照常导出 |
+
+## 相关参考
+
+- [uBot Physics Library](/reference/ubotphysics/uubotphysicslibrary/)：`Get Physics Scene Stats` 和 `Get uBot Physics Backend Capabilities`。
+- [UBot Physics Scene Stats](/reference/ubotphysics/structs/fubotphysicsscenestats/) 和 [UBot Physics Capabilities](/reference/ubotphysics/structs/fubotphysicscapabilities/)：两个结构体的全部字段。
+- [给后端作者](/physics/backend-authors/)：后端怎样接收 `UpdateScene`。
+- [绑定与所有权](/physics/binding/)：绑定后物体在 Chaos 里的样子。
