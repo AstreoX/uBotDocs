@@ -62,6 +62,33 @@ import SamplingTimeline from "../../../components/SamplingTimeline.astro";
 
 时间戳取实际采样那一帧的仿真时间，而不是网格上的采样时刻，所以定时采样的时间戳严格递增。
 
+## 固定步长的多步消费（0.1.3 起）
+
+传感器一帧只采一次，物理这类固定步长的模拟则要在一帧里补上所有到期的步。uBotCore 0.1.3 起，采样调度器 `FUBotSampleScheduler` 为此新增 `ConsumeDueSteps`。
+
+:::note[尚未发布]
+uBotCore 0.1.3 还没有发布，已发布的是 0.1.2。`ConsumeDueSteps` 只能在 C++ 里调用，没有蓝图节点。
+:::
+
+`ConsumeDueSteps(NowSeconds, MaxSteps, OutFirstDueSeconds)` 的规则是：
+
+- 数出从下一个采样时刻起、不晚于 `NowSeconds` 的所有采样时刻，最多 `MaxSteps` 个，返回这个个数。
+- 之后下一个采样时刻越过所有不晚于 `NowSeconds` 的时刻。超出 `MaxSteps` 的那些被跳过，计入丢弃计数（`GetDroppedSampleCount`），不会补跑。
+- `OutFirstDueSeconds`（可以不传）得到第一个被数到的时刻，第 k 个是它加 k × `GetIntervalSeconds()`。
+- `MaxSteps` 小于 1、`NowSeconds` 不是有限数或早于下一个采样时刻、调度器还没有初始化时，返回 0，`OutFirstDueSeconds` 不变。
+
+和 `ConsumeDue` 的区别只在一帧跨过多个时刻时：
+
+| 调用 | 一帧跨过 4 个时刻 | 丢弃计数 |
+| --- | --- | --- |
+| `ConsumeDue` | 返回 true 一次，只采样一次 | 加 3 |
+| `ConsumeDueSteps`，`MaxSteps` 为 1000 | 返回 4，要走 4 步 | 不变 |
+| `ConsumeDueSteps`，`MaxSteps` 为 2 | 返回 2，只走最早的 2 步 | 加 2 |
+
+例如 100 Hz 的调度器，下一个采样时刻是 1.00 s，仿真时间走到 1.035 s：`ConsumeDueSteps` 返回 4，对应 1.00、1.01、1.02 和 1.03 s，下一个采样时刻变成 1.04 s。
+
+规划中的 uBotPhysics 用它让每个物理后端按自己的固定步长追赶仿真时间，见 [uBotPhysics](/physics/)。
+
 ## 相关页面
 
 - [帧头与采样状态](/concepts/frame-header/)：时间戳和 `Sequence` 在帧头里的位置。
