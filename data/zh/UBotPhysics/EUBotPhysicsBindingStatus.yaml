@@ -1,0 +1,19 @@
+EUBotPhysicsBindingStatus:
+  summary: 物理绑定当前的状态。新取值只会追加在末尾。
+  sourceHash: "ac04c5d239a3"
+
+EUBotPhysicsBindingStatus.BackendMissing:
+  summary: 最近一次 `Bind Physics Bodies` 失败：没有注册这个名字的后端。绑定期间后端被注销、物体回到 Chaos 时，也是这个状态。
+  sourceHash: "cecc5e51051e"
+
+EUBotPhysicsBindingStatus.Bound:
+  summary: 所有物体都已交给后端。
+  sourceHash: "a2eb812b8989"
+
+EUBotPhysicsBindingStatus.Rejected:
+  summary: 最近一次 `Bind Physics Bodies` 失败：某个组件或后端拒绝了绑定，没有任何物体被交出。
+  sourceHash: "57534aae36d5"
+
+EUBotPhysicsBindingStatus.Unbound:
+  summary: 未绑定：还没有调用 `Bind Physics Bodies`，或者已经调用了 `Unbind Physics Bodies`。
+  sourceHash: "082677d74ce7"

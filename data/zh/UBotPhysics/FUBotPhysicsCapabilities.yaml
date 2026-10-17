@@ -1,0 +1,59 @@
+Break:FUBotPhysicsCapabilities:
+  summary: 把 UBot Physics Capabilities 拆成各项能力开关。
+  sourceHash: "c51a4d24cbf5"
+
+FUBotPhysicsCapabilities:
+  summary: 物理后端能模拟什么。字段只会追加，默认全部为 false，后端只声明自己真正支持的能力。
+  sourceHash: "aa94dcbfe11e"
+
+FUBotPhysicsCapabilities.bAccelerations:
+  summary: 刚体状态带线加速度（m/s²）和角加速度（rad/s²）。
+  sourceHash: "34f8db815a5a"
+
+FUBotPhysicsCapabilities.bArticulations:
+  summary: 用缩减（广义）坐标描述的带关节物体。
+  sourceHash: "de27a2b85745"
+
+FUBotPhysicsCapabilities.bCloth:
+  summary: 布料。
+  sourceHash: "8e436f825637"
+
+FUBotPhysicsCapabilities.bContacts:
+  summary: 后端自己的物体之间的接触。
+  sourceHash: "a35817413f12"
+
+FUBotPhysicsCapabilities.bDeterministic:
+  summary: 相同的输入和步数给出完全相同的结果。
+  sourceHash: "168488e4c02d"
+
+FUBotPhysicsCapabilities.bDifferentiable:
+  summary: 仿真可以求导（可微分）。
+  sourceHash: "c76fe52a49ec"
+
+FUBotPhysicsCapabilities.bKinematicForeignBodies:
+  summary: 能把在别处模拟的物体（Chaos 或别的后端）作为运动学物体镜像进来。声明后，后端会收到场景里的运动学碰撞体。
+  sourceHash: "3e5c730a98ee"
+
+FUBotPhysicsCapabilities.bMaximalCoordinateJoints:
+  summary: 以自由刚体之间的约束实现的关节（最大坐标）。
+  sourceHash: "5455d338e904"
+
+FUBotPhysicsCapabilities.bParticles:
+  summary: 粒子系统。
+  sourceHash: "8d52efcbde1a"
+
+FUBotPhysicsCapabilities.bRigidBodies:
+  summary: 自由刚体。
+  sourceHash: "63ce278c0430"
+
+FUBotPhysicsCapabilities.bSoftBodies:
+  summary: 可变形的固体（软体）。
+  sourceHash: "330458f18c80"
+
+FUBotPhysicsCapabilities.bStaticSceneGeometry:
+  summary: 能和子系统交来的 UE 静态几何碰撞。声明后，后端会收到场景里的静态碰撞体。
+  sourceHash: "e581fa1d0b47"
+
+Make:FUBotPhysicsCapabilities:
+  summary: 用各项能力开关构造一个 UBot Physics Capabilities。
+  sourceHash: "26bedb67cbca"

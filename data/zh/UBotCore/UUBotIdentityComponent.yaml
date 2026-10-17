@@ -19,8 +19,8 @@ UUBotIdentityComponent.GetBaseFrameId:
   sourceHash: "5d3d26aba5df"
 
 UUBotIdentityComponent.GetResolvedNamespace:
-  summary: 返回 Namespace；留空时返回净化后的机器人 ID。
-  sourceHash: "4d623755400a"
+  summary: 返回 Namespace；留空时返回净化后的机器人 ID（`UBot::Identity::SanitizeNameToken`）。
+  sourceHash: "b1f0bb4df4d0"
 
 UUBotIdentityComponent.GetResolvedRobotId:
   summary: 返回 Robot Id；留空时返回所属 Actor 的名字，没有所属 Actor 时为空。

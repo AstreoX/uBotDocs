@@ -1,0 +1,19 @@
+Break:FUBotPhysicsBodyBinding:
+  summary: 把 UBot Physics Body Binding 拆成组件和物体名。
+  sourceHash: "6a41050a2074"
+
+FUBotPhysicsBodyBinding:
+  summary: 交给后端的一个 UE 组件。
+  sourceHash: "e0ce1a9364cb"
+
+FUBotPhysicsBodyBinding.BodyName:
+  summary: 这个物体在后端模型里的名字。`None` 时由后端自己决定。
+  sourceHash: "146f32814210"
+
+FUBotPhysicsBodyBinding.Component:
+  summary: 显示这个物体的组件，必须是绑定组件所在 Actor 自己的 Primitive 组件，且 Mobility 为 `Movable`。
+  sourceHash: "09b7b8b438f4"
+
+Make:FUBotPhysicsBodyBinding:
+  summary: 用组件和物体名构造一个 UBot Physics Body Binding。
+  sourceHash: "ab076d5e4172"

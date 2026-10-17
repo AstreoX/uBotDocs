@@ -1,0 +1,23 @@
+UUBotPhysicsLibrary:
+  summary: 查询 uBot 物理后端，以及某个组件由哪个后端模拟的蓝图函数库。
+  sourceHash: "e24cb33e1dfd"
+
+UUBotPhysicsLibrary.GetBodyPhysicsBackend:
+  summary: 返回模拟 `Component` 的后端名；由 Chaos（引擎自带的物理）模拟时为 `None`。
+  sourceHash: "0729593d9cb4"
+
+UUBotPhysicsLibrary.GetDroppedPhysicsSteps:
+  summary: 这个世界里 `Backend` 因为一帧需要的步数超过每帧上限而跳过的步数。跳过的步不会补跑，计数一直累加。
+  sourceHash: "7b6f05ca5ad4"
+
+UUBotPhysicsLibrary.GetPhysicsBackendCapabilities:
+  summary: 返回 `Backend` 能模拟什么。没有这个名字的后端时返回 false，各项能力都为关。
+  sourceHash: "7cb2effc9ef2"
+
+UUBotPhysicsLibrary.GetPhysicsBackendNames:
+  summary: 返回已注册的物理后端名，按注册顺序。绑定组件的 `Backend` 填其中之一。
+  sourceHash: "c0a04731ebfd"
+
+UUBotPhysicsLibrary.GetPhysicsSceneStats:
+  summary: 返回 `Backend` 在这个世界里现在看到的场景：最近一次交给它的静态和运动学碰撞体、它们的形状数，以及有物理碰撞却没能导出的组件数。后端在这个世界里没有求解器时返回 false，各项为 0。
+  sourceHash: "0e0a28a2020a"
