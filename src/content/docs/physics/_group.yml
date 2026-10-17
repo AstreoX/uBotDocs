@@ -1,0 +1,3 @@
+label: uBotPhysics
+# Pages in this folder are about UBotPhysics unless their frontmatter declares packages: itself.
+packages: [UBotPhysics]

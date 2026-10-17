@@ -1,7 +1,7 @@
 {
   "format": 1,
   "plugin": "UBotSensor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engine": "5.5",
   "repository": "https://github.com/AstreoX/uBotSensor",
   "generator": "UBotDocExport 1",
@@ -294,7 +294,7 @@
             "const": false
           },
           "default": "lidar_2d",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -462,7 +462,7 @@
             "const": false
           },
           "default": "lidar_2d",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -731,7 +731,7 @@
             "const": false
           },
           "default": "lidar_3d",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -965,7 +965,7 @@
             "const": false
           },
           "default": "lidar_3d",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -1565,7 +1565,7 @@
             "const": false
           },
           "default": "30.000000",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -1633,7 +1633,7 @@
             "const": false
           },
           "default": "depth_camera",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -1736,7 +1736,7 @@
             "const": false
           },
           "default": "depth_camera",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -2193,7 +2193,7 @@
             "const": false
           },
           "default": "imu_sensor",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -2360,7 +2360,7 @@
             "const": false
           },
           "default": "imu_sensor",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -2422,7 +2422,7 @@
             "const": false
           },
           "default": "100.000000",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -2470,10 +2470,31 @@
           "editable": "anywhere",
           "tooltip": "",
           "meta": {}
+        },
+        {
+          "id": "bUseBodyState",
+          "displayName": "Use Body State",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "IMU|Motion",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "When a body state source (a physics backend binding, a vehicle's own integrator) moves the body this\nsensor is attached to, read velocities and accelerations from that state instead of differentiating\nposes. The parts between that body and the sensor count as rigid; turn this off for a sensor on a part\nthat moves on its own, such as a gimbal.",
+          "meta": {}
         }
       ],
       "nodes": [
+        "UUBotImuSensorComponent.GetBodyStateAgeSeconds",
         "UUBotImuSensorComponent.GetLatestIMUData",
+        "UUBotImuSensorComponent.IsUsingBodyState",
         "UUBotImuSensorComponent.OnImuDataUpdated",
         "UUBotImuSensorComponent.ResetIMUBias",
         "UUBotImuSensorComponent.ResetIMUHistory",
@@ -2569,7 +2590,7 @@
             "const": false
           },
           "default": "odom",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -2754,7 +2775,7 @@
             "const": false
           },
           "default": "odometry_sensor",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -2816,7 +2837,7 @@
             "const": false
           },
           "default": "30.000000",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -2826,11 +2847,32 @@
             "UIMin": "0.1",
             "UIMax": "120.0"
           }
+        },
+        {
+          "id": "bUseBodyState",
+          "displayName": "Use Body State",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Odometry|Motion",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "When a body state source (a physics backend binding, a vehicle's own integrator) moves the body this\nsensor is attached to, read velocities and accelerations from that state instead of differentiating\nposes. The parts between that body and the sensor count as rigid; turn this off for a sensor on a part\nthat moves on its own, such as a gimbal.",
+          "meta": {}
         }
       ],
       "nodes": [
+        "UUBotOdometrySensorComponent.GetBodyStateAgeSeconds",
         "UUBotOdometrySensorComponent.GetLatestOdometryData",
         "UUBotOdometrySensorComponent.GetTrackedComponent",
+        "UUBotOdometrySensorComponent.IsUsingBodyState",
         "UUBotOdometrySensorComponent.OnOdometryDataUpdated",
         "UUBotOdometrySensorComponent.ResetOdometry",
         "UUBotOdometrySensorComponent.SampleOdometry"
@@ -3164,7 +3206,7 @@
             "const": false
           },
           "default": "pose_sensor",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3221,7 +3263,7 @@
             "const": false
           },
           "default": "pose_sensor",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3240,7 +3282,7 @@
             "const": false
           },
           "default": "30.000000",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3269,10 +3311,31 @@
           "editable": "anywhere",
           "tooltip": "",
           "meta": {}
+        },
+        {
+          "id": "bUseBodyState",
+          "displayName": "Use Body State",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Pose Sensor",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "When a body state source (a physics backend binding, a vehicle's own integrator) moves the body this\nsensor is attached to, read velocities and accelerations from that state instead of differentiating\nposes. The parts between that body and the sensor count as rigid; turn this off for a sensor on a part\nthat moves on its own, such as a gimbal. Only for the World reference frame; Parent and Custom\nComponent frames always differentiate the relative pose.",
+          "meta": {}
         }
       ],
       "nodes": [
+        "UUBotPoseSensorComponent.GetBodyStateAgeSeconds",
         "UUBotPoseSensorComponent.GetLatestPoseData",
+        "UUBotPoseSensorComponent.IsUsingBodyState",
         "UUBotPoseSensorComponent.OnPoseDataUpdated",
         "UUBotPoseSensorComponent.SamplePose"
       ]
@@ -3307,7 +3370,7 @@
             "const": false
           },
           "default": "rgb_camera",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3326,7 +3389,7 @@
             "const": false
           },
           "default": "rgb_camera",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3367,7 +3430,7 @@
             "const": false
           },
           "default": "",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3386,7 +3449,7 @@
             "const": false
           },
           "default": "1337",
-          "category": "uBot Sensor|Noise",
+          "category": "Sensor|Noise",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3405,7 +3468,7 @@
             "const": false
           },
           "default": "",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3424,7 +3487,7 @@
             "const": false
           },
           "default": "10.000000",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3448,7 +3511,7 @@
             "const": false
           },
           "default": "True",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3467,7 +3530,7 @@
             "const": false
           },
           "default": "False",
-          "category": "uBot Sensor|Debug",
+          "category": "Sensor|Debug",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3486,7 +3549,7 @@
             "const": false
           },
           "default": "True",
-          "category": "uBot Sensor|Model",
+          "category": "Sensor|Model",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3505,7 +3568,7 @@
             "const": false
           },
           "default": "False",
-          "category": "uBot Sensor|Noise",
+          "category": "Sensor|Noise",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -3524,7 +3587,7 @@
             "const": false
           },
           "default": "True",
-          "category": "uBot Sensor",
+          "category": "Sensor",
           "access": "readOnly",
           "editable": "anywhere",
           "tooltip": "",
@@ -6596,6 +6659,63 @@
       ]
     },
     {
+      "id": "UUBotImuSensorComponent.GetBodyStateAgeSeconds",
+      "kind": "pure",
+      "title": "Get Body State Age Seconds",
+      "subtitle": "Target is uBot IMU Sensor",
+      "subtitleZh": "目标是uBot IMU Sensor",
+      "owner": "UUBotImuSensorComponent",
+      "member": "GetBodyStateAgeSeconds",
+      "category": "uBot Sensor|IMU",
+      "tooltip": "Sample time minus the time of the body state the latest sample used (how far the physics step lay behind the sample), s; 0 when it used none.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotImuSensorComponent",
+            "subtypeDisplay": "uBot IMU Sensor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "UUBotImuSensorComponent.GetLatestIMUData",
       "kind": "pure",
       "title": "Get Latest IMUData",
@@ -6641,6 +6761,63 @@
             "category": "struct",
             "subtype": "FUBotImuSensorData",
             "subtypeDisplay": "UBot Imu Sensor Data",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotImuSensorComponent.IsUsingBodyState",
+      "kind": "pure",
+      "title": "Is Using Body State",
+      "subtitle": "Target is uBot IMU Sensor",
+      "subtitleZh": "目标是uBot IMU Sensor",
+      "owner": "UUBotImuSensorComponent",
+      "member": "IsUsingBodyState",
+      "category": "uBot Sensor|IMU",
+      "tooltip": "True when the latest sample took its motion from a body state source.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotImuSensorComponent",
+            "subtypeDisplay": "uBot IMU Sensor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
             "container": "none",
             "valueType": null,
             "byRef": false,
@@ -6943,6 +7120,63 @@
       ]
     },
     {
+      "id": "UUBotOdometrySensorComponent.GetBodyStateAgeSeconds",
+      "kind": "pure",
+      "title": "Get Body State Age Seconds",
+      "subtitle": "Target is uBot Odometry Sensor",
+      "subtitleZh": "目标是uBot Odometry Sensor",
+      "owner": "UUBotOdometrySensorComponent",
+      "member": "GetBodyStateAgeSeconds",
+      "category": "uBot Sensor|Odometry",
+      "tooltip": "Sample time minus the time of the body state the latest sample used (how far the physics step lay behind the sample), s; 0 when it used none.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotOdometrySensorComponent",
+            "subtypeDisplay": "uBot Odometry Sensor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "UUBotOdometrySensorComponent.GetLatestOdometryData",
       "kind": "pure",
       "title": "Get Latest Odometry Data",
@@ -7045,6 +7279,63 @@
             "category": "object",
             "subtype": "USceneComponent",
             "subtypeDisplay": "Scene Component",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotOdometrySensorComponent.IsUsingBodyState",
+      "kind": "pure",
+      "title": "Is Using Body State",
+      "subtitle": "Target is uBot Odometry Sensor",
+      "subtitleZh": "目标是uBot Odometry Sensor",
+      "owner": "UUBotOdometrySensorComponent",
+      "member": "IsUsingBodyState",
+      "category": "uBot Sensor|Odometry",
+      "tooltip": "True when the latest sample took its motion from a body state source.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotOdometrySensorComponent",
+            "subtypeDisplay": "uBot Odometry Sensor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
             "container": "none",
             "valueType": null,
             "byRef": false,
@@ -7883,6 +8174,63 @@
       ]
     },
     {
+      "id": "UUBotPoseSensorComponent.GetBodyStateAgeSeconds",
+      "kind": "pure",
+      "title": "Get Body State Age Seconds",
+      "subtitle": "Target is uBot Pose Sensor",
+      "subtitleZh": "目标是uBot Pose Sensor",
+      "owner": "UUBotPoseSensorComponent",
+      "member": "GetBodyStateAgeSeconds",
+      "category": "uBot Sensor|Pose Sensor",
+      "tooltip": "Sample time minus the time of the body state the latest sample used (how far the physics step lay behind the sample), s; 0 when it used none.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotPoseSensorComponent",
+            "subtypeDisplay": "uBot Pose Sensor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "double",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
       "id": "UUBotPoseSensorComponent.GetLatestPoseData",
       "kind": "pure",
       "title": "Get Latest Pose Data",
@@ -7928,6 +8276,63 @@
             "category": "struct",
             "subtype": "FUBotPoseSensorData",
             "subtypeDisplay": "UBot Pose Sensor Data",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPoseSensorComponent.IsUsingBodyState",
+      "kind": "pure",
+      "title": "Is Using Body State",
+      "subtitle": "Target is uBot Pose Sensor",
+      "subtitleZh": "目标是uBot Pose Sensor",
+      "owner": "UUBotPoseSensorComponent",
+      "member": "IsUsingBodyState",
+      "category": "uBot Sensor|Pose Sensor",
+      "tooltip": "True when the latest sample took its motion from a body state source.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotPoseSensorComponent",
+            "subtypeDisplay": "uBot Pose Sensor",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
             "container": "none",
             "valueType": null,
             "byRef": false,

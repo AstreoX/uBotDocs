@@ -1,9 +1,17 @@
 UUBotConventionsLibrary:
-  summary: 在蓝图里使用 UE 与 ROS（REP-103）的坐标和时间约定，对应 C++ 的 UBot::Ros。
-  sourceHash: "8983fd730f85"
+  summary: 在蓝图里使用 uBot 的坐标约定：UE（左手系，厘米）与右手系 FLU（国际单位制）互转，ROS REP-103 和 MuJoCo 等都适用。对应 C++ 的 UBot::RightHanded。
+  sourceHash: "aeb23a93bd5e"
+
+UUBotConventionsLibrary.AngularVelocityRightHandedToUE:
+  summary: 角速度、力矩等轴向量（单位 rad/s），右手系转 UE：(-x, y, -z)。
+  sourceHash: "a52fe38d3042"
 
 UUBotConventionsLibrary.AngularVelocityROSToUE:
   summary: 角速度、力矩等轴向量（单位 rad/s），ROS 转 UE：(-x, y, -z)。
+  sourceHash: "a52fe38d3042"
+
+UUBotConventionsLibrary.AngularVelocityUEToRightHanded:
+  summary: 角速度、力矩等轴向量（单位 rad/s），UE 转右手系：(-x, y, -z)。
   sourceHash: "a52fe38d3042"
 
 UUBotConventionsLibrary.AngularVelocityUEToROS:
@@ -18,9 +26,17 @@ UUBotConventionsLibrary.GetOpticalFrameSuffix:
   summary: 接在相机 frame id 后面、组成光学系 frame id 的后缀 _optical。
   sourceHash: "2ac2345162a2"
 
+UUBotConventionsLibrary.PositionRightHandedToUE:
+  summary: 位置，右手系的米转 UE 的厘米：(x, -y, z) × 100。
+  sourceHash: "e9b8400ca264"
+
 UUBotConventionsLibrary.PositionROSToUE:
   summary: 位置，ROS 的米转 UE 的厘米：(x, -y, z) × 100。
   sourceHash: "497216224f76"
+
+UUBotConventionsLibrary.PositionUEToRightHanded:
+  summary: 位置，UE 的厘米转右手系的米：(x, -y, z) / 100。
+  sourceHash: "32ac2d8eb156"
 
 UUBotConventionsLibrary.PositionUEToROS:
   summary: 位置，UE 的厘米转 ROS 的米：(x, -y, z) / 100。
@@ -30,8 +46,16 @@ UUBotConventionsLibrary.RosTimeToSeconds:
   summary: 把 builtin_interfaces/Time 的 sec 和 nanosec 换成秒。nanosec 为负数时按 0 处理。
   sourceHash: "2f226d4070d1"
 
+UUBotConventionsLibrary.RotationRightHandedToUE:
+  summary: 旋转四元数，右手系转 UE：(x, y, z, w) 变为归一化的 (-x, y, -z, w)。
+  sourceHash: "584ee9b100d6"
+
 UUBotConventionsLibrary.RotationROSToUE:
   summary: 旋转四元数，ROS 转 UE：(x, y, z, w) 变为归一化的 (-x, y, -z, w)。
+  sourceHash: "584ee9b100d6"
+
+UUBotConventionsLibrary.RotationUEToRightHanded:
+  summary: 旋转四元数，UE 转右手系：(x, y, z, w) 变为归一化的 (-x, y, -z, w)。
   sourceHash: "584ee9b100d6"
 
 UUBotConventionsLibrary.RotationUEToROS:
@@ -46,25 +70,49 @@ UUBotConventionsLibrary.SecondsToRosTime:
   summary: 把秒换成 builtin_interfaces/Time 的 sec 和 nanosec。负数或非有限值得到 (0, 0)。
   sourceHash: "a019408d75bc"
 
+UUBotConventionsLibrary.TransformRightHandedToUE:
+  summary: 刚体变换，右手系转 UE：旋转镜像，平移从米换成厘米，缩放丢弃。
+  sourceHash: "ddfd5381b901"
+
 UUBotConventionsLibrary.TransformROSToUE:
   summary: 刚体变换，ROS 转 UE：旋转镜像，平移从米换成厘米，缩放丢弃。
   sourceHash: "ddfd5381b901"
+
+UUBotConventionsLibrary.TransformUEToRightHanded:
+  summary: 刚体变换，UE 转右手系：旋转镜像，平移从厘米换成米，缩放丢弃。
+  sourceHash: "33ef4b800721"
 
 UUBotConventionsLibrary.TransformUEToROS:
   summary: 刚体变换，UE 转 ROS：旋转镜像，平移从厘米换成米，缩放丢弃。
   sourceHash: "33ef4b800721"
 
+UUBotConventionsLibrary.VectorRightHandedToUE:
+  summary: 已是 SI 单位的线性量，右手系转 UE：(x, -y, z)，不换算单位。
+  sourceHash: "16b15e724bdb"
+
 UUBotConventionsLibrary.VectorROSToUE:
   summary: 已是 SI 单位的线性量，ROS 转 UE：(x, -y, z)，不换算单位。
   sourceHash: "16b15e724bdb"
+
+UUBotConventionsLibrary.VectorUEToRightHanded:
+  summary: 线速度、加速度、以米为单位的点等线性量，UE 转右手系：(x, -y, z)，不换算单位。
+  sourceHash: "399f14343ba0"
 
 UUBotConventionsLibrary.VectorUEToROS:
   summary: 线速度、加速度、以米为单位的点等线性量，UE 转 ROS：(x, -y, z)，不换算单位。
   sourceHash: "399f14343ba0"
 
+UUBotConventionsLibrary.YawRightHandedToUE:
+  summary: 平面航向角、扫描角或偏航角速度（弧度），右手系转 UE：UE = -右手系。
+  sourceHash: "8c265b2f53e3"
+
 UUBotConventionsLibrary.YawROSToUE:
   summary: 平面航向角、扫描角或偏航角速度（弧度），ROS 转 UE：UE = -ROS。
   sourceHash: "a0c8c1359067"
+
+UUBotConventionsLibrary.YawUEToRightHanded:
+  summary: 平面航向角、扫描角或偏航角速度（弧度），UE 转右手系：右手系 = -UE。
+  sourceHash: "ea797ae2ce92"
 
 UUBotConventionsLibrary.YawUEToROS:
   summary: 平面航向角、扫描角或偏航角速度（弧度），UE 转 ROS：ROS = -UE。

@@ -1,0 +1,27 @@
+Break:FUBotPhysicsSceneStats:
+  summary: 把 UBot Physics Scene Stats 拆成静态物体数、运动学物体数、形状数和跳过的组件数。
+  sourceHash: "4036245d47a9"
+
+FUBotPhysicsSceneStats:
+  summary: 一个后端当前看到的 UE 场景。
+  sourceHash: "113682b913fc"
+
+FUBotPhysicsSceneStats.KinematicBodies:
+  summary: 交给后端的运动学（会动的）碰撞体数量。
+  sourceHash: "2137c06dd48e"
+
+FUBotPhysicsSceneStats.Shapes:
+  summary: 这些静态和运动学碰撞体的形状总数。
+  sourceHash: "1c842c15a9ef"
+
+FUBotPhysicsSceneStats.SkippedComponents:
+  summary: 世界里有物理碰撞、但没能导出的组件数（组件类型或形状不支持，或没有 Body Setup），取自最近一次扫描。带 `UBotPhysics.NoScene` 标签的组件不计入。
+  sourceHash: "4e96dd011b50"
+
+FUBotPhysicsSceneStats.StaticBodies:
+  summary: 交给后端的静态碰撞体数量。
+  sourceHash: "53a38ae8e81f"
+
+Make:FUBotPhysicsSceneStats:
+  summary: 用各字段构造一个 UBot Physics Scene Stats。
+  sourceHash: "b3920d25265c"

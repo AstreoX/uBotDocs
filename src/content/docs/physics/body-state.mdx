@@ -1,0 +1,56 @@
+---
+title: 绑定物体的刚体状态
+description: 绑定组件是 uBotCore 的刚体状态源，对已绑定的组件给出后端最近一步结束时的状态；说明状态里有什么、怎样在 C++ 里读取，以及传感器怎样使用它。
+pageKind: concept
+sidebar:
+  order: 50
+---
+
+绑定组件是 uBotCore 的刚体状态源（Body State Source）：对已绑定的组件，它给出后端最近一步结束时的状态，读状态的代码（例如传感器）不必再对位姿做差分。
+
+接口 `IUBotBodyStateSource` 从 uBotCore 0.1.3 起提供，是实验性的，只能在 C++ 里使用。状态是结构体 `FUBotBodyState`，UE 世界轴，SI 单位：
+
+| 字段 | 内容 |
+| --- | --- |
+| `PositionMeters`、`Orientation` | 物体原点的位置（m）和物体到世界的姿态 |
+| `LinearVelocityMetersPerSecond` | 世界系线速度，m/s |
+| `AngularVelocityRadiansPerSecond` | 世界系角速度，rad/s，旋向与 UE 一致（+Z 向右偏航） |
+| `LinearAccelerationMetersPerSecondSquared`、`AngularAccelerationRadiansPerSecondSquared` | 原点的运动学加速度（不含重力），世界系，m/s² 和 rad/s²；只在 `bHasLinearAcceleration`、`bHasAngularAcceleration` 为真时有效 |
+| `TimestampSeconds` | 后端最近一步结束的 uBot 仿真时间，不晚于当前仿真时间 |
+| `Source` | 模拟这个物体的后端名（求解器没有设置时） |
+
+## 提供与占有
+
+- 提供一个组件同时也是占有它：别的绑定、别的状态源不能再驱动同一个组件，见[绑定与所有权](/physics/binding/)。
+- 后端第一步之前，或组件没有绑定时，`GetBodyState` 返回 `false`。
+- 后端在能力里声明 `Accelerations`（C++ 里是 `bAccelerations`），表示它的状态带线加速度和角加速度，见 [`UBot Physics Capabilities`](/reference/ubotphysics/structs/fubotphysicscapabilities/)。
+
+## 在 C++ 里读取
+
+`UBot::BodyState::GetNearestBodyState(Component, State)` 从组件起沿附着父级向上找最近的、被某个状态源提供的物体，并返回它的状态。传感器挂在被绑定组件的子组件上时，用它读真实速度：
+
+```cpp
+#include "UBotBodyState.h"
+
+void LogBodyVelocity(const USceneComponent* Component)
+{
+    FUBotBodyState State;
+    if (UBot::BodyState::GetNearestBodyState(Component, State))
+    {
+        UE_LOG(LogTemp, Log, TEXT("%s: %.2f m/s"), *State.Source.ToString(), State.LinearVelocityMetersPerSecond.Size());
+    }
+}
+```
+
+C++ 里 `UUBotPhysicsSubsystem` 提供同样的查询：`FindBodyBackend` 给出模拟某个组件的后端，`GetBodyState` 给出绑定组件的状态。uBotPhysics 0.1.0 的蓝图节点里没有读取状态的节点；蓝图里只能用 [`Get Body Physics Backend`](/reference/ubotphysics/uubotphysicslibrary/#GetBodyPhysicsBackend) 知道谁在模拟一个组件。
+
+## 传感器怎么用
+
+uBotSensor 0.1.2 起，位姿、里程计和 IMU 自己判断并读这份状态，蓝图里不用做任何事，见[读取刚体状态](/sensor/body-state/)。
+
+## 相关页面
+
+- [读取刚体状态](/sensor/body-state/)：传感器什么时候读状态，状态的年龄和暖机。
+- [无人机的刚体状态](/aerial/body-state/)：uBotAerial 的 `Movement` 组件是另一个状态源。
+- [绑定与所有权](/physics/binding/)：哪些组件可以绑定。
+- [uBot Physics Binding](/reference/ubotphysics/uubotphysicsbindingcomponent/)：绑定组件的全部节点和属性。

@@ -98,11 +98,7 @@ wires:
 
 ## 刚体状态源（0.1.3 起）
 
-uBotCore 0.1.3 起提供刚体状态源（Body State Source）接口 `IUBotBodyStateSource`，让传感器直接读到物体的真实速度和加速度，不必再对位姿做差分。
-
-:::note[尚未发布]
-uBotCore 0.1.3 还没有发布，已发布的是 0.1.2。这个接口是实验性的，小版本之间可能变化。
-:::
+uBotCore 0.1.3 起提供刚体状态源（Body State Source）接口 `IUBotBodyStateSource`，让传感器直接读到物体的真实速度和加速度，不必再对位姿做差分。这个接口是实验性的，小版本之间可能变化。
 
 实现它的是推动一个物体、并知道它真实状态的对象，比如物理后端的绑定，或者载具自己的积分器。接口只能在 C++ 里实现，没有蓝图节点：
 
@@ -132,9 +128,9 @@ uBotCore 0.1.3 还没有发布，已发布的是 0.1.2。这个接口是实验�
 | `FindSourceInParents(Component, OutBody)` | 从 `Component` 起沿附着父级往上找，返回找到的第一个来源，`OutBody` 是它提供的物体 |
 | `GetNearestBodyState(Component, OutState, OutBody)` | 取 `Component` 或它的附着父级里最近一个被提供的物体的状态；只有返回 true 时才写 `OutState` |
 
-使用它的插件都还没有发布：
+已经用到它的插件：
 
-- uBotPhysics 的绑定为被绑定的组件提供状态，见 [uBotPhysics](/physics/)。
+- uBotPhysics 0.1.0 的绑定为被绑定的组件提供状态，见 [uBotPhysics](/physics/body-state/)。
 - uBotAerial 0.1.1 起，无人机的 `Movement` 组件是一个状态源，见[无人机的刚体状态](/aerial/body-state/)。
 - uBotSensor 0.1.2 起，位姿、里程计和 IMU 读它，见[读取刚体状态](/sensor/body-state/)。
 

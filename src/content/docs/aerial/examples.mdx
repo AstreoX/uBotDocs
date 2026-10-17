@@ -12,28 +12,26 @@ import { Steps } from "@astrojs/starlight/components";
 
 ## 快速用法
 
-在 `BeginPlay` 之后等 0.1 s，找到关卡里的示例无人机，取得它的 `Movement` 组件，发一条 1 m/s 的前进速度指令：
+在 `BeginPlay` 时找到关卡里的示例无人机，取得它的 `Movement` 组件，发一条 1 m/s 的前进速度指令：
 
 ```blueprint
 caption: 让关卡里的导航无人机以 1 m/s 前进
 nodes:
   A: AActor.ReceiveBeginPlay
-  W: { ref: UKismetSystemLibrary.Delay, set: { Duration: 0.1 } }
   B: { ref: UGameplayStatics.GetActorOfClass, set: { ActorClass: BP_UBotNavigationDrone } }
   C: UUBotMultirotorLibrary.FindMultirotorMovement
   D: { ref: Make:FUBotVelocityCommand, hideUnconnected: true }
   E: { ref: UKismetMathLibrary.MakeVector, set: { X: 1 } }
   F: UUBotVelocityCommandable.ApplyVelocityCommand
 wires:
-  - A.then -> W.execute
-  - W.then -> B.execute
+  - A.then -> B.execute
   - B.then -> F.execute
   - B.ReturnValue -> C.Actor
   - C.ReturnValue -> F.self
   - E.ReturnValue -> D.LinearVelocityMetersPerSecond
   - D.UBotVelocityCommand -> F.Command
 notes:
-  W: 无人机的 `Movement` 在自己的 `BeginPlay` 里会清掉之前收到的指令，而 Actor 之间的 `BeginPlay` 顺序没有保证，所以先等一小会儿。
+  F: uBotAerial 0.1.1 起不需要等待：Actor 之间的 `BeginPlay` 顺序没有保证，无人机自己的 `BeginPlay` 之前发出的指令也会生效。
   E: X 为 1、其余为 0：沿无人机当前航向前进，单位 m/s。
 ```
 
@@ -126,6 +124,7 @@ notes:
 
 - 看不到示例时，先确认「Show Plugin Content」已勾选。
 - 示例开局就在原地悬停；放在地面上时它也不会“落地待机”，任何指令都会让它立即动起来。
+- 在无人机自己的 `BeginPlay` 之前发出的速度、姿态、角速度和电机指令，uBotAerial 0.1.1 起会在开始飞行后生效，有多条时以最后一条为准。0.1.0 里它们会被开始飞行时的重置清掉，要先 `Delay` 一小会儿再发。`Reset Flight` 和 `Stop Motion` 为 true 的 `Teleport Multirotor` 仍然清除指令。
 
 ## 相关参考
 

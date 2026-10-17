@@ -18,6 +18,14 @@ UUBotPoseSensorComponent.OnPoseDataUpdated:
   summary: 每次位姿采样后触发，包括参考系无效的 Error 样本。Data 是本次的完整数据。
   sourceHash: "e3b0c44298fc"
 
+UUBotPoseSensorComponent.GetBodyStateAgeSeconds:
+  summary: 最新样本所用刚体状态的年龄，即取样时刻减去状态时刻（物理步落后取样多久），单位 s；没有用到状态时为 0。
+  sourceHash: "622fe636a5b1"
+
+UUBotPoseSensorComponent.IsUsingBodyState:
+  summary: 最新样本的运动量是否取自刚体状态源；差分模式下为 false。
+  sourceHash: "3d201dc3cd11"
+
 UUBotPoseSensorComponent.ReferenceFrame:
   summary: 位姿相对哪个参考系表示：世界、父组件，或自选组件。
   sourceHash: "e3b0c44298fc"
@@ -41,3 +49,7 @@ UUBotPoseSensorComponent.UpdateRateHz:
 UUBotPoseSensorComponent.bIncludeVelocity:
   summary: 为 true 时，用相邻样本差分计算线速度和角速度；启动后的第一个样本没有速度。
   sourceHash: "e3b0c44298fc"
+
+UUBotPoseSensorComponent.bUseBodyState:
+  summary: 机体由刚体状态源（物理后端的绑定、载具自己的积分器）驱动时，速度读该状态，而不是对位姿差分。刚体到传感器之间的部分按刚性连接处理；传感器装在会自己运动的部件上（例如云台）时关闭。只对 World 参考系有效，Parent 和 Custom Component 参考系总是对相对位姿差分。
+  sourceHash: "0c9f15544e18"

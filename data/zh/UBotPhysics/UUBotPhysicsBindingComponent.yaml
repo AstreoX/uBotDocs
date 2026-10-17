@@ -1,0 +1,35 @@
+UUBotPhysicsBindingComponent:
+  summary: 把本 Actor 自己的组件交给物理后端：绑定期间由后端而不是 Chaos 模拟它们，后端按 uBot 仿真时钟步进，每帧把位姿写回组件。绑定要么全部成功要么全部不交，一个组件最多属于一个绑定，且不能交出别的 Actor 的组件。为已交出的组件实现 `IUBotBodyStateSource`，传感器可以读到它们的真实状态。被交出的组件在 Chaos 里是运动学体（关闭物理模拟，碰撞设置不变）：能推动 Chaos 物体，但不会被推动。解绑时恢复原来的模拟状态；后端被注销时物体同样回到 Chaos，状态变为 `BackendMissing`，后端重新注册后再次 `Bind Physics Bodies` 即可。
+  sourceHash: "f4c2e8cd308d"
+
+UUBotPhysicsBindingComponent.Backend:
+  summary: 模拟这些物体的后端名，即在 `UBotPhysics.Backend` 扩展点上注册的名字。调用 `Bind Physics Bodies` 时读取。
+  sourceHash: "cd58f51244b8"
+
+UUBotPhysicsBindingComponent.Bind:
+  summary: 把所有物体交给后端，要么全部成功要么全部不交。绑定成功返回 true，已经绑定时也返回 true。失败时不会绑定任何物体，原因见 `Get Physics Binding Status` 和 `Get Physics Binding Error`；失败会作为运行时问题报告，直到下一次成功的绑定、解绑或结束播放才清除。
+  sourceHash: "5493139e9054"
+
+UUBotPhysicsBindingComponent.Bodies:
+  summary: 要交出的物体，每个都必须是本 Actor 的组件。留空时交出所属 Actor 的根组件，它必须是 Primitive 组件。
+  sourceHash: "886bde4b7f28"
+
+UUBotPhysicsBindingComponent.GetBindingError:
+  summary: 最近一次 `Bind Physics Bodies` 失败的原因；其他情况为空。
+  sourceHash: "448fa80128a8"
+
+UUBotPhysicsBindingComponent.GetBindingStatus:
+  summary: 返回绑定当前的状态。
+  sourceHash: "ad11565ea58b"
+
+UUBotPhysicsBindingComponent.GetBoundComponents:
+  summary: 返回已交给后端的组件；未绑定时为空。
+  sourceHash: "219351e77ea3"
+
+UUBotPhysicsBindingComponent.Unbind:
+  summary: 把物体还给 Chaos：原来开着物理模拟的组件重新开启，并带上后端最后一步的速度。同时清除失败的绑定状态。
+  sourceHash: "83bcfa9e7ec8"
+
+UUBotPhysicsBindingComponent.bBindOnBeginPlay:
+  summary: 开始播放时自动绑定，默认开启。关闭后自己调用 `Bind Physics Bodies`，例如等后端的模型准备好之后。
+  sourceHash: "282e8fc2a1a3"

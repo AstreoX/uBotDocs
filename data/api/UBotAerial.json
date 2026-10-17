@@ -1,7 +1,7 @@
 {
   "format": 1,
   "plugin": "UBotAerial",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engine": "5.5",
   "repository": "https://github.com/AstreoX/uBotAerial",
   "generator": "UBotDocExport 1",
@@ -711,7 +711,7 @@
       "module": "UBotAerial",
       "header": "Source/UBotAerial/Public/UBotMultirotorManualInputComponent.h",
       "category": "uBot",
-      "tooltip": "Flies the owning multirotor with keyboard or gamepad while a local player controls (possesses) it.\nThe input actions and the mapping context are created at run time (Enhanced Input), so no assets\nare needed; set your own to change the keys. While it controls the drone it sends a command every\nframe; when control ends the drone brakes and hovers.",
+      "tooltip": "Flies the owning multirotor with keyboard or gamepad while a local player controls (possesses) it.\nThe input actions and the mapping context are created at run time (Enhanced Input), so no assets\nare needed; set your own to change the keys. While it controls the drone it sends a command every\nframe. When control ends, it depends on the Flight Mode: in Velocity mode the drone brakes and hovers;\nin Angle and Rate mode the attitude command is released, and the drone's Command Loss Action decides\nwhat happens next (Hover by default).",
       "flags": {
         "abstract": false,
         "blueprintType": true,
@@ -979,7 +979,7 @@
       "module": "UBotAerial",
       "header": "Source/UBotAerial/Public/UBotMultirotorMovementComponent.h",
       "category": "uBot",
-      "tooltip": "Base of the multirotor flight models. Moves the root component (the updated component) in fixed\nphysics steps on uBot sim time, sweeps its collision shape through the world and slides along what\nit touches (the ground is a surface like any other), and presents the pose extrapolated to the\ncurrent sim time every frame. Accepts velocity commands\n(IUBotVelocityCommandable) in the heading frame: X forward and Y right along the current heading,\nZ up; only the Z angular velocity (yaw rate) is used.",
+      "tooltip": "Base of the multirotor flight models. Moves the root component (the updated component) in fixed\nphysics steps on uBot sim time, sweeps its collision shape through the world and slides along what\nit touches (the ground is a surface like any other), and presents the pose extrapolated to the\ncurrent sim time every frame. Accepts velocity commands\n(IUBotVelocityCommandable) in the heading frame: X forward and Y right along the current heading,\nZ up; only the Z angular velocity (yaw rate) is used.\n\nImplements IUBotBodyStateSource for its updated component: the state is the integrator's at the latest\nphysics step (the component shows it extrapolated to the current sim time), so sensors can read it, and\nno physics backend can bind the same body.",
       "flags": {
         "abstract": true,
         "blueprintType": true,

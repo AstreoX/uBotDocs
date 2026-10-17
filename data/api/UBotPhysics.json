@@ -1,0 +1,1620 @@
+{
+  "format": 1,
+  "plugin": "UBotPhysics",
+  "version": "0.1.0",
+  "engine": "5.5",
+  "repository": "https://github.com/AstreoX/uBotPhysics",
+  "generator": "UBotDocExport 1",
+  "culture": "en",
+  "modules": [
+    {
+      "name": "UBotPhysics",
+      "type": "Runtime"
+    }
+  ],
+  "classes": [
+    {
+      "id": "UUBotPhysicsBindingComponent",
+      "displayName": "uBot Physics Binding",
+      "kind": "component",
+      "parent": "UActorComponent",
+      "module": "UBotPhysics",
+      "header": "Source/UBotPhysics/Public/UBotPhysicsBindingComponent.h",
+      "category": "uBot",
+      "tooltip": "Hands components of its own actor to a physics backend: from Bind until Unbind the backend simulates\nthem instead of Chaos, is stepped on the uBot sim clock and moves the components every frame. The\ncomponent implements the uBotCore body state source interface for exactly the components it has bound,\nso sensors can read their true state; that lookup finds a source on the owner actor of a body, which is\nwhy a binding cannot hand over components of another actor.\n\nBinding is all or nothing and a body belongs to at most one binding. The bound components are made\nkinematic in Chaos (physics simulation off, collision settings untouched): queries and Chaos bodies\nstill see them, and they push Chaos bodies, but nothing pushes them back. Unbind restores the earlier\nsimulation state. When the backend is unregistered while bodies are bound, they go back to Chaos the\nsame way and the status becomes BackendMissing; Bind hands them to the backend again once it is registered.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": true,
+        "blueprintable": true,
+        "spawnable": true,
+        "deprecated": false
+      },
+      "properties": [
+        {
+          "id": "Backend",
+          "displayName": "Backend",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "None",
+          "category": "Physics",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Backend that simulates the bodies: the name an extension is registered under at the UBotPhysics.Backend extension point. Read when Bind is called.",
+          "meta": {}
+        },
+        {
+          "id": "Bodies",
+          "displayName": "Bodies",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsBodyBinding",
+            "subtypeDisplay": "UBot Physics Body Binding",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "category": "Physics",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "The bodies to hand over; each must be a component of this actor. Empty: the owner's root component, which must be a primitive component.",
+          "meta": {}
+        },
+        {
+          "id": "bBindOnBeginPlay",
+          "displayName": "Bind on Begin Play",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "True",
+          "category": "Physics",
+          "access": "readOnly",
+          "editable": "anywhere",
+          "tooltip": "Binds when play begins. Turn it off to call Bind yourself, for example after the backend's model is ready.",
+          "meta": {}
+        }
+      ],
+      "nodes": [
+        "UUBotPhysicsBindingComponent.Bind",
+        "UUBotPhysicsBindingComponent.GetBindingError",
+        "UUBotPhysicsBindingComponent.GetBindingStatus",
+        "UUBotPhysicsBindingComponent.GetBoundComponents",
+        "UUBotPhysicsBindingComponent.Unbind"
+      ]
+    },
+    {
+      "id": "UUBotPhysicsLibrary",
+      "displayName": "uBot Physics Library",
+      "kind": "library",
+      "parent": "UBlueprintFunctionLibrary",
+      "module": "UBotPhysics",
+      "header": "Source/UBotPhysics/Public/UBotPhysicsLibrary.h",
+      "category": "",
+      "tooltip": "Blueprint access to the uBot physics backends and to which backend simulates a component.",
+      "flags": {
+        "abstract": false,
+        "blueprintType": false,
+        "blueprintable": false,
+        "spawnable": false,
+        "deprecated": false
+      },
+      "properties": [],
+      "nodes": [
+        "UUBotPhysicsLibrary.GetBodyPhysicsBackend",
+        "UUBotPhysicsLibrary.GetDroppedPhysicsSteps",
+        "UUBotPhysicsLibrary.GetPhysicsBackendCapabilities",
+        "UUBotPhysicsLibrary.GetPhysicsBackendNames",
+        "UUBotPhysicsLibrary.GetPhysicsSceneStats"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "Break:FUBotPhysicsBodyBinding",
+      "kind": "break",
+      "title": "Break UBot Physics Body Binding",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Physics Body Binding' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotPhysicsBodyBinding",
+          "name": "UBot Physics Body Binding",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsBodyBinding",
+            "subtypeDisplay": "UBot Physics Body Binding",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Component",
+          "name": "Component",
+          "type": {
+            "category": "struct",
+            "subtype": "FComponentReference",
+            "subtypeDisplay": "Component Reference",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Primitive component of the binding's own actor that shows the body; it must be Movable."
+        },
+        {
+          "id": "BodyName",
+          "name": "Body Name",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Name of the body in the backend's model. None: the backend derives it."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotPhysicsCapabilities",
+      "kind": "break",
+      "title": "Break UBot Physics Capabilities",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Physics Capabilities' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotPhysicsCapabilities",
+          "name": "UBot Physics Capabilities",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsCapabilities",
+            "subtypeDisplay": "UBot Physics Capabilities",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "bRigidBodies",
+          "name": "Rigid Bodies",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Free rigid bodies."
+        },
+        {
+          "id": "bArticulations",
+          "name": "Articulations",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Jointed bodies in reduced (generalized) coordinates."
+        },
+        {
+          "id": "bMaximalCoordinateJoints",
+          "name": "Maximal Coordinate Joints",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Joints as constraints between free bodies."
+        },
+        {
+          "id": "bContacts",
+          "name": "Contacts",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Contacts between the backend's own bodies."
+        },
+        {
+          "id": "bStaticSceneGeometry",
+          "name": "Static Scene Geometry",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Can collide with static UE geometry the subsystem hands over."
+        },
+        {
+          "id": "bKinematicForeignBodies",
+          "name": "Kinematic Foreign Bodies",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Can mirror bodies simulated elsewhere as kinematic bodies."
+        },
+        {
+          "id": "bAccelerations",
+          "name": "Accelerations",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Body states carry linear and angular accelerations."
+        },
+        {
+          "id": "bDeterministic",
+          "name": "Deterministic",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "The same inputs and steps give identical results."
+        },
+        {
+          "id": "bDifferentiable",
+          "name": "Differentiable",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "The simulation can be differentiated."
+        },
+        {
+          "id": "bSoftBodies",
+          "name": "Soft Bodies",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Deformable solid bodies."
+        },
+        {
+          "id": "bCloth",
+          "name": "Cloth",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Cloth."
+        },
+        {
+          "id": "bParticles",
+          "name": "Particles",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": true,
+          "tooltip": "Particle systems."
+        }
+      ]
+    },
+    {
+      "id": "Break:FUBotPhysicsSceneStats",
+      "kind": "break",
+      "title": "Break UBot Physics Scene Stats",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that breaks a 'UBot Physics Scene Stats' into its member fields",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "UBotPhysicsSceneStats",
+          "name": "UBot Physics Scene Stats",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsSceneStats",
+            "subtypeDisplay": "UBot Physics Scene Stats",
+            "container": "none",
+            "valueType": null,
+            "byRef": true,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "StaticBodies",
+          "name": "Static Bodies",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Static colliders handed to the backend."
+        },
+        {
+          "id": "KinematicBodies",
+          "name": "Kinematic Bodies",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Kinematic (moving) colliders handed to the backend."
+        },
+        {
+          "id": "Shapes",
+          "name": "Shapes",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Shapes of those bodies."
+        },
+        {
+          "id": "SkippedComponents",
+          "name": "Skipped Components",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": "Components of the world with physics collision that could not be exported (unsupported type or shapes, no body setup)."
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotPhysicsBodyBinding",
+      "kind": "make",
+      "title": "Make UBot Physics Body Binding",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Physics Body Binding' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "UBotPhysicsBodyBinding",
+          "name": "UBot Physics Body Binding",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsBodyBinding",
+            "subtypeDisplay": "UBot Physics Body Binding",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotPhysicsCapabilities",
+      "kind": "make",
+      "title": "Make UBot Physics Capabilities",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Physics Capabilities' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "UBotPhysicsCapabilities",
+          "name": "UBot Physics Capabilities",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsCapabilities",
+            "subtypeDisplay": "UBot Physics Capabilities",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "Make:FUBotPhysicsSceneStats",
+      "kind": "make",
+      "title": "Make UBot Physics Scene Stats",
+      "subtitle": "",
+      "owner": "",
+      "member": "",
+      "category": "Utilities|Struct",
+      "tooltip": "Adds a node that create a 'UBot Physics Scene Stats' from its members",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "UBotPhysicsSceneStats",
+          "name": "UBot Physics Scene Stats",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsSceneStats",
+            "subtypeDisplay": "UBot Physics Scene Stats",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsBindingComponent.Bind",
+      "kind": "call",
+      "title": "Bind Physics Bodies",
+      "subtitle": "Target is uBot Physics Binding",
+      "subtitleZh": "目标是uBot Physics Binding",
+      "owner": "UUBotPhysicsBindingComponent",
+      "member": "Bind",
+      "category": "uBot|Physics",
+      "tooltip": "Hands every body to the backend, all or nothing. Returns true when bound, also when it already was.\nOn failure nothing is bound; Get Binding Status and Get Binding Error say why, and the failure is\nreported as a runtime problem until the next successful Bind, Unbind or the end of play.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotPhysicsBindingComponent",
+            "subtypeDisplay": "uBot Physics Binding",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsBindingComponent.GetBindingError",
+      "kind": "pure",
+      "title": "Get Physics Binding Error",
+      "subtitle": "Target is uBot Physics Binding",
+      "subtitleZh": "目标是uBot Physics Binding",
+      "owner": "UUBotPhysicsBindingComponent",
+      "member": "GetBindingError",
+      "category": "uBot|Physics",
+      "tooltip": "Why the last Bind failed; empty otherwise.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotPhysicsBindingComponent",
+            "subtypeDisplay": "uBot Physics Binding",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "text",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsBindingComponent.GetBindingStatus",
+      "kind": "pure",
+      "title": "Get Physics Binding Status",
+      "subtitle": "Target is uBot Physics Binding",
+      "subtitleZh": "目标是uBot Physics Binding",
+      "owner": "UUBotPhysicsBindingComponent",
+      "member": "GetBindingStatus",
+      "category": "uBot|Physics",
+      "tooltip": "Where the binding stands.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotPhysicsBindingComponent",
+            "subtypeDisplay": "uBot Physics Binding",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "enum",
+            "subtype": "EUBotPhysicsBindingStatus",
+            "subtypeDisplay": "EUBot Physics Binding Status",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsBindingComponent.GetBoundComponents",
+      "kind": "pure",
+      "title": "Get Bound Physics Components",
+      "subtitle": "Target is uBot Physics Binding",
+      "subtitleZh": "目标是uBot Physics Binding",
+      "owner": "UUBotPhysicsBindingComponent",
+      "member": "GetBoundComponents",
+      "category": "uBot|Physics",
+      "tooltip": "The components handed to the backend; empty unless bound.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotPhysicsBindingComponent",
+            "subtypeDisplay": "uBot Physics Binding",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "object",
+            "subtype": "UPrimitiveComponent",
+            "subtypeDisplay": "Primitive Component",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsBindingComponent.Unbind",
+      "kind": "call",
+      "title": "Unbind Physics Bodies",
+      "subtitle": "Target is uBot Physics Binding",
+      "subtitleZh": "目标是uBot Physics Binding",
+      "owner": "UUBotPhysicsBindingComponent",
+      "member": "Unbind",
+      "category": "uBot|Physics",
+      "tooltip": "Gives the bodies back to Chaos: simulation is restored where it was on, with the backend's last velocities. Clears a failed Bind.",
+      "keywords": "",
+      "flags": {
+        "static": false,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "execute",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "self",
+          "name": "Target",
+          "type": {
+            "category": "object",
+            "subtype": "UUBotPhysicsBindingComponent",
+            "subtypeDisplay": "uBot Physics Binding",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "then",
+          "name": "",
+          "type": {
+            "category": "exec",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsLibrary.GetBodyPhysicsBackend",
+      "kind": "pure",
+      "title": "Get Body Physics Backend",
+      "subtitle": "",
+      "owner": "UUBotPhysicsLibrary",
+      "member": "GetBodyPhysicsBackend",
+      "category": "uBot|Physics",
+      "tooltip": "The backend that simulates Component; None when Chaos (the engine's physics) does.",
+      "keywords": "physics backend chaos owner",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Component",
+          "name": "Component",
+          "type": {
+            "category": "object",
+            "subtype": "UPrimitiveComponent",
+            "subtypeDisplay": "Primitive Component",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": true
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsLibrary.GetDroppedPhysicsSteps",
+      "kind": "pure",
+      "title": "Get Dropped Physics Steps",
+      "subtitle": "",
+      "owner": "UUBotPhysicsLibrary",
+      "member": "GetDroppedPhysicsSteps",
+      "category": "uBot|Physics",
+      "tooltip": "Steps the backend skipped in this world because one frame needed more than the per-frame limit.",
+      "keywords": "physics backend dropped skipped steps",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Backend",
+          "name": "Backend",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "None",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "int64",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsLibrary.GetPhysicsBackendCapabilities",
+      "kind": "pure",
+      "title": "Get uBot Physics Backend Capabilities",
+      "subtitle": "",
+      "owner": "UUBotPhysicsLibrary",
+      "member": "GetPhysicsBackendCapabilities",
+      "category": "uBot|Physics",
+      "tooltip": "What Backend can simulate. False (and all capabilities off) if no backend has that name.",
+      "keywords": "physics backend capabilities features",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Backend",
+          "name": "Backend",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "None",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Capabilities",
+          "name": "Capabilities",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsCapabilities",
+            "subtypeDisplay": "UBot Physics Capabilities",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsLibrary.GetPhysicsBackendNames",
+      "kind": "pure",
+      "title": "Get uBot Physics Backend Names",
+      "subtitle": "",
+      "owner": "UUBotPhysicsLibrary",
+      "member": "GetPhysicsBackendNames",
+      "category": "uBot|Physics",
+      "tooltip": "Names of the registered physics backends, in registration order. A binding's Backend is one of them.",
+      "keywords": "physics backend list solver",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "array",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    },
+    {
+      "id": "UUBotPhysicsLibrary.GetPhysicsSceneStats",
+      "kind": "pure",
+      "title": "Get Physics Scene Stats",
+      "subtitle": "",
+      "owner": "UUBotPhysicsLibrary",
+      "member": "GetPhysicsSceneStats",
+      "category": "uBot|Physics",
+      "tooltip": "What Backend currently sees of this world's scene: the static and kinematic colliders it was last sent, their\nshapes, and how many components with physics collision could not be exported. False (and all zero) if the\nbackend has no solver in this world.",
+      "keywords": "scene collider static kinematic mocap geometry",
+      "flags": {
+        "static": true,
+        "latent": false,
+        "deprecated": false,
+        "developmentOnly": false,
+        "callInEditor": false,
+        "compact": false
+      },
+      "compactTitle": "",
+      "inputs": [
+        {
+          "id": "Backend",
+          "name": "Backend",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "None",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Stats",
+          "name": "Stats",
+          "type": {
+            "category": "struct",
+            "subtype": "FUBotPhysicsSceneStats",
+            "subtypeDisplay": "UBot Physics Scene Stats",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        },
+        {
+          "id": "ReturnValue",
+          "name": "Return Value",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "default": "",
+          "advanced": false,
+          "tooltip": ""
+        }
+      ]
+    }
+  ],
+  "structs": [
+    {
+      "id": "FUBotPhysicsBodyBinding",
+      "displayName": "UBot Physics Body Binding",
+      "module": "UBotPhysics",
+      "header": "Source/UBotPhysics/Public/UBotPhysicsTypes.h",
+      "tooltip": "One UE component handed to a backend.",
+      "fields": [
+        {
+          "id": "BodyName",
+          "displayName": "Body Name",
+          "type": {
+            "category": "name",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Name of the body in the backend's model. None: the backend derives it.",
+          "access": "readOnly"
+        },
+        {
+          "id": "Component",
+          "displayName": "Component",
+          "type": {
+            "category": "struct",
+            "subtype": "FComponentReference",
+            "subtypeDisplay": "Component Reference",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Primitive component of the binding's own actor that shows the body; it must be Movable.",
+          "access": "readOnly"
+        }
+      ],
+      "make": "Make:FUBotPhysicsBodyBinding",
+      "break": "Break:FUBotPhysicsBodyBinding"
+    },
+    {
+      "id": "FUBotPhysicsCapabilities",
+      "displayName": "UBot Physics Capabilities",
+      "module": "UBotPhysics",
+      "header": "Source/UBotPhysics/Public/UBotPhysicsTypes.h",
+      "tooltip": "What a physics backend can simulate. Fields are only ever appended.",
+      "fields": [
+        {
+          "id": "bAccelerations",
+          "displayName": "Accelerations",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Body states carry linear and angular accelerations.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bArticulations",
+          "displayName": "Articulations",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Jointed bodies in reduced (generalized) coordinates.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bCloth",
+          "displayName": "Cloth",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Cloth.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bContacts",
+          "displayName": "Contacts",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Contacts between the backend's own bodies.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bDeterministic",
+          "displayName": "Deterministic",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "The same inputs and steps give identical results.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bDifferentiable",
+          "displayName": "Differentiable",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "The simulation can be differentiated.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bKinematicForeignBodies",
+          "displayName": "Kinematic Foreign Bodies",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Can mirror bodies simulated elsewhere as kinematic bodies.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bMaximalCoordinateJoints",
+          "displayName": "Maximal Coordinate Joints",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Joints as constraints between free bodies.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bParticles",
+          "displayName": "Particles",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Particle systems.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bRigidBodies",
+          "displayName": "Rigid Bodies",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Free rigid bodies.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bSoftBodies",
+          "displayName": "Soft Bodies",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Deformable solid bodies.",
+          "access": "readOnly"
+        },
+        {
+          "id": "bStaticSceneGeometry",
+          "displayName": "Static Scene Geometry",
+          "type": {
+            "category": "bool",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Can collide with static UE geometry the subsystem hands over.",
+          "access": "readOnly"
+        }
+      ],
+      "make": "Make:FUBotPhysicsCapabilities",
+      "break": "Break:FUBotPhysicsCapabilities"
+    },
+    {
+      "id": "FUBotPhysicsSceneStats",
+      "displayName": "UBot Physics Scene Stats",
+      "module": "UBotPhysics",
+      "header": "Source/UBotPhysics/Public/UBotPhysicsTypes.h",
+      "tooltip": "What one backend currently sees of the UE scene.",
+      "fields": [
+        {
+          "id": "KinematicBodies",
+          "displayName": "Kinematic Bodies",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Kinematic (moving) colliders handed to the backend.",
+          "access": "readOnly"
+        },
+        {
+          "id": "Shapes",
+          "displayName": "Shapes",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Shapes of those bodies.",
+          "access": "readOnly"
+        },
+        {
+          "id": "SkippedComponents",
+          "displayName": "Skipped Components",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Components of the world with physics collision that could not be exported (unsupported type or shapes, no body setup).",
+          "access": "readOnly"
+        },
+        {
+          "id": "StaticBodies",
+          "displayName": "Static Bodies",
+          "type": {
+            "category": "int",
+            "subtype": "",
+            "subtypeDisplay": "",
+            "container": "none",
+            "valueType": null,
+            "byRef": false,
+            "const": false
+          },
+          "tooltip": "Static colliders handed to the backend.",
+          "access": "readOnly"
+        }
+      ],
+      "make": "Make:FUBotPhysicsSceneStats",
+      "break": "Break:FUBotPhysicsSceneStats"
+    }
+  ],
+  "enums": [
+    {
+      "id": "EUBotPhysicsBindingStatus",
+      "displayName": "EUBot Physics Binding Status",
+      "module": "UBotPhysics",
+      "header": "Source/UBotPhysics/Public/UBotPhysicsTypes.h",
+      "tooltip": "Where a physics binding stands. Append new values at the end.",
+      "values": [
+        {
+          "id": "BackendMissing",
+          "displayName": "Backend Missing",
+          "value": 2,
+          "tooltip": "The last Bind failed: no backend with this name is registered."
+        },
+        {
+          "id": "Bound",
+          "displayName": "Bound",
+          "value": 1,
+          "tooltip": "Every body is handed to the backend."
+        },
+        {
+          "id": "Rejected",
+          "displayName": "Rejected",
+          "value": 3,
+          "tooltip": "The last Bind failed: a component or the backend refused. Nothing is bound."
+        },
+        {
+          "id": "Unbound",
+          "displayName": "Unbound",
+          "value": 0,
+          "tooltip": "Not bound: Bind was not called yet, or Unbind was."
+        }
+      ]
+    }
+  ]
+}

@@ -109,7 +109,7 @@ wires:
 ## 输出与事件
 
 - 控制期间组件每帧发一条指令。
-- 控制结束时，`Velocity` 模式发 `Stop Motion`，其余模式发 `Release Attitude Command`：无人机刹停并悬停，物理无人机在后一种情况下按 `Command Loss Action` 处理。
+- 控制结束时，`Velocity` 模式发 `Stop Motion`，无人机刹停并悬停。`Angle` 和 `Rate` 模式发 `Release Attitude Command`，释放姿态指令，接下来由无人机的 `Command Loss Action` 决定，默认是 `Hover`（刹停并悬停），见[物理无人机的指令与控制模式](/aerial/dynamics/#关键属性)。
 - 同时有其他发送方（例如 ROS）时，最后到达的指令生效。
 
 ## 注意事项

@@ -1,0 +1,23 @@
+UUBotROSConventionsLibrary:
+  summary: 在蓝图里使用 ROS 专有的约定：相机光学系、builtin_interfaces/Time 的字段和 ROS 名字。对应 C++ 的 UBot::ROSConventions。ROS 用的 UE 与右手系轴向换算在 uBotCore 的坐标约定库里（类别 uBot|Conventions，节点 UE To Right-Handed …）。
+  sourceHash: "8a2148431878"
+
+UUBotROSConventionsLibrary.CameraLinkToOpticalRotation:
+  summary: 相机光学系（z 向前、x 向右、y 向下）相对相机 link 系的旋转，ROS 约定。
+  sourceHash: "cb12ec14f663"
+
+UUBotROSConventionsLibrary.GetOpticalFrameSuffix:
+  summary: 接在相机 frame id 后面、组成光学系 frame id 的后缀 _optical。
+  sourceHash: "2ac2345162a2"
+
+UUBotROSConventionsLibrary.RosTimeToSeconds:
+  summary: 把 builtin_interfaces/Time 的 sec 和 nanosec 换成秒。nanosec 为负数时按 0 处理。
+  sourceHash: "2f226d4070d1"
+
+UUBotROSConventionsLibrary.SanitizeRosName:
+  summary: 生成合法的 ROS 名字片段：只保留 A-Z、a-z、0-9 和下划线，连续下划线合并，首字符是数字时加前缀下划线，结果不会为空。
+  sourceHash: "38bd4b356bd6"
+
+UUBotROSConventionsLibrary.SecondsToRosTime:
+  summary: 把秒换成 builtin_interfaces/Time 的 sec 和 nanosec。负数或非有限值得到 (0, 0)。
+  sourceHash: "a019408d75bc"

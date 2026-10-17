@@ -14,20 +14,38 @@ sidebar:
 
 | 名称 | 版本 | 日期 | UE 5.5 Win64 预编译包 |
 | --- | --- | --- | --- |
+| uBotCore | 0.1.3 | 2026-10-17 | 有 |
 | uBotCore | 0.1.2 | 2026-10-13 | 有 |
 | uBotCore | 0.1.1 | 2026-10-10 | 有 |
 | uBotCore | 0.1.0 | 2026-10-10 | 无 |
+| uBotSensor | 0.1.2 | 2026-10-17 | 有 |
 | uBotSensor | 0.1.1 | 2026-10-10 | 有 |
 | uBotSensor | 0.1.0 | 2026-10-10 | 无 |
+| uBotROS | 0.1.3 | 2026-10-17 | 有 |
 | uBotROS | 0.1.2 | 2026-10-13 | 有 |
 | uBotROS | 0.1.1 | 2026-10-10 | 有 |
 | uBotROS | 0.1.0 | 2026-10-10 | 无 |
+| uBotAerial | 0.1.1 | 2026-10-17 | 有 |
 | uBotAerial | 0.1.0 | 2026-10-13 | 有 |
+| uBotPhysics | 0.1.0 | 2026-10-17 | 有 |
 | uBot Manager | 0.1.0 | 2026-10-10 | 不适用 |
 
 更新已装的插件见[安装、更新、移除插件](/manager/packages/)。预编译包是什么，见[安装 uBot](/start/install/)。
 
 ## uBotCore
+
+### 0.1.3
+
+- 坐标约定改为中立的右手系：UE 的左手系、厘米与右手系 FLU、国际单位制之间互转，ROS（REP-103）和 MuJoCo 都适用。蓝图节点是 `UE To Right-Handed …` 和 `Right-Handed To UE …`，C++ 是 `UBot::RightHanded`，见[坐标约定库](/core/conventions/)。
+- 旧的 `UE To ROS …` 等 17 个节点和 C++ 的 `UBot::Ros` 保留，已弃用，结果相同。其中相机光学系、ROS 时间和 ROS 名字合法化这些 ROS 专属的节点移到了 uBotROS 0.1.3。
+- 新增刚体状态源接口 `IUBotBodyStateSource` 和状态结构体 `FUBotBodyState`（实验性，只能在 C++ 里实现）：移动一个物体的对象报告它的真实状态，传感器据此读取速度和加速度，见[插件之间怎么对接](/concepts/interfaces/)。
+- 采样调度器新增 `ConsumeDueSteps`（C++），一帧里补上所有到期的步，供固定步长的模拟使用，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- 扩展点注册表新增 `AddExtensionsChangedHandler` 和 `RemoveExtensionsChangedHandler`（C++）：扩展点或扩展增减之后通知处理函数，在任何线程都可以添加和移除。
+- `uBot Identity` 的默认命名空间改用 `UBot::Identity::SanitizeNameToken` 净化，规则不变。
+- Details 面板里的属性分类不再以 `uBot` 开头，之前会显示成「U Bot」。
+- 包索引新增 uBotSensor 0.1.2、uBotROS 0.1.3、uBotAerial 0.1.1 和 uBotPhysics 0.1.0 的条目。
+- 与 0.1.2 兼容：只新增和弃用 API。已发布的 uBotROS 0.1.2 和 uBotAerial 0.1.0 的预编译包不用重新编译，配合 uBotCore 0.1.3 和 uBotSensor 0.1.2 通过了它们的全部自动化测试。
+- 提供 UE 5.5 Win64 的预编译包。
 
 ### 0.1.2
 
@@ -57,6 +75,17 @@ sidebar:
 
 ## uBotSensor
 
+### 0.1.2
+
+- 位姿、里程计和 IMU 在所在物体有刚体状态源时（比如 uBotAerial 的无人机、uBotPhysics 的物理后端绑定），直接读真实的速度和加速度，不再对位姿做差分，见[读取刚体状态](/sensor/body-state/)。IMU 加上杠杆臂项（α×r + ω×(ω×r)）。
+- 新增 `Use Body State`（默认开）：传感器装在会动的部件上时关闭它，总是差分。新增 `Is Using Body State` 和 `Get Body State Age Seconds`，后者给出状态的新旧；样本的时间戳仍是采样时刻。没有状态源时行为与 0.1.1 相同。
+- 状态模式只需要一个预热样本，噪声和滤波与差分模式用同一段代码。
+- 修复：每个采样间隔转角小于 2e-4 rad 时，角速度被当成绕 X 轴的旋转；慢速偏航现在读数正确。
+- Details 面板里的属性分类不再以 `uBot` 开头。
+- 已发布的 uBotROS 0.1.2 的预编译包不用重新编译。
+- 需要 uBotCore 0.1.3。
+- 提供 UE 5.5 Win64 的预编译包。
+
 ### 0.1.1
 
 - 插件图标换成 uBot 标志。
@@ -75,6 +104,15 @@ sidebar:
 - 旧插件的蓝图和关卡在切换到 uBotSensor 后可以加载（CoreRedirects），详见[从旧插件迁移](/develop/migration/)。
 
 ## uBotROS
+
+### 0.1.3
+
+- ROS 专属的坐标内容从 uBotCore 移到这里：相机光学系的旋转和后缀、`builtin_interfaces/Time` 与秒的互转、ROS 名字合法化。蓝图节点是类别 `uBot|ROS|Conventions` 下的 5 个，名字和显示名不变，行为不变，见[坐标约定库](/core/conventions/)。
+- uBotROS 自己的转换改用 uBotCore 的中立约定 `UBot::RightHanded`，不再调用已弃用的接口。
+- Details 面板里的属性分类不再以 `uBot` 开头（`ROS|…`）。
+- 与 ROS 桥握手时报告的 UE 端版本现在是 `uBot UE 0.1.3`。
+- 依赖改为 uBotCore 0.1.3 或更新的 0.1.x。
+- 提供 UE 5.5 Win64 的预编译包。
 
 ### 0.1.2
 
@@ -107,6 +145,15 @@ sidebar:
 
 ## uBotAerial
 
+### 0.1.1
+
+- 多旋翼的移动组件（`uBot Multirotor Movement`）成为 uBotCore 的刚体状态源：位置、姿态、线速度和线加速度取自最近一个物理步，角速度和新增的角加速度在世界系，时间戳是该步的仿真时间。它从注册起就认领根组件，uBotPhysics 的绑定不会接管无人机。uBotSensor 0.1.2 的位姿、里程计和 IMU 据此读取真实的速度和加速度，见[无人机的刚体状态](/aerial/body-state/)。
+- 修复：在无人机自己的 `BeginPlay` 之前发出的速度、姿态、角速度和电机指令，之前节点返回成功，随后被开始飞行时的重置清掉；现在会在重置之后生效。`Reset Flight` 和 `Stop Motion` 为 true 的 `Teleport Multirotor` 仍然清除指令。
+- 修复：每个物理步转角小于 2e-4 rad 时，角速度被当成绕 X 轴的旋转；慢速偏航现在读数正确。
+- `uBot Multirotor Manual Input` 的类说明改为按飞行模式写明控制结束时的行为：`Velocity` 模式刹车并悬停，`Angle` 和 `Rate` 模式释放姿态指令，由 `Command Loss Action` 决定，见[键盘和手柄手动飞行](/aerial/manual-flight/)。
+- 需要 uBotCore 0.1.3。
+- 提供 UE 5.5 Win64 的预编译包。
+
 ### 0.1.0
 
 首个版本，建立在 uBotCore 0.1.2 之上，另需引擎插件 Enhanced Input。
@@ -121,6 +168,19 @@ sidebar:
 - 无人机会撞上地面、墙和其他物体，见[碰撞](/aerial/collision/)。
 - 无人机通过 uBotCore 的速度、姿态和电机指令接口接收指令，uBotROS 0.1.2 的指令组件可以直接驱动它，见[插件之间怎么对接](/concepts/interfaces/)。
 - 示例无人机的模型来自 Fab 上的 Animated Drone（CC BY 4.0）。
+- 提供 UE 5.5 Win64 的预编译包。
+
+## uBotPhysics
+
+### 0.1.0
+
+首个版本，建立在 uBotCore 0.1.3 之上。它让同一个关卡里的不同物体由不同的物理后端计算，Chaos 仍是默认；自己不带物理引擎，后端是依赖它的独立插件，至少安装一个后端才能绑定物体。用法见 [uBotPhysics](/physics/)。
+
+- 后端扩展点 `UBotPhysics.Backend`，后端实现 `IUBotPhysicsBackendFactory` 和 `IUBotPhysicsSolver`（实验性，只能在 C++ 里实现，小版本之间可能变化）。
+- 绑定组件 `uBot Physics Binding`：选后端，播放时自动绑定；一个组件只归一个后端，全部成功或全部回滚。
+- 后端按 uBot 仿真时钟以自己的固定步长推进，每帧把位姿写回对应的 UE 组件；暂停时不步进，恢复后不补跑。
+- 场景几何：声明了相应能力的后端会把关卡里其余的碰撞体当作静态物体和运动学物体收到。
+- 绑定组件是 uBotCore 的刚体状态源，传感器可以读到后端给出的真实速度。
 - 提供 UE 5.5 Win64 的预编译包。
 
 ## uBot Manager

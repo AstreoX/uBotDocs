@@ -41,9 +41,9 @@ notes:
 
 2. **添加组件**
 
-   在无人机的蓝图上点「Components」面板的「Add」，搜索 `uBot ROS Attitude Command`（姿态和角速度）或 `uBot ROS Motor Command`（单电机），可以两个都加。属性在「Details」面板的「U Bot > ROS > Command」下：
+   在无人机的蓝图上点「Components」面板的「Add」，搜索 `uBot ROS Attitude Command`（姿态和角速度）或 `uBot ROS Motor Command`（单电机），可以两个都加。属性在「Details」面板的「ROS > Command」下：
 
-   ![复制出来的示例无人机加了 ROSAttitudeCommand 和 ROSMotorCommand 两个组件，选中前者，Details 面板里 U Bot 的 ROS 下是 Command 分类的各项属性](../../../assets/ros/attitude-command.png)
+   ![复制出来的示例无人机加了 ROSAttitudeCommand 和 ROSMotorCommand 两个组件，选中前者，Details 面板里 ROS 下是 Command 分类的各项属性](../../../assets/ros/attitude-command.png)
 
 3. **确定话题**
 
@@ -80,7 +80,7 @@ notes:
 | `Target Component` | 空 | 接收指令的组件；空则自动查找 |
 | `Command Timeout Seconds` | 0.5 s | 超过这么久（仿真时间）没有新指令，就释放指令；0 关闭超时 |
 
-![选中 ROSMotorCommand 时的 Details 面板：U Bot 的 ROS 下 Command 分类里的属性与姿态指令组件相同](../../../assets/ros/motor-command.png)
+![选中 ROSMotorCommand 时的 Details 面板：ROS 下 Command 分类里的属性与姿态指令组件相同](../../../assets/ros/motor-command.png)
 
 ## 输出与事件
 
