@@ -1,6 +1,6 @@
 ---
 title: uBotEnvironment
-description: uBotEnvironment（规划中）：烟雾、雾等影响感知的环境效果。
+description: uBotEnvironment 尚未发布：当前开发风场，烟雾和雾仍在规划中。
 pageKind: placeholder
 sidebar:
   order: 30
@@ -8,38 +8,38 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-uBotEnvironment 是规划中的环境效果插件，目前尚未发布。
+uBotEnvironment 统一提供场景环境，当前正在开发风场，尚未发布。
 
 <PackageStatus name="UBotEnvironment" />
 
 ## 定位
 
-提供烟雾、雾等会影响感知的环境效果，用在需要让传感器受到干扰的场景里。
+提供可被多个机器人或传感器共同使用的场景环境，环境本身与无人机的飞行模型分开。
 
-在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
+本地开发版把 uBotAerial 的风场迁到这里；uBot Manager 中仍显示为「规划中」，现在不能安装。已经发布的 uBotAerial 0.1.1 仍自带风场，按[风](/aerial/wind/)中的步骤使用。
 
 ## 计划提供的能力
 
-包索引为它声明了两个能力标签（`provides`）：
+首版的开发范围是风，包索引中的能力标签（`provides`）为 `Env.Wind`：
 
-| 能力标签 | 含义 |
+| 内容 | 状态 |
 | --- | --- |
-| `Env.Smoke` | 烟雾效果 |
-| `Env.Fog` | 雾效果 |
+| 恒定风、按种子生成的阵风、Actor 风源与脚本风源叠加 | 当前开发内容，保持 uBotAerial 0.1.1 的风场行为 |
+| 烟雾、雾等影响感知的环境效果 | 后续规划，首版不提供 |
 
-uBotCore 已经定义了描述这类介质的接口 `UBot Perception Medium`：实现它的 Actor 通过 `Get Medium Snapshot` 交出若干球形单元，每个单元有位置、半径和密度。uBotSensor 的激光雷达、RGB 相机和深度相机会读取这样的 Actor，细节见 [感知介质](/sensor/medium/)。
-
-尚未确定：烟雾和雾 Actor 的名称与属性，以及它们是否就是这个接口的实现。
+风场目前在空间上均匀，随仿真时间变化；局部风区、建筑绕流、旋翼尾流不在这次迁移范围内。烟雾和雾 Actor 的名称、属性及实现方式尚未确定。
 
 ## 与现有插件的关系
 
-- uBotCore：按包索引，它只依赖 uBotCore 0.1.x，不依赖 uBotSensor。
-- uBotSensor：已经能读取实现了 `UBot Perception Medium` 的 Actor。传感器受不受 uBotEnvironment 的影响，要看它使用的接口，这一点尚未确定。
-- uBotCombat：它依赖 uBotEnvironment。包索引里的组合「烟雾作战演示」把两者放在一起，用途是「带烟雾干扰的作战场景」，见 [选择组合](/start/recipes/)。
+- uBotCore：开发版通过 Core 的 `IUBotWindProvider` 和按世界隔离的 `UUBotWindQuerySubsystem` 连接风场与使用者，需要尚未发布的 uBotCore 0.1.4。
+- uBotAerial：开发版只向 Core 查询风速，由自己的飞行模型计算阻力和抗风响应；两个插件互不硬依赖。只使用无人机飞行时无需启用 uBotEnvironment，没有风提供者时风速为零。
+- uBotSensor：已经能读取实现了 `UBot Perception Medium` 的 Actor；这不代表 uBotEnvironment 已提供烟雾或雾。
+- uBotCombat：规划中的「烟雾作战演示」仍需等待烟雾能力，不能用首版风场替代，见[选择组合](/start/recipes/)。
 
 ## 发布前可以先怎么做
 
-- 自己做一个烟雾或雾的 Actor，让它实现 `UBot Perception Medium`：在 `Get Medium Snapshot` 里返回若干球形单元，每个单元有位置、半径（单位厘米）和密度（0 到 1）。
+- 使用已发布的 uBotAerial 0.1.1 时，继续用它自带的风场；切换到本地开发版时，按[风场迁移说明](/develop/migration/#风场从-ubotaerial-迁到-ubotenvironment开发版)启用新插件并处理旧资产。
+- 需要烟雾或雾干扰时，可以自行制作实现 `UBot Perception Medium` 的 Actor：在 `Get Medium Snapshot` 里返回若干球形单元，每个单元有位置、半径（单位厘米）和密度（0 到 1）。
 - 把 uBotSensor 的激光雷达或相机放进场景，确认传感器上的 `Enable Smoke Interference` 是打开的（默认打开），就能看到介质对数据的影响。
 - 添加接口的做法见 [插件之间怎么对接](/concepts/interfaces/)，每种传感器受到的影响见 [感知介质](/sensor/medium/)。
 - uBotEnvironment 发布后，自己做的介质要不要改、怎么改，尚未确定。

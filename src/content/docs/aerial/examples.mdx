@@ -10,6 +10,8 @@ import { Steps } from "@astrojs/starlight/components";
 
 用插件自带的三架示例无人机和试飞关卡 `L_UBotAerialDemo` 马上飞起来，再把示例放进自己的关卡，复制后改成自己的无人机。
 
+以下内容对应已发布的 uBotAerial 0.1.1，试飞关卡中的风由它自带。尚未发布的开发版把风场移到 uBotEnvironment，打开含风 Actor 的示例关卡时需启用它；无人机单独飞行无需这个插件，见[迁移说明](/develop/migration/#风场从-ubotaerial-迁到-ubotenvironment开发版)。
+
 ## 快速用法
 
 在 `BeginPlay` 时找到关卡里的示例无人机，取得它的 `Movement` 组件，发一条 1 m/s 的前进速度指令：
