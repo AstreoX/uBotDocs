@@ -43,6 +43,8 @@ uBot 的插件通过接口对接，而不是互相依赖对方的类，除了 `I
 
 三个指令接口都是独立的能力接口，实现它们不要求同时实现 `UBot Actuator`。
 
+环境提供者负责场景条件，使用者负责自己的物理或测量响应，双方通过 Core 的已有接口对接，不需要专用连接插件。接口归属、风场开发版的接入方式与后续烟雾的复用原则，见[环境与使用者的职责边界](/develop/package-authoring/#环境与使用者的职责边界)。
+
 ## 例子：ROS 的速度指令驱动一个对象
 
 uBotROS 只负责把 ROS 的 `cmd_vel` 翻译成 uBot 的速度指令（`UBot Velocity Command`），怎样让车辆动起来，由实现了 `UBot Velocity Commandable` 的对象决定。

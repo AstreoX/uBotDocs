@@ -132,10 +132,11 @@ RGB 相机的颜色：来自 `UBot Perception Medium` 接口的快照用它自�
 - 单元只能是球。形状复杂的烟雾用多个单元拼出来。
 - 每次采样都会遍历世界里的 Actor 来收集介质。场景里没有介质时，可以关掉 `Enable Smoke Interference`。
 - 烟雾、雾等环境效果计划由 [uBotEnvironment](/environment/) 提供，它还在规划中，尚未发布。介质接口在 uBotCore 里，不依赖 uBotEnvironment，现在就可以用本页的方法自己做介质。
+- 后续环境提供者优先实现现有介质接口，Sensor 保留收集和测量响应，无需额外连接插件；职责约定见[环境与使用者的职责边界](/develop/package-authoring/#环境与使用者的职责边界)。
 
 ## 相关参考
 
 - [UBot Perception Medium](/reference/ubotcore/uubotperceptionmedium/)：接口和 `Get Medium Snapshot`。
 - [UBot Medium Snapshot](/reference/ubotcore/structs/fubotmediumsnapshot/)和 [UBot Medium Cell](/reference/ubotcore/structs/fubotmediumcell/)：快照和单元的字段。
 - [2D 激光雷达](/sensor/lidar-2d/)、[3D 激光雷达](/sensor/lidar-3d/)、[RGB 相机](/sensor/rgb-camera/)和[深度相机](/sensor/depth-camera/)：各传感器的输出。
-- [插件之间怎么对接](/concepts/interfaces/)：uBot 的四个接口。
+- [插件之间怎么对接](/concepts/interfaces/)：共享接口的实现者和使用者。

@@ -27,9 +27,11 @@ uBotEnvironment 统一提供场景环境，当前正在开发风场，尚未发�
 | 恒定风、按种子生成的阵风、Actor 风源与脚本风源叠加 | 当前开发内容，保持 uBotAerial 0.1.1 的风场行为 |
 | 烟雾、雾等影响感知的环境效果 | 后续规划，首版不提供 |
 
-风场目前在空间上均匀，随仿真时间变化；局部风区、建筑绕流、旋翼尾流不在这次迁移范围内。烟雾和雾 Actor 的名称、属性及实现方式尚未确定。
+风场目前在空间上均匀，随仿真时间变化；局部风区、建筑绕流、旋翼尾流不在这次迁移范围内。烟雾和雾的生成、演化及视觉效果尚未实现。
 
 ## 与现有插件的关系
+
+环境生成归 Environment，物理与测量响应归使用者；接口的实现与调用留在各自插件中，不新增连接插件，后续烟雾优先复用感知介质接口。完整约定见[环境与使用者的职责边界](/develop/package-authoring/#环境与使用者的职责边界)。
 
 - uBotCore：开发版通过 Core 的 `IUBotWindProvider` 和按世界隔离的 `UUBotWindQuerySubsystem` 连接风场与使用者，需要尚未发布的 uBotCore 0.1.4。
 - uBotAerial：开发版只向 Core 查询风速，由自己的飞行模型计算阻力和抗风响应；两个插件互不硬依赖。只使用无人机飞行时无需启用 uBotEnvironment，没有风提供者时风速为零。
@@ -42,4 +44,3 @@ uBotEnvironment 统一提供场景环境，当前正在开发风场，尚未发�
 - 需要烟雾或雾干扰时，可以自行制作实现 `UBot Perception Medium` 的 Actor：在 `Get Medium Snapshot` 里返回若干球形单元，每个单元有位置、半径（单位厘米）和密度（0 到 1）。
 - 把 uBotSensor 的激光雷达或相机放进场景，确认传感器上的 `Enable Smoke Interference` 是打开的（默认打开），就能看到介质对数据的影响。
 - 添加接口的做法见 [插件之间怎么对接](/concepts/interfaces/)，每种传感器受到的影响见 [感知介质](/sensor/medium/)。
-- uBotEnvironment 发布后，自己做的介质要不要改、怎么改，尚未确定。
