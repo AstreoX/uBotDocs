@@ -33,7 +33,9 @@ uBot Manager 是 Windows 桌面程序，负责下载插件、处理依赖、修�
 
 2. **运行安装包**
 
-   安装包按当前用户安装，不需要管理员权限，可以在向导里选目录，界面随系统语言显示中文或英文。安装包没有代码签名，SmartScreen 会提示「未知发布者」，点「更多信息 → 仍要运行」。
+   安装包按当前用户安装，不需要管理员权限，可以在向导里选目录，界面随系统语言显示中文或英文。当前 Manager v0.1.3 尚未签名，SignPath 申请仍在等待审批。先确认下载来自上述仓库，再用 `Get-FileHash .\uBot-Manager_0.1.3_x64-setup.exe -Algorithm SHA256` 核对发布页 `.sha256` 中的值，确认后可在 SmartScreen 选择「更多信息 → 仍要运行」。也可以按仓库说明从源码构建。
+
+   后续签名版发布后应检查有效发布者签名；[代码签名不保证 SmartScreen 立即建立信誉](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation)，仍可能出现提示。
 
 3. **启动**
 
