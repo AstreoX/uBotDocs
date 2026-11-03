@@ -111,7 +111,7 @@ notes:
 | `VisualRoot` | 网格的父级，导航无人机的外观倾斜作用于它 |
 | `Body` | 机身网格，没有碰撞 |
 | `Rotor0` 到 `Rotor3` | `uBot Rotor`，桨叶随对应电机的转速旋转；导航无人机没有电机，桨叶转速只是显示用的，由加速度推算 |
-| `CameraBoom` / `Camera` | 跟随相机 |
+| `CameraBoom` / `Camera` | 跟随相机，弹簧臂长 120 cm，保留 12 cm 碰撞探针；贴地出生时可将臂的相对位置 Z 设为 20 cm，见[手动飞行注意事项](/aerial/manual-flight/#注意事项) |
 | `Identity` | `uBot Identity`：机器人 ID、ROS 命名空间、基坐标系 |
 | `ManualInput` | `uBot Multirotor Manual Input`，见 [键盘和手柄手动飞行](/aerial/manual-flight/) |
 | `Movement` | 飞行模型 |
