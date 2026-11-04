@@ -1,6 +1,6 @@
 ---
 title: 从旧插件迁移
-description: 从旧插件迁移到 uBot、迁移开发版风场，以及 CoreRedirects 自动处理和需要手工调整的内容。
+description: 从旧插件迁移到 uBot、迁移开发版 Core API 和风场，以及 CoreRedirects 自动处理和需要手工调整的内容。
 pageKind: concept
 packages: [UBotSensor, UBotROS, UBotAerial]
 sidebar:
@@ -128,9 +128,49 @@ import { Steps } from "@astrojs/starlight/components";
 
 如果装过早期版本的 uBotROS，还要搬一次设置：早期版本把设置写在工程的 `Config/DefaultEngine.ini`，现在只读取 `Config/DefaultUBotROS.ini`。把 `[/Script/UBotROS.UBotROSSettings]` 整段剪切过去，或在「Project Settings」里重新设置一遍。
 
+## Core 旧 ROS API 迁移（0.2.0 开发版）
+
+尚未发布的 0.2.0 源码删除 Core 的 `UBotRosConventions.h`、17 个旧 `UBot::Ros` 换算函数和 17 个已弃用蓝图节点。六个插件的开发版统一为 0.2.0，要求 Core `^0.2.0`；uBotROS 还要求 Sensor `^0.2.0`，暂不能通过 uBot Manager 安装。
+
+文档站的参考数据与示例图继续对应已发布的 0.1.x；其中出现的旧节点属于该文档版本。以下步骤适用于更新源码到 0.2.0 的工程。
+
+### C++ 调用方
+
+12 个数学函数改用 `UBotRightHandedConventions.h`，将 `UBot::Ros` 换成 `UBot::RightHanded`，并按下表替换函数名；参数类型及换算行为不变，只需依赖 Core：
+
+| 量 | UE → 右手系 | 右手系 → UE |
+| --- | --- | --- |
+| 位置 | `PositionUEToROS` → `PositionFromUE` | `PositionROSToUE` → `PositionToUE` |
+| 线性向量 | `VectorUEToROS` → `VectorFromUE` | `VectorROSToUE` → `VectorToUE` |
+| 角速度 | `AngularVelocityUEToROS` → `AngularVelocityFromUE` | `AngularVelocityROSToUE` → `AngularVelocityToUE` |
+| 旋转 | `RotationUEToROS` → `RotationFromUE` | `RotationROSToUE` → `RotationToUE` |
+| 变换 | `TransformUEToROS` → `TransformFromUE` | `TransformROSToUE` → `TransformToUE` |
+| 航向 | `YawUEToROS` → `YawFromUE` | `YawROSToUE` → `YawToUE` |
+
+5 个 ROS 专属函数改用 uBotROS 的 `UBotROSConventionHelpers.h`，将 `UBot::Ros` 换成 `UBot::ROSConventions`；函数名和参数不变，调用它们的模块须依赖 `UBotROS`：
+
+| 用途 | 函数 |
+| --- | --- |
+| 相机光学系 | `CameraLinkToOpticalRotation`、`OpticalFrameSuffix` |
+| ROS 时间 | `SecondsToRosTime`、`RosTimeToSeconds` |
+| ROS 名称 | `SanitizeRosName` |
+
+通用名称片段处理可继续只用 Core 的 `UBot::Identity::SanitizeNameToken`。完成修改后，统一重编所有依赖的 uBot 和工程模块；0.1.x DLL 不能与 0.2.0 混用，CoreRedirects 不处理 C++ 链接符号。
+
+### 蓝图与关卡
+
+| 旧节点 | 0.2.0 目标 | 提供重定向的插件 |
+| --- | --- | --- |
+| `UE To ROS …` / `ROS To UE …`，共 12 个 | Core 的 `UE To Right-Handed …` / `Right-Handed To UE …` | uBotCore |
+| 上表的 5 个 ROS 专属函数所对应的节点 | uBotROS 的 `UUBotROSConventionsLibrary`，函数名与引脚不变 | uBotROS |
+
+数学节点的 5 个改名输入引脚也有重定向：`ROSMeters` → `Meters`、`ROSRadiansPerSecond` → `RadiansPerSecond`、`ROSRotation` → `Rotation`、`ROSTransform` → `Transform`、`ROSRadians` → `Radians`。
+
+启用所需插件并重启编辑器后，打开、编译和重存相关蓝图与关卡。只使用数学换算的工程无需启用 uBotROS；含旧 ROS 专属节点的资产须先启用它，才能加载跨模块重定向。
+
 ## 风场从 uBotAerial 迁到 uBotEnvironment（开发版）
 
-这次拆分属于尚未发布的开发版：uBotAerial 0.1.2、uBotEnvironment 0.1.0 和 uBotCore 0.1.4，不能通过 uBot Manager 安装。已发布的 uBotAerial 0.1.1 继续使用自己模块中的风场，不需要做这项迁移。
+这次拆分属于尚未发布的 0.2.0 开发版，涉及 uBotAerial、uBotEnvironment 和 uBotCore，不能通过 uBot Manager 安装。已发布的 uBotAerial 0.1.1 继续使用自己模块中的风场，不需要做这项迁移。
 
 风源 Actor、风子系统和设置结构体移到新模块，类名、属性、函数和默认值保持不变；恒定风、阵风和多风源叠加的行为保持不变。
 
@@ -164,10 +204,14 @@ import { Steps } from "@astrojs/starlight/components";
 
 重定向（CoreRedirects）列表各只有一份，放在插件自带的 `Config/` 里的 `[CoreRedirects]` 段，引擎在配置已启用的插件时加载。每一条把旧的类、结构体、枚举、委托签名或资产路径映射到新的，旧资产加载时就按新名称找到它们。
 
+以下为已发布 0.1.x 的旧插件迁移条目：
+
 | 插件 | 文件 | 条数 | 内容 |
 | --- | --- | --- | --- |
 | uBotSensor | `Config/DefaultUBotSensor.ini` | 47 | 脚本包 1，类 14，结构体 4，枚举 4，动态委托签名 10，网格 14（包 7、对象 7） |
 | uBotROS | `Config/DefaultUBotROS.ini` | 11 | 脚本包 1，类 1，属性 2，结构体 2，枚举 2，动态委托签名 3 |
+
+0.2.0 开发版另外在 Core 的 `Config/DefaultUBotCore.ini` 中提供 12 个数学函数和 5 个引脚的重定向，在 ROS 的 `Config/DefaultUBotROS.ini` 中提供 5 个 ROS 专属函数的跨模块重定向。风类型的重定向由 uBotEnvironment 提供，见上节。
 
 - 重定向只在编辑器启动时生效。在运行中的编辑器里新启用插件，旧资产不会被重定向，请重启编辑器。
 - 重定向只处理序列化数据。引用 `UAgent*` 等旧名称的 C++ 代码要手工改名。
