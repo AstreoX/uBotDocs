@@ -172,19 +172,21 @@ import { Steps } from "@astrojs/starlight/components";
 
 这次拆分属于尚未发布的 0.2.0 开发版，涉及 uBotAerial、uBotEnvironment 和 uBotCore，不能通过 uBot Manager 安装。已发布的 uBotAerial 0.1.1 继续使用自己模块中的风场，不需要做这项迁移。
 
-风源 Actor、风子系统和设置结构体移到新模块，类名、属性、函数和默认值保持不变；恒定风、阵风和多风源叠加的行为保持不变。
+风源 Actor、风子系统和设置结构体从 Aerial 移到 Environment，风提供者接口与查询子系统也从 Core 移入 Environment。类型名、属性、函数和默认值保持不变；恒定风、阵风和多风源叠加的行为保持不变。
 
 | 类型 | 旧序列化路径 | 新序列化路径 |
 | --- | --- | --- |
 | `AUBotWind` | `/Script/UBotAerial.UBotWind` | `/Script/UBotEnvironment.UBotWind` |
 | `UUBotWindSubsystem` | `/Script/UBotAerial.UBotWindSubsystem` | `/Script/UBotEnvironment.UBotWindSubsystem` |
 | `FUBotWindSettings` | `/Script/UBotAerial.UBotWindSettings` | `/Script/UBotEnvironment.UBotWindSettings` |
+| `UUBotWindProvider` / `IUBotWindProvider` | `/Script/UBotCore.UBotWindProvider` | `/Script/UBotEnvironment.UBotWindProvider` |
+| `UUBotWindQuerySubsystem` | `/Script/UBotCore.UBotWindQuerySubsystem` | `/Script/UBotEnvironment.UBotWindQuerySubsystem` |
 
 <Steps>
 
 1. **启用 uBotEnvironment 并重启编辑器**
 
-   在本地源码工程中同时更新上述三个插件。旧蓝图或关卡引用了风 Actor、风子系统或风设置时，需要启用 uBotEnvironment，再重启编辑器，使新插件的重定向生效。
+   在本地源码工程中同时更新上述三个插件。需要风场或旧资产引用了上表类型时，在项目中启用 uBotEnvironment，重新构建受影响模块后重启编辑器，使新插件的重定向生效。
 
 2. **检查并重新保存旧资产**
 
@@ -192,13 +194,19 @@ import { Steps } from "@astrojs/starlight/components";
 
 3. **调整直接使用风场的 C++ 模块并重新编译**
 
-   在使用风 Actor、风子系统或风设置的模块 `Build.cs` 中加入 `UBotEnvironment`。`UBotWind.h` 和 `UBotWindSubsystem.h` 文件名不变；`FUBotWindSettings` 的头文件由 `UBotAerialTypes.h` 改为 `UBotEnvironmentTypes.h`，修改后重新编译，旧二进制不能直接复用。
+   在直接使用上表类型的模块 `Build.cs` 中加入 `UBotEnvironment`。`UBotWind.h`、`UBotWindSubsystem.h`、`UBotWindProvider.h` 和 `UBotWindQuerySubsystem.h` 文件名不变；`FUBotWindSettings` 的头文件由 `UBotAerialTypes.h` 改为 `UBotEnvironmentTypes.h`。
+
+   自定义风提供者也须把模块依赖从 Core 改为 Environment；若仍使用 Core 的其他 API，保留相应依赖。统一重编所有受影响模块，旧二进制不能直接复用。
 
 </Steps>
 
-重定向位于 uBotEnvironment 的 `Config/DefaultUBotEnvironment.ini`，只覆盖上表的两个类和一个结构体。它处理资产序列化引用；C++ 的模块依赖和头文件仍需按步骤修改。
+重定向位于 uBotEnvironment 的 `Config/DefaultUBotEnvironment.ini`，覆盖上表类型。它处理资产序列化引用；C++ 的模块依赖和头文件仍需按步骤修改。
 
-无人机的 `Enable Wind`、阻力系数和抗风响应继续由 uBotAerial 管理。飞行模型经 Core 查询风速，没有提供者时返回零；uBotAerial 不依赖 uBotEnvironment，uBotEnvironment 也不依赖 uBotAerial。
+无人机的 `Enable Wind`、阻力系数和抗风响应继续由 uBotAerial 管理。Aerial 通过私有可选编译依赖查询 Environment；其公开头文件不暴露 Environment 类型，Core 不再提供风接口或查询服务。
+
+只安装 Core 和 Aerial 即可独立编译、飞行，风速为零。Environment 未安装或被项目、Target 明确禁用时，不编译风场接入；安装并启用 Environment 后重新构建 Aerial，才会查询风场。
+
+切换插件组合需要重新构建受影响模块。预编译 Aerial 的依赖取决于构建时是否接入 Environment，不能把带接入的 DLL 直接用于缺少 Environment 的组合。
 
 ## CoreRedirects
 

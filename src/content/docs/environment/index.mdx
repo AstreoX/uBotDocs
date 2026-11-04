@@ -33,8 +33,8 @@ uBotEnvironment 统一提供场景环境，当前正在开发风场，尚未发�
 
 环境生成归 Environment，物理与测量响应归使用者；接口的实现与调用留在各自插件中，不新增连接插件，后续烟雾优先复用感知介质接口。完整约定见[环境与使用者的职责边界](/develop/package-authoring/#环境与使用者的职责边界)。
 
-- uBotCore：开发版通过 Core 的 `IUBotWindProvider` 和按世界隔离的 `UUBotWindQuerySubsystem` 连接风场与使用者，需要尚未发布的 uBotCore 0.1.4。
-- uBotAerial：开发版只向 Core 查询风速，由自己的飞行模型计算阻力和抗风响应；两个插件互不硬依赖。只使用无人机飞行时无需启用 uBotEnvironment，没有风提供者时风速为零。
+- uBotCore：开发版依赖尚未发布的 Core `^0.2.0` 提供仿真时钟等基础能力。风契约 `IUBotWindProvider` 和按世界隔离的 `UUBotWindQuerySubsystem` 均属于 Environment。
+- uBotAerial：0.2.0 开发版通过私有可选编译依赖查询 Environment，由自己的飞行模型计算阻力和抗风响应。Environment 未安装或被项目、Target 禁用时，Aerial 仍可独立编译并按零风飞行；改变插件组合后须重新构建受影响模块。
 - uBotSensor：已经能读取实现了 `UBot Perception Medium` 的 Actor；这不代表 uBotEnvironment 已提供烟雾或雾。
 - uBotCombat：规划中的「烟雾作战演示」仍需等待烟雾能力，不能用首版风场替代，见[选择组合](/start/recipes/)。
 

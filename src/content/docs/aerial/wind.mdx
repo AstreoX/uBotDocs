@@ -12,6 +12,8 @@ import { Steps } from "@astrojs/starlight/components";
 
 以下节点、截图和参考对应已发布的 uBotAerial 0.1.1，该版本仍自带风场。尚未发布的开发版将风场移到 [uBotEnvironment](/environment/)，使用旧蓝图和关卡前需按[迁移说明](/develop/migration/#风场从-ubotaerial-迁到-ubotenvironment开发版)启用新插件。
 
+0.2.0 开发版的风接口、查询和生成均属于 Environment，Aerial 通过可选编译依赖接入。未安装或禁用 Environment 时，Aerial 仍能编译并按零风运行；安装或启用后重新构建受影响模块，再使用风场。
+
 ## 快速用法
 
 下面把关卡里的风改成 3 m/s 的侧风并打开：
