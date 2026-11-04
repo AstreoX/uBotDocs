@@ -21,10 +21,10 @@ uBotSensor 的常见问题按主题分组，每题给出简短回答和详细说
 
 ### 为什么刚启动时的样本不是 Valid？
 
-靠差分计算的传感器（比如 IMU）启动后的前两次采样是预热样本，状态为 `Warming Up`。见[帧头与采样状态](/concepts/frame-header/)。
+在差分模式下，IMU 启动后的前两次采样用于积累历史数据，状态为 `Warming Up`。见[帧头与采样状态](/concepts/frame-header/)。
 
 ## 蓝图
 
 ### 找不到传感器的节点怎么办？
 
-先确认 uBotSensor 已在工程里启用，再在节点索引里按名称搜索。见[节点索引](/reference/nodes/)。
+确认工程已启用 uBotSensor 后，在节点索引中按名称搜索。见[节点索引](/reference/nodes/)。

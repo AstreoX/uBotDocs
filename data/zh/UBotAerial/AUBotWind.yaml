@@ -1,5 +1,5 @@
 AUBotWind:
-  summary: 关卡里的风，作用于 uBot 多旋翼。放一个到关卡中，风就吹遍整个关卡（风场空间均匀），多个风 Actor 的风会叠加。编辑器里的箭头指向稳定风的方向。
+  summary: "为关卡提供作用于 uBot 多旋翼的空间均匀风场；多个风源 Actor 的风速向量会叠加。编辑器中的箭头显示恒定风方向。"
   sourceHash: "8b274af3199b"
 
 AUBotWind.Arrow:
@@ -7,17 +7,17 @@ AUBotWind.Arrow:
   sourceHash: "e3b0c44298fc"
 
 AUBotWind.SetWindEnabled:
-  summary: 打开或关闭这个风。
+  summary: "启用或禁用此 Actor 的风源。"
   sourceHash: "8dfdc27ddf44"
 
 AUBotWind.SetWindSettings:
-  summary: 从现在起改用新的风设置。
+  summary: "更新此风源使用的风场设置。"
   sourceHash: "b02d7a1f0cfe"
 
 AUBotWind.Settings:
-  summary: 稳定风和阵风。
+  summary: "此风源的恒定风和阵风设置。"
   sourceHash: "22046b12bbe3"
 
 AUBotWind.bEnabled:
-  summary: 这个风是否吹。
+  summary: "此 Actor 是否向风场贡献风速。"
   sourceHash: "69fe50c04aa0"

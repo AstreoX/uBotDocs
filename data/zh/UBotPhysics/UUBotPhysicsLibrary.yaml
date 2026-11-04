@@ -7,17 +7,17 @@ UUBotPhysicsLibrary.GetBodyPhysicsBackend:
   sourceHash: "0729593d9cb4"
 
 UUBotPhysicsLibrary.GetDroppedPhysicsSteps:
-  summary: 这个世界里 `Backend` 因为一帧需要的步数超过每帧上限而跳过的步数。跳过的步不会补跑，计数一直累加。
+  summary: "返回当前世界中指定 `Backend` 因单帧所需步数超过上限而跳过的累计物理步数。跳过的物理步不会在后续帧补执行，计数持续累加。"
   sourceHash: "7b6f05ca5ad4"
 
 UUBotPhysicsLibrary.GetPhysicsBackendCapabilities:
-  summary: 返回 `Backend` 能模拟什么。没有这个名字的后端时返回 false，各项能力都为关。
+  summary: "返回 `Backend` 声明的模拟能力。指定名称的后端未注册时返回 false，所有能力字段均为 false。"
   sourceHash: "7cb2effc9ef2"
 
 UUBotPhysicsLibrary.GetPhysicsBackendNames:
-  summary: 返回已注册的物理后端名，按注册顺序。绑定组件的 `Backend` 填其中之一。
+  summary: "按注册顺序返回已注册物理后端的名称，可选择其中一个名称设置绑定组件的 `Backend`。"
   sourceHash: "c0a04731ebfd"
 
 UUBotPhysicsLibrary.GetPhysicsSceneStats:
-  summary: 返回 `Backend` 在这个世界里现在看到的场景：最近一次交给它的静态和运动学碰撞体、它们的形状数，以及有物理碰撞却没能导出的组件数。后端在这个世界里没有求解器时返回 false，各项为 0。
+  summary: "返回 `Backend` 在当前世界中最近接收的场景统计，包括静态与运动学碰撞体数量、形状数量，以及启用物理碰撞但未能导出的组件数量。该后端在当前世界中没有求解器时返回 false，各统计值为 0。"
   sourceHash: "0e0a28a2020a"

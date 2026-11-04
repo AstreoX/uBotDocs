@@ -31,15 +31,15 @@ UUBot2DLidarFrame.GetRangeByIndex:
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarFrame.GetSampleCount:
-  summary: "这一帧的射线数。"
+  summary: "返回该帧的射线数量。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarFrame.Header:
-  summary: "帧头，含 Valid 和 Status。"
+  summary: "帧头，包含 Valid 和 Status 字段。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarFrame.RangeMaxMeters:
-  summary: "最大量程，单位 m。未命中的射线距离等于它。"
+  summary: "最大量程，单位 m。未命中的射线距离等于该最大量程。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarFrame.RangeMinMeters:
@@ -51,5 +51,5 @@ UUBot2DLidarFrame.ScanPeriodSeconds:
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarFrame.SensorTransformWorld:
-  summary: "扫描时传感器在 UE 世界里的变换，位置单位 cm。"
+  summary: "扫描时传感器在 UE 世界坐标系中的变换，位置单位 cm。"
   sourceHash: "e3b0c44298fc"

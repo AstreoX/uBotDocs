@@ -1,31 +1,31 @@
 UUBotPackageLibrary:
-  summary: 在蓝图里查询已安装的 uBot Package 和扩展点。
+  summary: "为蓝图提供已安装 uBot Package 和扩展点的查询功能。"
   sourceHash: "a75361bcabc3"
 
 UUBotPackageLibrary.FindUBotPackage:
-  summary: 按名称查找已安装的 Package，不区分大小写。找到时 Return Value 为 true，Out Info 是它的信息。
+  summary: "按名称查找已安装的 Package，不区分大小写。查找成功时，Return Value 为 true，Out Info 返回该 Package 的信息。"
   sourceHash: "a7d4fdd3b752"
 
 UUBotPackageLibrary.GetInstalledUBotPackages:
-  summary: 所有已安装的 uBot Package（不论是否启用），按名称排序。
+  summary: "返回所有已安装的 uBot Package，按名称排序，包括未启用的 Package。"
   sourceHash: "efdfebeda9f3"
 
 UUBotPackageLibrary.GetUBotExtensionNames:
-  summary: 某个扩展点上已注册的扩展名，按注册顺序；扩展点还没有声明时为空。
+  summary: "返回指定扩展点已注册的扩展名称，按注册顺序排列；扩展点尚未声明时返回空列表。"
   sourceHash: "42b6c044fa77"
 
 UUBotPackageLibrary.GetUBotExtensionPointNames:
-  summary: 已声明的扩展点名称，按声明顺序。
+  summary: "返回已声明的扩展点名称，按声明顺序排列。"
   sourceHash: "66c8d1dec9f6"
 
 UUBotPackageLibrary.GetUBotPackageVersion:
-  summary: 已安装 Package 的版本号；没有安装时返回空字符串。
+  summary: "返回已安装 Package 的版本号；未安装时返回空字符串。"
   sourceHash: "bc7a262ddc91"
 
 UUBotPackageLibrary.IsUBotPackageEnabled:
-  summary: Package 是否已安装并启用。
+  summary: "返回 Package 是否已安装并启用。"
   sourceHash: "e3b0c44298fc"
 
 UUBotPackageLibrary.IsUBotPackageVersionSatisfied:
-  summary: Package 已安装且版本满足约束（例如 ^0.1.0）时为 true。没有安装，或版本号、约束无法解析时为 false。
+  summary: "Package 已安装且版本满足约束（例如 ^0.1.0）时返回 true。未安装，或版本号、约束无法解析时返回 false。"
   sourceHash: "15476c26f563"

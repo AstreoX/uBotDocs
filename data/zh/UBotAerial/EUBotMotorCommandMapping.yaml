@@ -1,5 +1,5 @@
 EUBotMotorCommandMapping:
-  summary: 归一化电机指令（0 到 1）如何换算成转子转速。
+  summary: "将 0 到 1 范围内的归一化电机指令转换为转子转速的方式。"
   sourceHash: "11f05f2e6667"
 
 EUBotMotorCommandMapping.Speed:

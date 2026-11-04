@@ -1,6 +1,6 @@
 ---
 title: 编写自己的 uBot Package
-description: 编写自己的 uBot Package：.uplugin 里的 UBot 块、版本约束语法、索引条目和校验。
+description: 将 UE 插件注册为 uBot Package 所需的描述文件元数据、版本约束、索引条目及校验方法。
 pageKind: concept
 packages: [UBotCore]
 sidebar:
@@ -9,21 +9,21 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-把一个 UE 插件写成 uBot Package：`.uplugin` 里的 `UBot` 块写什么、依赖的版本约束（version constraint）怎么写、索引条目长什么样，以及怎样校验。
+UE 插件可通过 `.uplugin` 中的 `UBot` 元数据注册为 uBot Package，并使用版本约束（version constraint）和 Package 索引声明安装与依赖关系。
 
 | 键 | 必填 | 写法 |
 | --- | --- | --- |
 | `VersionName`（UE 原生） | 是 | 语义化版本（SemVer），如 `0.1.0` |
 | `UBot.Layer` | 是 | `Foundation`、`Capability`、`Adapter`、`Content` |
-| `UBot.Repository` | 否 | git 仓库地址，uBot Manager 用它安装和更新 |
+| `UBot.Repository` | 否 | git 仓库地址，uBot Manager 根据该地址安装和更新 Package |
 | `UBot.Requires` | 否 | 依赖列表，每项有 `Name`、`Version`（版本约束，缺省为任意版本）和 `Optional`（默认 `false`） |
-| `UBot.Provides` | 否 | 这个 Package 提供的能力键（capability key），如 `Sensor.IMU` |
+| `UBot.Provides` | 否 | 该 Package 提供的能力键（capability key），如 `Sensor.IMU` |
 | `UBot.Tags` | 否 | 标签，如 `sensor` |
 | `UBot.EnginePlugins` | 否 | 必须启用的引擎插件，如 `ChaosVehiclesPlugin` |
 
 ## `.uplugin` 里的 UBot 块
 
-只有带 `UBot` 对象的插件才会被当作 uBot Package。UE 原生的 `Plugins` 依赖仍然是 UE 强制执行的机制，`UBot` 块在它之上补充版本范围和目录信息，所以依赖要在两处都写。
+只有声明了 `UBot` 对象的插件才会被识别为 uBot Package。UE 原生 `Plugins` 字段仍负责引擎强制执行的插件依赖，`UBot` 块则补充版本范围和 Package 目录信息，因此需要在两处一致声明依赖。
 
 ```json
 {
@@ -50,51 +50,51 @@ import { Steps } from "@astrojs/starlight/components";
 }
 ```
 
-`Optional` 为 `true` 的依赖只在对方已经安装但版本不满足时才算问题，也不构成依赖边。
+`Optional` 为 `true` 的依赖仅在目标 Package 已安装但版本不满足时报告问题，也不会形成必需依赖关系。
 
 ## 环境与使用者的职责边界
 
-环境插件提供场景条件，使用者解释这些条件怎样影响自身；双方通过 uBotCore 的共享契约对接，各自实现或调用接口，无需专门的连接插件。
+环境插件提供场景条件，使用者负责计算这些条件对自身的影响；双方通过 uBotCore 的共享契约对接，各自实现或调用接口，无需专门的连接插件。
 
 | 归属 | 负责内容 | 不承担的职责 |
 | --- | --- | --- |
 | uBotCore | 已有实际跨插件需求的稳定接口、共享数据，以及必要的通用发现或查询 | 风、烟雾、雨雪的生成、演化、参数配置和视觉效果 |
 | uBotEnvironment | 环境场与介质的生成、演化、配置和视觉效果；实现共享接口 | 无人机的空气阻力、控制响应和传感器的测量模型 |
-| 使用者，如 uBotAerial、uBotSensor | 通过共享接口读取环境，计算自己的物理或测量响应 | 环境场与介质的生成、演化 |
+| 使用者，如 uBotAerial、uBotSensor | 通过共享接口读取环境，计算自身的物理或测量响应 | 环境场与介质的生成、演化 |
 
-环境提供者与使用者各自依赖 uBotCore，不互相硬依赖。没有环境提供者时，使用者仍须正常工作，例如无人机按零风运行，传感器不施加介质干扰。
+环境提供者与使用者各自依赖 uBotCore，不直接依赖对方插件。没有环境提供者时，使用者仍须正常工作，例如无人机按零风运行，传感器不施加介质干扰。
 
 ### 风场的接入
 
-风场拆分的开发版需要尚未发布的 uBotCore 0.1.4、uBotAerial 0.1.2 和 uBotEnvironment 0.1.0；已发布的 uBotAerial 0.1.1 仍自带风场，见[迁移说明](/develop/migration/#风场从-ubotaerial-迁到-ubotenvironment开发版)。各处代码分别负责：
+风场拆分的开发版需要尚未发布的 uBotCore 0.1.4、uBotAerial 0.1.2 和 uBotEnvironment 0.1.0；已发布的 uBotAerial 0.1.1 仍自带风场，见[迁移说明](/develop/migration/#风场从-ubotaerial-迁到-ubotenvironment开发版)。各模块的具体职责如下：
 
 | 位置 | 职责 |
 | --- | --- |
 | Core 的 `IUBotWindProvider` | 约定按世界位置和仿真时间返回风速，位置用 cm，风速用 m/s |
-| Core 的 `UUBotWindQuerySubsystem` | 每个世界保存一个风提供者的弱引用，将查询交给它；没有提供者时返回零风速 |
+| Core 的 `UUBotWindQuerySubsystem` | 每个世界保存一个风提供者的弱引用，将查询转发给该提供者；没有提供者时返回零风速 |
 | Environment 的 `UUBotWindSubsystem` | 实现接口，向本世界的查询子系统注册并在销毁时注销；聚合 Actor 风源和脚本风，计算恒定风与阵风 |
-| Aerial 的运动组件 | 查询风速，在自己的飞行模型里计算阻力或导航响应；`Enable Wind` 关闭时忽略风 |
+| Aerial 的运动组件 | 查询风速，在自身飞行模型中计算阻力或导航响应；`Enable Wind` 关闭时忽略风 |
 
-查询子系统用于隔离提供者与使用者，不持有风源配置，也不计算或叠加风。风源的管理和聚合只在 Environment 中完成；这条查询路径不是给每一种环境效果新增 Core 子系统的模板。
+查询子系统用于隔离提供者与使用者，不持有风源配置，也不计算或叠加风。风源的管理和聚合只在 Environment 中完成；不应据此为每一种环境效果新增 Core 子系统。
 
 ### 烟雾优先复用感知介质
 
-Core 已有 `IUBotPerceptionMedium`、`Get Medium Snapshot` 和介质单元数据。Sensor 已通过 `CollectMedia` 收集本世界实现接口的 Actor，读取快照，再由各传感器计算测量变化，见[感知介质](/sensor/medium/)。
+uBotCore 已提供 `IUBotPerceptionMedium`、`Get Medium Snapshot` 和介质单元数据。uBotSensor 通过 `CollectMedia` 收集本世界实现该接口的 Actor 并读取快照，各传感器再根据快照计算测量变化，见[感知介质](/sensor/medium/)。
 
-后续 Environment 的烟雾或雾 Actor 优先实现这个接口，由 Environment 更新单元的位置、半径、密度，以及介质快照的颜色。Sensor 继续使用已有的收集路径，无需连接插件或 Core 烟雾管理服务；uBotEnvironment 当前尚未实现烟雾或雾。
+后续 uBotEnvironment 中的烟或雾 Actor 应优先实现该接口，由 uBotEnvironment 更新单元的位置、半径、密度及介质快照颜色。uBotSensor 继续使用已有收集路径，无需连接插件或 Core 烟雾管理服务；uBotEnvironment 当前尚未实现烟雾或雾。
 
-现有传感器响应是简化模型：激光雷达和深度相机按介质入口截断距离，RGB 相机混合颜色。烟雾的运动、扩散和视觉效果归环境提供者，测量模型的精度与改进归 Sensor。
+现有传感器响应是简化模型：激光雷达和深度相机按介质入口截断距离，RGB 相机混合颜色。烟雾的运动、扩散和视觉效果归环境提供者，测量模型的精度与改进由 uBotSensor 负责。
 
 ### 新增能力时的取舍
 
 1. 先检查现有接口能否表达需要的交互，同类环境效果复用同一契约；纯视觉效果留在 Environment，不因此修改 Core。
 2. 只有出现现有契约无法表达的真实跨插件物理交互，才新增或演进最小接口，并明确单位、时间、世界归属及缺省行为；Core 可以随真实需求演进。
-3. 接入代码留在接口实现者和调用者中，不为每对插件新增连接、桥接插件或适配器，也不引入万能总线、按字符串反射调用或不断堆叠效果类型的枚举与万能快照。
+3. 接入代码留在接口实现者和调用者中，不为每对插件新增连接、桥接插件或适配器，也不引入万能总线、按字符串反射调用或持续扩充效果类型的枚举或通用环境快照。
 4. 验证没有环境插件时使用者仍可运行、不同世界互不干扰；具体环境算法与使用者的响应分别测试。
 
 ## 版本约束语法
 
-`Requires[].Version`、索引里的 `requires[].version` 和 `engine`，以及蓝图节点 `Is uBot Package Version Satisfied` 用同一套语法。
+`Requires[].Version`、索引中的 `requires[].version` 和 `engine`，以及蓝图节点 `Is uBot Package Version Satisfied` 使用相同的版本约束语法。
 
 | 写法 | 含义 |
 | --- | --- |
@@ -106,17 +106,17 @@ Core 已有 `IUBotPerceptionMedium`、`Get Medium Snapshot` 和介质单元数�
 | `^0.0.3` | `>=0.0.3 <0.0.4` |
 | `~1.2.3` | `>=1.2.3 <1.3.0` |
 | `~1` | `>=1.0.0 <2.0.0` |
-| `1.2`、`=1.2` | 不完整的版本按范围算：`>=1.2.0 <1.3.0` |
+| `1.2`、`=1.2` | 不完整版本按版本范围解释：`>=1.2.0 <1.3.0` |
 | `>=1.0.0 <2.0.0` | 区间，所有比较器同时成立 |
 
-- `^` 锁定最左边不为 0 的那一段：`^0.1.0` 只接受 0.1.x，`^0.0.3` 只接受 0.0.3。
+- `^` 锁定从左侧开始第一个非零的版本段：`^0.1.0` 只接受 0.1.x，`^0.0.3` 只接受 0.0.3。
 - 版本号接受 `1`、`1.2`、`1.2.3`，可以带前缀 `v` 和 `-prerelease`，`+build` 被忽略。
 - 多个比较器用空格分隔，运算符和版本之间也可以有空格（`>= 1.0`）。
 - 由 `^`、`~` 和不完整版本产生的上界会排除该上界本身的预发布版本，例如 `^1.2.3` 不接受 `2.0.0-beta`。
 
 ## 索引条目
 
-索引（index）是 uBot Manager 和编辑器读取 Package 列表的地方，格式版本是 2（`formatVersion`）。条目里的每一项都要和 Package 仓库里的 `.uplugin` 保持一致：
+Package 索引（index）向 uBot Manager 和编辑器提供 Package 列表，当前格式版本为 2（`formatVersion`）。索引条目应与相应 Package 仓库中 `.uplugin` 的对应元数据保持一致：
 
 | 索引 | 对应的 `.uplugin` 键，或说明 |
 | --- | --- |
@@ -124,16 +124,16 @@ Core 已有 `IUBotPerceptionMedium`、`Get Medium Snapshot` 和介质单元数�
 | `friendlyName`、`docsUrl` | `FriendlyName`、`DocsURL` |
 | `layer` | `UBot.Layer` |
 | `repository` | `UBot.Repository`；有可安装版本时必填 |
-| `folder` | 只在索引里，可选：安装目录名，插件装到 `Plugins/uBot/<folder>`；省略时取仓库地址的最后一段，去掉 `.git` |
+| `folder` | 仅在索引中定义，可选：指定安装目录名称，插件安装到 `Plugins/uBot/<folder>`；省略时取仓库地址的最后一段，去掉 `.git` |
 | `tags` | `UBot.Tags` |
-| `versions[].version` | `VersionName`（该标签处的值） |
+| `versions[].version` | `VersionName`（对应标签版本中的值） |
 | `versions[].ref` | 要检出的 git 标签，如 `v0.1.0`；规划中的版本（`"planned": true`）不写 |
 | `versions[].requires` | `UBot.Requires`（`name`、`version`、`optional` 对应 `Name`、`Version`、`Optional`） |
 | `versions[].provides` | `UBot.Provides` |
 | `versions[].enginePlugins` | `UBot.EnginePlugins` |
-| `versions[].engine` | 对 UE 版本的约束，如 `~5.5`；只在索引里 |
-| `versions[].binaries` | 只在索引里，可选：这个版本的预编译压缩包，按 UE 版本和平台给出 `url`、`sha256` 和 `size`；由 `ubot package --update-index` 写入，不用手写 |
-| `description` | 只在索引里：`en` 必填，`zh-CN` 建议填写 |
+| `versions[].engine` | 对 UE 版本的约束，如 `~5.5`；仅在索引中定义 |
+| `versions[].binaries` | 仅在索引中定义，可选：该版本的预编译压缩包，按 UE 版本和平台提供 `url`、`sha256` 和 `size`；由 `ubot package --update-index` 写入，无需手动填写 |
+| `description` | 仅在索引中定义：`en` 必填，`zh-CN` 建议填写 |
 
 一个完整的索引文件：
 
@@ -171,11 +171,11 @@ Core 已有 `IUBotPerceptionMedium`、`Get Medium Snapshot` 和介质单元数�
 
 1. **改版本号**
 
-   修改 `.uplugin` 的 `VersionName`（需要时也改 `UBot` 块），提交。
+   修改 `.uplugin` 的 `VersionName`，按需更新 `UBot` 元数据，并提交更改。
 
 2. **打标签并推送**
 
-   标签叫 `v` 加版本号，要先推送，再写进索引。uBot Manager 用 `git clone --branch <ref>` 安装。
+   标签名称由前缀 `v` 和版本号组成，需要先推送标签，再将其写入索引。uBot Manager 使用 `git clone --branch <ref>` 安装指定版本。
 
    ```powershell
    git tag v0.1.0
@@ -184,29 +184,29 @@ Core 已有 `IUBotPerceptionMedium`、`Get Medium Snapshot` 和介质单元数�
 
 3. **在索引里追加一项**
 
-   在这个 Package 的 `versions` 里追加新版本，`ref` 写标签名。旧版本留着，用户需要降级或固定版本。
+   在该 Package 的 `versions` 中追加新版本，并将 `ref` 设置为标签名称。应保留旧版本条目，以支持用户降级或固定版本。
 
 4. **制作预编译包（可选）**
 
-   用 `ubot package` 编译并打包，同时把下载地址和 SHA-256 写进索引的 `binaries`。新版本还没有推送，所以用 `--index` 指向本地的索引文件：
+   用 `ubot package` 编译并打包，同时把下载地址和 SHA-256 写进索引的 `binaries`。新增版本的索引条目尚未推送时，可使用 `--index` 指定本地索引文件：
 
    ```powershell
    ubot --index Index/index.json package MyRangeSensor --out E:\release --update-index Index/index.json
    ```
 
-   再把 `E:\release` 里的 zip 上传到对应标签的 GitHub Release。参数和要求见[命令行 ubot](/manager/cli/#制作预编译包)。
+   将 `E:\release` 中生成的 ZIP 压缩包上传到对应标签的 GitHub Release。参数和要求见[命令行 ubot](/manager/cli/#制作预编译包)。
 
 5. **校验并推送**
 
-   运行 `ubot index validate`，见下一节。有预编译包时先上传压缩包，再提交并推送索引：索引一推送，用户就会开始下载。
+   运行 `ubot index validate`，见下一节。如果提供预编译包，应先上传压缩包，再提交并推送索引，确保用户读取新索引后即可下载对应文件。
 
 </Steps>
 
 ### 让工程读到你的索引
 
-| 谁读 | 怎么加 |
+| 读取方 | 配置方式 |
 | --- | --- |
-| uBot Manager | 「设置 > Package 索引 > 索引源」，添加 `https://` 地址或文件路径。同一个 Package 以排在前面的源为准 |
+| uBot Manager | 「设置 > Package 索引 > 索引源」，添加 `https://` 地址或文件路径。同一 Package 的重复条目以列表中靠前的索引源为准 |
 | 编辑器和 commandlet | 项目设置「uBot Core」的 `AdditionalPackageIndexFiles`。同名条目由后加载的覆盖 |
 
 ```ini
@@ -216,7 +216,7 @@ Core 已有 `IUBotPerceptionMedium`、`Get Medium Snapshot` 和介质单元数�
 
 ## 校验
 
-| 方式 | 检查什么 | 入口 |
+| 方式 | 检查内容 | 入口 |
 | --- | --- | --- |
 | 编辑器启动日志 | `UBot` 块和依赖；每个问题是一条 `LogUBot` 警告，最后一行是 `uBot packages: N installed, M enabled, K problem(s).` | 打开工程（`bValidatePackagesOnStartup` 默认开启） |
 | uBot 面板 | 同上，显示在「Problems」分区 | 「Window > uBot」 |
@@ -233,7 +233,7 @@ $Project = '<Project>\<Project>.uproject'
 ubot index validate Index/index.json            # 加 --json 得到 { ok, errors, warnings }
 ```
 
-编辑器端会报告这些问题：
+编辑器端会报告以下问题：
 
 - `VersionName` 缺失或无法解析，或者 `UBot` 块缺少必填的键。
 - 必需的 Package 不存在或未安装，已安装的依赖不满足版本约束。
@@ -247,10 +247,10 @@ error: packages[0] (UBotFoo).versions[0]: "ref" is required for a version that i
 Index/index.json: 1 error(s), 0 warning(s).
 ```
 
-它只读指定的文件，不比较索引和 `.uplugin`。没安装的 Package 按索引规划，装好以后按 `.uplugin` 规划，两边不一致就会得到不同的结果，所以改完要自己对一遍。
+`ubot index validate` 仅读取指定索引文件，不比较索引与 `.uplugin`。安装规划对未安装的 Package 使用索引元数据，对已安装的 Package 使用 `.uplugin` 元数据；两者不一致时，可能产生不同的规划结果，因此修改后应人工核对对应字段。
 
 ## 相关页面
 
 - [Package 查询与编辑器面板](/core/packages/)：uBot 面板、运行时状态和命令行 `-run=UBotPackage`。
 - [命令行 ubot](/manager/cli/)：`ubot` 的获取方式和常用命令。
-- [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/)：Package 之间用扩展点互相扩展。
+- [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/)：通过扩展点为其他 Package 提供功能扩展。

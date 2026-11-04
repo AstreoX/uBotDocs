@@ -1,13 +1,13 @@
 UUBotMultirotorMovementComponent:
-  summary: 多旋翼飞行模型的基类。它按 uBot 仿真时间以固定物理步移动根组件（被更新的组件），用碰撞体扫过世界并沿接触面滑动（地面和其他表面一样），每帧显示外推到当前仿真时间的姿态。接受航向坐标系下的速度指令（`IUBotVelocityCommandable`）：X 沿当前朝向向前，Y 向右，Z 向上，只用 Z 方向的角速度（偏航角速度）。为被更新的组件实现 `IUBotBodyStateSource`：状态是最近一个物理步积分器的状态（组件显示的是外推到当前仿真时间的姿态），传感器可以读取它，也没有物理后端能再绑定同一个物体。
+  summary: "多旋翼飞行模型基类，按 uBot 仿真时间以固定物理步移动根组件，对其碰撞形状执行扫掠并沿接触面滑动，地面也按普通接触面处理，每帧呈现外推到当前仿真时间的位姿。支持 `IUBotVelocityCommandable` 航向坐标系速度指令：X 沿当前航向向前、Y 向右、Z 向上，角速度仅使用 Z 轴偏航分量；通过 `IUBotBodyStateSource` 提供根组件最近物理步的真值状态并声明驱动所有权，因此物理后端不能重复绑定该组件。"
   sourceHash: "0e605edabaa9"
 
 UUBotMultirotorMovementComponent.ActuatorId:
-  summary: 向 uBot 报告的执行器 ID。为空时使用所属 Actor 的机器人 ID（其 uBot Identity，否则用它的名字）。
+  summary: "向 uBot 报告的执行器 ID。为空时，优先使用所属 Actor 的 `uBot Identity` 提供的机器人 ID；没有该组件时使用 Actor 名称。"
   sourceHash: "170deb3b26ce"
 
 UUBotMultirotorMovementComponent.ContactFriction:
-  summary: 接触时的滑动摩擦：滑动速度减少冲击速度的这个比例。
+  summary: "接触时的滑动摩擦系数：从滑动速度中扣除撞击速度乘以该系数的值。"
   sourceHash: "44ce2f8ddbb3"
 
 UUBotMultirotorMovementComponent.GetLastVelocityCommand:
@@ -19,11 +19,11 @@ UUBotMultirotorMovementComponent.GetMultirotorState:
   sourceHash: "a2afeef21e22"
 
 UUBotMultirotorMovementComponent.GetPhysicsStepCount:
-  summary: 开始游玩以来已运行的物理步数。
+  summary: "开始播放以来已运行的物理步数。"
   sourceHash: "8a1e86e6c768"
 
 UUBotMultirotorMovementComponent.GetRotorLayout:
-  summary: 按电机顺序返回转子的位置（机体坐标系，单位 m，UE 轴）和旋转方向。默认是臂长 0.225 m 的四旋翼 X 型，按 PX4 顺序：右前、左后、左前、右后。把每个 `uBot Rotor` 放在对应 `Rotor Index` 的位置上；开始游玩时转子从这里取旋转方向。
+  summary: "按电机序号返回转子在机体坐标系下的位置（m，UE 坐标轴）和旋转方向，默认采用臂长 0.225 m 的四旋翼 X 机架，按 PX4 顺序排列为右前、左后、左前、右后。可根据返回值放置对应 `Rotor Index` 的 `uBot Rotor` 组件；组件在开始播放时从此布局读取旋转方向。"
   sourceHash: "c68962301c8d"
 
 UUBotMultirotorMovementComponent.ImpactEventMinSpeedMetersPerSecond:
@@ -31,7 +31,7 @@ UUBotMultirotorMovementComponent.ImpactEventMinSpeedMetersPerSecond:
   sourceHash: "97d731b17725"
 
 UUBotMultirotorMovementComponent.MaxStepsPerFrame:
-  summary: 每帧最多运行这么多个物理步。帧时间更长时，多出的时间被跳过，并记录一次警告。
+  summary: "每帧允许执行的最大物理步数。单帧所需步数超过上限时，跳过多出的模拟时间，并记录一次警告。"
   sourceHash: "5a22ab92cd27"
 
 UUBotMultirotorMovementComponent.OnImpact:
@@ -43,7 +43,7 @@ UUBotMultirotorMovementComponent.PhysicsRateHz:
   sourceHash: "da19aece6c79"
 
 UUBotMultirotorMovementComponent.ResetFlight:
-  summary: 停止所有运动，并像开始游玩时那样在当前位姿重新悬停。
+  summary: "停止所有运动，并将无人机重置为在当前位姿悬停的初始飞行状态。"
   sourceHash: "75f0690a80bd"
 
 UUBotMultirotorMovementComponent.TeleportMultirotor:

@@ -17,10 +17,10 @@ const rows = repositoryOverview(createPackageRegistry(index));
 
 <div class="repo-overview not-content">
   <p class="recommend">
-    推荐用 <a href="/manager/">uBot Manager</a> 下载和管理 uBot：它为 UE 5.5 工程安装预编译的插件包，处理插件之间的依赖，并在有新版本时更新。{/* no line break here: it would render as a space after 。 */}GitHub 仓库用来查看源码、提交问题（Issues）和下载发布版本（Releases）。
+    推荐通过 <a href="/manager/">uBot Manager</a> 下载和管理 uBot 插件：它为 UE 5.5 工程安装预编译的插件包，处理插件之间的依赖，并在有新版本时更新。{/* no line break here: it would render as a space after 。 */}GitHub 仓库用来查看源码、提交问题（Issues）和下载发布版本（Releases）。
   </p>
   <p class="recommend">
-    Manager 的安装包在 <a href={MANAGER_RELEASES_URL}>uBotManager 的 Releases 页面</a>，步骤见<a href="/start/install/">安装 uBot</a>。
+    uBot Manager 安装包可从以下页面下载： <a href={MANAGER_RELEASES_URL}>uBotManager 的 Releases 页面</a>，安装步骤参见<a href="/start/install/">安装 uBot</a>。
   </p>
   <ul class="repos">
     {rows.map((r) => (

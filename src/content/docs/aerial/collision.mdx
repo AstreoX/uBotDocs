@@ -1,6 +1,6 @@
 ---
 title: 碰撞
-description: 了解无人机碰到地面、墙和其他物体时会怎样，并在蓝图里得知撞击。
+description: 配置无人机与地面、墙面和其他物体的碰撞行为，并通过蓝图接收撞击事件。
 pageKind: feature
 sidebar:
   order: 90
@@ -8,11 +8,11 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-了解无人机碰到地面、墙和其他物体时的行为，并用 `On Impact` 在蓝图里得知撞击。
+无人机通过根组件的碰撞形状与场景接触，并通过 `On Impact` 事件向蓝图报告符合阈值的撞击。
 
 ## 快速用法
 
-无人机撞上东西，开始接触且沿表面法线的速度够大时，`Movement` 组件触发 `On Impact`：
+无人机开始接触物体，且沿接触面法线的撞击速度达到设定阈值时，`Movement` 组件会触发 `On Impact`：
 
 ```blueprint
 caption: 撞击时在屏幕上显示撞击速度（m/s）
@@ -36,11 +36,11 @@ wires:
 
 2. **添加事件**
 
-   在「Details」面板的「Events」区点 `On Impact` 旁的「+」，照上图连线。
+   在「Details」面板的「Events」区点击 `On Impact` 旁的「+」，按上图连接节点。
 
 3. **按需调整**
 
-   `Impact Event Min Speed Meters Per Second` 决定多慢的撞击不触发事件；`Contact Friction` 决定沿表面滑动时的损失。
+   `Impact Event Min Speed Meters Per Second` 设置撞击事件的最低速度阈值；`Contact Friction` 决定沿表面滑动时的损失。
 
 </Steps>
 
@@ -49,28 +49,28 @@ wires:
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
 | `Impact Event Min Speed Meters Per Second` | 0.3 m/s | 沿表面法线的撞击速度低于它时不触发 `On Impact` |
-| `Contact Friction` | 0.3 | 接触时滑动速度减少撞击速度的这个比例 |
+| `Contact Friction` | 0.3 | 接触时，从滑动速度中扣除撞击速度乘以该系数的值 |
 
 ## 输出与事件
 
-`On Impact` 的参数是 `Hit`（命中结果）和 `Impact Speed Meters Per Second`（撞击速度，m/s）。事件在每帧的 tick 末尾按发生顺序触发，处理函数里可以再发指令。
+`On Impact` 的参数是 `Hit`（命中结果）和 `Impact Speed Meters Per Second`（撞击速度，m/s）。事件在每帧的 tick 末尾按发生顺序触发，事件处理函数中可以发送新的控制指令。
 
 另有两个节点处理重置和移动：
 
 - `Reset Flight`：停止所有运动、清除当前指令，并在当前位姿重新悬停。
-- `Teleport Multirotor(New Location, New Rotation, Stop Motion)`：不扫掠地移动无人机，位置单位是 cm。`Stop Motion` 为 true（默认）时速度清零并在新位置悬停，否则保持速度继续飞。
+- `Teleport Multirotor(New Location, New Rotation, Stop Motion)`：移动无人机且不执行扫掠检测，位置单位是 cm。`Stop Motion` 为 true（默认）时速度清零并在新位置悬停，否则保持速度继续飞。
 
 ## 注意事项
 
-- 地面、墙和其他物体都只是碰撞面：无人机在表面前停住，沿表面滑动，接触期间照常执行每一条指令。没有着陆、起飞或坠毁状态，旋翼在地面上不会停转。
+- 地面、墙和其他物体均按碰撞面处理：无人机的法向运动受阻时，可沿表面滑动，接触期间仍执行控制指令。插件没有独立的着陆、起飞或坠毁状态，旋翼不会因接触地面而自动停转。
 - 开始时和 `Reset Flight` 之后，无人机都在当前位置悬停，放在地面上也一样。
-- 撞得再重也只触发 `On Impact`，无人机继续飞行，继续接受指令。
-- 每个物理步长，飞行模型沿运动方向扫掠根组件的碰撞形状，忽略无人机自己；旋转不参与扫掠，起点就嵌在几何体里时被推出。
-- 物理无人机的两种指令不会往最近 50 ms 内接触过的表面里推：速度设定值，以及姿态、角速度模式下不带推力的爬升率。在地面上按住下降键后紧接着上升，无人机立刻升起，不会迟钝。
-- 电机指令和带推力的指令不做这个处理。
-- 用 `Set Actor Location` 等从外部移动无人机时，飞行模型在下一帧接管新位姿，速度保持。
+- 撞击强度不会触发坠毁状态；满足阈值时仅触发 `On Impact`，无人机仍继续接受指令并执行飞行模拟。
+- 每个物理步，飞行模型沿运动方向扫掠根组件的碰撞形状，忽略无人机自己；旋转不参与扫掠，扫掠起点与几何体重叠时会执行推出处理。
+- 物理无人机会限制朝向最近 50 ms 内接触表面的两类控制目标：速度设定值，以及姿态、角速度模式下未指定推力时的爬升率。因此，在地面上持续发送下降指令后改为上升指令，无人机仍可立即上升。
+- 电机指令和带推力的指令不采用上述接触限制。
+- 用 `Set Actor Location` 等从外部移动无人机时，飞行模型在下一帧接管新位姿，速度保持不变。
 
 ## 相关参考
 
 - [uBot Multirotor Movement](/reference/ubotaerial/uubotmultirotormovementcomponent/)：`On Impact`、`Reset Flight` 和 `Teleport Multirotor`。
-- [示例无人机与试飞关卡](/aerial/examples/)：试飞关卡里有墙、斜墙、平台和立柱可以撞。
+- [示例无人机与试飞关卡](/aerial/examples/)：试飞关卡提供墙、斜墙、平台和立柱，可用于验证碰撞行为。

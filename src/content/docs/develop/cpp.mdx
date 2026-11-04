@@ -1,6 +1,6 @@
 ---
 title: 在 C++ 中使用传感器与接口
-description: 在 C++ 里查找传感器、调用 uBot 接口、实现自己的接口。
+description: 在 C++ 中查找传感器、调用 uBot 共享接口，并为自定义类实现这些接口。
 pageKind: feature
 packages: [UBotSensor]
 graph: false
@@ -10,7 +10,7 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-在自己的 C++ 模块里依赖 uBot、查找机器人上的传感器、通过接口读取数据和下发速度指令，并让自己的类实现这些接口。
+在自定义 C++ 模块中声明 uBot 依赖后，可以查找机器人上的传感器，通过共享接口读取数据和下发速度指令，也可以为自定义类实现这些接口。
 
 ## 步骤
 
@@ -20,7 +20,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 1. **添加模块依赖**
 
-   在自己模块的 `Build.cs` 里加入 `UBotCore` 和 `UBotSensor`。只用接口、时钟、身份（Identity）和坐标换算时，只加 `UBotCore` 就够了。
+   在自定义模块的 `Build.cs` 中添加 `UBotCore` 和 `UBotSensor`。如果仅使用接口、时钟、标识（Identity）和坐标转换功能，只需添加 `UBotCore`。
 
    ```csharp
    PublicDependencyModuleNames.AddRange(new[]
@@ -29,11 +29,11 @@ import { Steps } from "@astrojs/starlight/components";
    });
    ```
 
-   插件要先在工程里启用。你自己的插件还要在 `.uplugin` 里声明依赖，见[编写自己的 uBot Package](/develop/package-authoring/)。
+   使用前需要在项目中启用这些插件。自定义插件还需要在 `.uplugin` 中声明对应依赖，见[编写自己的 uBot Package](/develop/package-authoring/)。
 
 2. **查找传感器并调用接口**
 
-   `UBot::Sensors::FindSensors` 返回 Actor 自身（如果它实现了接口）和所有实现 `IUBotSensor` 的组件，按组件顺序排列，不搜索子 Actor（Child Actor）。接口函数用 `IUBotSensor::Execute_*` 调用，这样 C++ 和蓝图写的实现都能走到。
+   `UBot::Sensors::FindSensors` 返回 Actor 自身（如果它实现了接口）和所有实现 `IUBotSensor` 的组件，按组件顺序排列，不搜索子 Actor（Child Actor）。接口函数应通过 `IUBotSensor::Execute_*` 调用，以确保 C++ 和蓝图实现均能被正确执行。
 
    ```cpp
    #include "GameFramework/Actor.h"
@@ -55,7 +55,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 3. **读取某一种传感器的数据**
 
-   把 `FindSensors` 返回的对象转成具体的组件类，就能用它自己的函数。`GetLatestIMUData` 返回最近一次样本，不会触发新的采样。
+   将 `FindSensors` 返回的对象转换为具体组件类型后，可以调用该组件的数据读取函数。`GetLatestIMUData` 返回最近一次样本，不会触发新的采样。
 
    ```cpp
    #include "UBotImuSensorComponent.h"
@@ -75,7 +75,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 4. **下发速度指令**
 
-   `UBot::Actuation::FindVelocityCommandable` 先找 Actor 本身，再找它的组件，没有就返回 `nullptr`。`FUBotVelocityCommand` 在机体系下使用 UE 坐标轴（X 前、Y 右、Z 上）：线速度单位 m/s，角速度单位 rad/s，+Z 为向右偏航。
+   `UBot::Actuation::FindVelocityCommandable` 先检查 Actor 自身，再检查其组件；未找到实现对象时返回 `nullptr`。`FUBotVelocityCommand` 在机体坐标系下使用 UE 坐标轴（X 向前、Y 向右、Z 向上）：线速度单位 m/s，角速度单位 rad/s，+Z 为向右偏航。
 
    ```cpp
    #include "GameFramework/Actor.h"
@@ -99,11 +99,11 @@ import { Steps } from "@astrojs/starlight/components";
    }
    ```
 
-   右手系（ROS、MuJoCo 等用的坐标系）的数据要先转成 UE 的轴向再填：线速度用 `UBot::RightHanded::VectorToUE`，角速度用 `AngularVelocityToUE`，见[坐标约定库](/core/conventions/)。
+   来自右手坐标系（例如 ROS 或 MuJoCo）的数据，需要先转换为 UE 坐标轴方向，再填写指令字段：线速度用 `UBot::RightHanded::VectorToUE`，角速度用 `AngularVelocityToUE`，见[坐标约定库](/core/conventions/)。
 
 5. **读取仿真时间和机器人标识**
 
-   所有 uBot 时间戳都用 `UBot::Clock::GetSimTimeSeconds`，它的基准是 `UWorld::GetTimeSeconds()`，遵循暂停和时间膨胀。机器人的名字取自 `AActor::GetName()`，不是编辑器里的标签，所以打包后结果不变。
+   所有 uBot 时间戳均通过 `UBot::Clock::GetSimTimeSeconds` 获取；该函数以 `UWorld::GetTimeSeconds()` 为基准，受暂停和时间膨胀影响。默认机器人标识取自 `AActor::GetName()`，与编辑器标签无关，打包后仍采用相同的解析规则。
 
    ```cpp
    #include "GameFramework/Actor.h"
@@ -113,8 +113,8 @@ import { Steps } from "@astrojs/starlight/components";
    void LogIdentity(const AActor* Robot)
    {
        const double Now = UBot::Clock::GetSimTimeSeconds(Robot);               // 秒；没有 World 时为 0
-       const FString RobotId = UBot::Identity::ResolveRobotId(Robot);          // 没有 uBot Identity 组件时用 Actor 名
-       const FString RobotNamespace = UBot::Identity::ResolveNamespace(Robot); // 没有组件时用净化后的 Actor 名
+       const FString RobotId = UBot::Identity::ResolveRobotId(Robot);          // 没有 uBot Identity 组件时使用 Actor 名称
+       const FString RobotNamespace = UBot::Identity::ResolveNamespace(Robot); // 没有组件时使用净化后的 Actor 名称
        const FString BaseFrame = UBot::Identity::ResolveBaseFrameId(Robot);    // 没有组件时是 base_link
        UE_LOG(LogTemp, Log, TEXT("t=%.3f %s ns=%s base=%s"), Now, *RobotId, *RobotNamespace, *BaseFrame);
    }
@@ -128,7 +128,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 1. **实现传感器接口**
 
-   让组件继承 `IUBotSensor`，它就能被 `FindSensors` 找到，uBotROS 也是靠这个接口发现传感器的。接口函数是 `BlueprintNativeEvent`，在 C++ 里重写它们的 `_Implementation` 版本。
+   组件实现 `IUBotSensor` 后，可由 `FindSensors` 发现；uBotROS 同样通过该接口发现传感器。接口函数声明为 `BlueprintNativeEvent`，C++ 实现需要重写对应的 `_Implementation` 函数。
 
    ```cpp
    // MyRangeSensorComponent.h（模块 MyRangeSensor）
@@ -201,7 +201,7 @@ import { Steps } from "@astrojs/starlight/components";
    };
    ```
 
-   `PublishSample` 由你自己调用，固定频率采样的做法见注意事项。帧头的时间戳取自 uBot 时钟，序号自己递增：
+   `PublishSample` 需要由自定义采样逻辑调用，固定频率采样方法见“注意事项”。帧头时间戳取自 uBot 时钟，样本序号由组件自行递增：
 
    ```cpp
    // MyRangeSensorComponent.cpp
@@ -274,7 +274,7 @@ import { Steps } from "@astrojs/starlight/components";
    }
    ```
 
-   控制器、油门和转向的映射都写在这样的实现里，uBotROS 本身不含控制逻辑。
+   控制器、油门和转向映射由接口实现方负责，uBotROS 本身不提供这些控制逻辑。
 
 </Steps>
 
@@ -284,19 +284,19 @@ import { Steps } from "@astrojs/starlight/components";
 
 1. **打开「Class Settings」**
 
-   打开蓝图 Actor 或蓝图组件，点工具栏的「Class Settings」。
+   打开蓝图 Actor 或蓝图组件，点击工具栏的「Class Settings」。
 
 2. **添加接口**
 
-   在「Details」面板的「Interfaces」区点「Add」，选择 `UBot Velocity Commandable`。传感器选 `UBot Sensor`。
+   在「Details」面板的「Interfaces」区域点击「Add」，选择 `UBot Velocity Commandable`。若要实现传感器接口，则选择 `UBot Sensor`。
 
 3. **实现函数**
 
-   在「My Blueprint」面板的「Interfaces」里，双击有返回值的函数（如 `Apply Velocity Command`）来实现它。没有返回值的函数（如 `Stop Motion`）在事件图表里右键添加为事件。
+   在「My Blueprint」面板的「Interfaces」区域，双击有返回值的函数（如 `Apply Velocity Command`）并编写实现。没有返回值的函数（如 `Stop Motion`）需要在事件图中右键添加对应事件。
 
 4. **编译并保存**
 
-   之后 C++ 里的 `FindVelocityCommandable` 和 `Execute_ApplyVelocityCommand` 就会找到并调用这个蓝图。
+   编译并保存后，C++ 可通过 `FindVelocityCommandable` 查找实现对象，并通过 `Execute_ApplyVelocityCommand` 调用蓝图实现。
 
 </Steps>
 
@@ -309,23 +309,23 @@ import { Steps } from "@astrojs/starlight/components";
 | `IUBotVelocityCommandable` | `UBotActuatorInterface.h` | `ApplyVelocityCommand`、`StopMotion` |
 | `IUBotPerceptionMedium` | `UBotPerceptionMedium.h` | `GetMediumSnapshot`，见 [感知介质](/sensor/medium/) |
 | `UBot::Sensors::FindSensors` | `UBotSensorInterface.h` | Actor 自身（如果实现了接口）加上所有实现 `IUBotSensor` 的组件 |
-| `UBot::Actuation::FindVelocityCommandable` | `UBotActuatorInterface.h` | 第一个实现 `IUBotVelocityCommandable` 的对象，没有则为 `nullptr` |
-| `UBot::Interfaces::FindImplementers`、`FindFirstImplementer` | `UBotSensorInterface.h` | 上面两个函数的通用版本，参数是接口的 `UClass`，如 `UUBotActuator::StaticClass()` |
+| `UBot::Actuation::FindVelocityCommandable` | `UBotActuatorInterface.h` | 第一个实现 `IUBotVelocityCommandable` 的对象，未找到时为 `nullptr` |
+| `UBot::Interfaces::FindImplementers`、`FindFirstImplementer` | `UBotSensorInterface.h` | 上述查找函数的通用版本，参数是接口的 `UClass`，如 `UUBotActuator::StaticClass()` |
 | `UBot::Clock::GetSimTimeSeconds` | `UBotClock.h` | 仿真时间，单位秒 |
 | `FUBotExtensionRegistry` | `UBotExtensionRegistry.h` | 扩展点：`RegisterExtensionPoint` 声明，`RegisterExtension` 注册，`GetExtensions` 查询；例子见[为自定义传感器添加 ROS 发布器](/develop/ros-publisher/) |
 | `FUBotRuntimeStatus` | `UBotRuntimeStatus.h` | 运行状态：`SetItem` 发布一个状态项，`ReportProblem` 报告一个问题，显示在 uBot 面板的「Runtime」和「Problems」分区，见 [Package 查询与编辑器面板](/core/packages/) |
-| `UBot::Identity::Find`、`ResolveRobotId`、`ResolveNamespace`、`ResolveBaseFrameId`、`ResolveBaseComponent` | `UBotIdentityComponent.h` | 与 uBot Identity 组件相同的解析规则，Actor 没有组件时回退到默认值 |
-| `UBot::Identity::SanitizeNameToken` | `UBotIdentityComponent.h` | 把任意名字变成合法的名字片段，可以用作 ROS 名称、C 标识符和文件名；身份组件的命名空间回退用的就是它，规则见[标识与命名](/concepts/identity/) |
+| `UBot::Identity::Find`、`ResolveRobotId`、`ResolveNamespace`、`ResolveBaseFrameId`、`ResolveBaseComponent` | `UBotIdentityComponent.h` | 与 uBot Identity 组件相同的解析规则，Actor 未添加该组件时回退到默认值 |
+| `UBot::Identity::SanitizeNameToken` | `UBotIdentityComponent.h` | 将任意名称转换为合法的名称片段，可用作 ROS 名称片段、C 标识符和文件名；Identity 组件使用该函数生成缺省命名空间，规则见[标识与命名](/concepts/identity/) |
 | `UBot::RightHanded::PositionFromUE`、`VectorFromUE`、`AngularVelocityFromUE`、`RotationFromUE`、`TransformFromUE`、`YawFromUE` | `UBotRightHandedConventions.h` | UE（左手系，厘米）到右手系（FLU，国际单位制）的换算，反方向是对应的 `…ToUE`。纯数学函数，不含 ROS 或引擎的类型，规则见[坐标系与单位](/concepts/coordinates-and-units/) |
 
 ## 输出与事件
 
-- `Execute_*` 的返回值就是接口函数的返回值。`Execute_ApplyVelocityCommand` 返回 `false` 表示指令被拒绝（没准备好、数值无效等）。
+- `Execute_*` 返回被调用接口函数的返回值。`Execute_ApplyVelocityCommand` 返回 `false` 表示指令被拒绝（目标尚未就绪、数值无效等）。
 - `Execute_GetLatestSensorHeader` 返回最近一次采样的帧头，不会触发新的采样。
-- 传感器自己的事件用 `AddDynamic` 绑定，处理函数必须是 `UFUNCTION()`：
+- 传感器事件通过 `AddDynamic` 绑定，处理函数必须是 `UFUNCTION()`：
 
 ```cpp
-// 头文件里声明：UFUNCTION() void HandleImu(const FUBotImuSensorData& Data);
+// 在头文件中声明：UFUNCTION() void HandleImu(const FUBotImuSensorData& Data);
 void UMyReceiver::Bind(UUBotImuSensorComponent* Imu)
 {
     Imu->OnImuDataUpdated.AddDynamic(this, &UMyReceiver::HandleImu);
@@ -334,18 +334,18 @@ void UMyReceiver::Bind(UUBotImuSensorComponent* Imu)
 
 ## 注意事项
 
-- 用 `Execute_*` 调用接口，不要把对象 `Cast` 成 `IUBotSensor*` 再直接调用函数：蓝图里写的实现这样调用不到。
-- `FindSensors` 返回的对象一定实现了接口。其他对象先用 `Object->Implements<UUBotSensor>()` 检查。
+- 应通过 `Execute_*` 调用接口函数。将对象 `Cast` 为 `IUBotSensor*` 后直接调用函数，无法执行蓝图提供的接口实现。
+- `FindSensors` 返回的对象一定实现了接口。对其他对象调用接口前，应先通过 `Object->Implements<UUBotSensor>()` 检查。
 - 查找函数只搜索 Actor 自身和它的组件，不搜索子 Actor。
-- uBotCore 0.1.3 起，旧的 `UBot::Ros` 命名空间（`UBotRosConventions.h`）已弃用，里面的轴换算函数转发到 `UBot::RightHanded`，结果相同。
-- ROS 专属的函数（`CameraLinkToOpticalRotation`、`OpticalFrameSuffix`、`SecondsToRosTime`、`RosTimeToSeconds`、`SanitizeRosName`）移到了 uBotROS 的 `UBot::ROSConventions`（`UBotROSConventionHelpers.h`），用它们的模块要依赖 `UBotROS`。
-- 要按固定频率采样，用 `FUBotSampleScheduler`（`UBotSampleScheduler.h`），不要用循环定时器。长帧时循环定时器会在同一帧触发多次，产生重复的时间戳，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- uBotCore 0.1.3 起，旧的 `UBot::Ros` 命名空间（`UBotRosConventions.h`）已弃用，其中的坐标轴转换函数转发到 `UBot::RightHanded`，结果相同。
+- ROS 专属的函数（`CameraLinkToOpticalRotation`、`OpticalFrameSuffix`、`SecondsToRosTime`、`RosTimeToSeconds`、`SanitizeRosName`）已迁移到 uBotROS 的 `UBot::ROSConventions`（`UBotROSConventionHelpers.h`），调用这些函数的模块需要依赖 `UBotROS`。
+- 按固定频率采样时，应使用 `FUBotSampleScheduler`（`UBotSampleScheduler.h`）。循环定时器在单帧耗时较长时可能于同一帧触发多次，生成重复时间戳，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
 
 ## 相关参考
 
 - [UBot Sensor](/reference/ubotcore/uubotsensor/)、[UBot Actuator](/reference/ubotcore/uubotactuator/)、[UBot Velocity Commandable](/reference/ubotcore/uubotvelocitycommandable/)、[UBot Perception Medium](/reference/ubotcore/uubotperceptionmedium/)：四个接口的全部函数。
 - [FUBotVelocityCommand](/reference/ubotcore/structs/fubotvelocitycommand/)：速度指令的字段。
-- [插件之间怎么对接](/concepts/interfaces/)：四个接口各自的用途。
+- [插件之间怎么对接](/concepts/interfaces/)：各共享接口的用途及其实现方与使用方。
 - [Identity 组件](/core/identity/)：身份字段和解析规则。
-- [坐标约定库](/core/conventions/)：蓝图里的同一组坐标换算节点。
-- [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/)：让上面的 `UMyRangeSensorComponent` 发布到 ROS 2。
+- [坐标约定库](/core/conventions/)：对应的蓝图坐标转换节点。
+- [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/)：将上述 `UMyRangeSensorComponent` 的数据发布到 ROS 2。

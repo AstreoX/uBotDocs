@@ -3,7 +3,7 @@ UUBotPointCloudFrame:
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.CaptureDurationMilliseconds:
-  summary: "生成这一帧用的时间，单位 ms。"
+  summary: "生成该帧所需的时间，单位 ms。"
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.ChannelCount:
@@ -35,23 +35,23 @@ UUBotPointCloudFrame.GetPointByIndex:
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.GetPointCount:
-  summary: "点云里的点数，即有效命中数。"
+  summary: "返回点云中的点数，即有效命中点的数量。"
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.GetTotalRayCount:
-  summary: "这次扫描发射的射线总数。"
+  summary: "返回本次扫描发射的射线总数。"
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.HasIntensityData:
-  summary: "点云里有点，并且每个点都有强度时返回 true。"
+  summary: "点云中有点，并且每个点都有强度时返回 true。"
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.Header:
-  summary: "帧头，含 Valid 和 Status。"
+  summary: "帧头，包含 Valid 和 Status 字段。"
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.HitPointCount:
-  summary: "点云里的点数，即有效命中数。"
+  summary: "点云中的点数，即有效命中数。"
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.HorizontalFovRadians:
@@ -75,7 +75,7 @@ UUBotPointCloudFrame.ScanPeriodSeconds:
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.SensorTransformWorld:
-  summary: "扫描时传感器在 UE 世界里的变换，位置单位 cm。"
+  summary: "扫描时传感器在 UE 世界坐标系中的变换，位置单位 cm。"
   sourceHash: "e3b0c44298fc"
 
 UUBotPointCloudFrame.TotalRayCount:

@@ -1,13 +1,13 @@
 Break:FUBotWindSettings:
-  summary: 把 UBot Wind Settings 拆成恒定风速、阵风标准差、阵风相关时间和种子。
+  summary: "将 UBot Wind Settings 拆分为恒定风速、阵风标准差、阵风相关时间和种子。"
   sourceHash: "027649c6abd3"
 
 FUBotWindSettings:
-  summary: 风：恒定部分加阵风。阵风是相位由种子决定的正弦之和，同样的设置在同样的仿真时间给出同样的风。
+  summary: "由恒定风和阵风组成的风场设置。阵风由种子决定相位的正弦分量叠加产生；相同设置在相同仿真时刻给出相同风速。"
   sourceHash: "fd9635a497c7"
 
 FUBotWindSettings.ConstantVelocityMetersPerSecond:
-  summary: 世界系恒定风速，单位 m/s，方向是空气移动的方向。
+  summary: "世界坐标系恒定风速，单位 m/s，方向是空气移动的方向。"
   sourceHash: "72a61a1a1f49"
 
 FUBotWindSettings.GustCorrelationTimeSeconds:

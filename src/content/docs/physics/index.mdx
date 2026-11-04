@@ -1,6 +1,6 @@
 ---
 title: uBotPhysics 概述
-description: uBotPhysics 让同一个关卡里的不同物体由不同的物理后端计算：能做什么、包含哪些组件、装它需要什么。
+description: uBotPhysics 支持在同一关卡中为不同物体指定物理后端，并提供绑定、仿真步进、状态查询和场景几何接口。
 pageKind: overview
 packages: [UBotPhysics]
 sidebar:
@@ -9,53 +9,53 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-用 uBotPhysics 让同一个关卡里的不同物体由不同的物理后端计算，UE 自带的 Chaos 仍是默认。
+uBotPhysics 支持在同一关卡中为不同物体指定物理后端，未绑定物体仍由 UE 内置的 Chaos 作为默认物理引擎处理。
 
 ## 能做什么
 
-没有绑定的物体都归 Chaos；绑定的物体交给指定的后端，后端按 uBot 仿真时间以自己的固定步长推进，每帧把结果写回对应的 UE 组件。被绑定的组件仍是原来的网格或碰撞体，传感器、射线检测和动画照常使用它。
+绑定后，物体由指定后端按照 uBot 仿真时间、以该后端的固定步长进行模拟，每帧将计算结果更新到对应的 UE 组件。绑定不会替换原有的网格或碰撞体组件，传感器、射线检测和动画仍使用这些组件。
 
-uBotPhysics 自己不带物理引擎，只提供后端接口、绑定组件、所有权规则、按仿真时钟步进、位姿回写和场景几何。后端是依赖它的独立插件，例如规划中的 [uBotMuJoCo](/mujoco/)。
+uBotPhysics 提供后端接口、绑定组件、所有权规则、按仿真时钟步进、组件位姿更新和场景几何导出功能，物理引擎由后端插件提供。后端是依赖它的独立插件，例如规划中的 [uBotMuJoCo](/mujoco/)。
 
 | 能力 | 含义 | 页面 |
 | --- | --- | --- |
-| 绑定与所有权（`Physics.BodyBinding`） | 加 `uBot Physics Binding` 组件，选后端，播放时自动绑定；全部成功，或全部回滚 | [绑定与所有权](/physics/binding/) |
-| 步进与位姿回写 | 每个后端按仿真时钟以自己的固定步长推进，每帧把位姿写回组件；暂停时不步进，恢复后不补跑 | [每帧时序与步进](/physics/stepping/) |
+| 绑定与所有权（`Physics.BodyBinding`） | 添加 `uBot Physics Binding` 组件并指定后端，播放时自动绑定；绑定作为整体执行，失败时撤销已完成的绑定 | [绑定与所有权](/physics/binding/) |
+| 步进与位姿回写 | 每个后端按仿真时钟以自己的固定步长推进，每帧将位姿更新到组件；暂停时停止步进，恢复后不会补执行暂停期间的步进 | [每帧时序与步进](/physics/stepping/) |
 | <span id="场景几何">场景几何</span>（`Physics.SceneGeometry`） | 关卡里其余的碰撞体按静态和运动学两类交给后端，后端的物体可以和它们接触 | [场景几何](/physics/scene/) |
 | 刚体状态 | 对已绑定的组件，给出后端最近一步结束时的状态，传感器不必再对位姿做差分；只能在 C++ 里使用 | [绑定物体的刚体状态](/physics/body-state/) |
-| 物理后端（`Physics.Backends`） | 后端在扩展点 `UBotPhysics.Backend` 注册工厂，名字就是绑定组件里 `Backend` 填的名字 | [给后端作者](/physics/backend-authors/) |
+| 物理后端（`Physics.Backends`） | 后端在扩展点 `UBotPhysics.Backend` 注册工厂，注册名称用于绑定组件的 `Backend` 属性 | [给后端作者](/physics/backend-authors/) |
 
 ## 依赖与安装
 
 <PackageStatus name="UBotPhysics" />
 
-用 [uBot Manager](/manager/) 安装，依赖会一并装好。uBotPhysics 0.1.0 是 Beta 版本，后端接口是实验性的，小版本之间可能变化。
+通过 [uBot Manager](/manager/) 安装时，管理器会同时安装所需依赖。uBotPhysics 0.1.0 是 Beta 版本，后端接口是实验性的，小版本之间可能变化。
 
-还要安装并启用至少一个物理后端插件。没有后端时，绑定会失败并报告 `BackendMissing`，物体仍由 Chaos 模拟。目前还没有已发布的后端插件，uBotMuJoCo 等后端仍在规划中；要自己写后端，见[给后端作者](/physics/backend-authors/)。
+还要安装并启用至少一个物理后端插件。没有后端时，绑定会失败并报告 `BackendMissing`，物体仍由 Chaos 模拟。目前还没有已发布的后端插件，uBotMuJoCo 等后端仍在规划中；需要开发后端插件时，见[给后端作者](/physics/backend-authors/)。
 
 ### 与其他插件的关系
 
 | 插件 | 关系 |
 | --- | --- |
 | [uBotCore](/core/) | 依赖 0.1.3 或更新的 0.1.x，用它的仿真时钟、固定步长调度器、扩展点注册表和刚体状态源接口 |
-| [uBotSensor](/sensor/) | 无依赖。传感器读到的是被写回的组件位姿；0.1.2 起位姿、里程计和 IMU 直接读后端给出的速度，见[读取刚体状态](/sensor/body-state/) |
-| [uBotROS](/ros/) | 无依赖。ROS 只读组件位姿和 uBotCore 接口，物体由哪个后端计算对它没有影响 |
-| [uBotAerial](/aerial/) | 无依赖。无人机的 `Movement` 组件已经驱动机体，根组件不能绑定给后端，见[无人机的刚体状态](/aerial/body-state/) |
+| [uBotSensor](/sensor/) | 无依赖关系。传感器从组件变换读取位姿；从 0.1.2 起，位姿、里程计和 IMU 传感器直接读取后端提供的速度，见[读取刚体状态](/sensor/body-state/) |
+| [uBotROS](/ros/) | 无依赖关系。uBotROS 通过组件位姿和 uBotCore 接口读取数据，无需针对物理后端调整发布流程 |
+| [uBotAerial](/aerial/) | 无依赖关系。无人机的 `Movement` 组件已经驱动机体，根组件不能绑定给后端，见[无人机的刚体状态](/aerial/body-state/) |
 | 物理后端插件 | 各自依赖 uBotPhysics，在 `UBotPhysics.Backend` 注册工厂，例如规划中的 [uBotMuJoCo](/mujoco/) |
 
 ## 组件一览
 
 | 组件 | 作用 | 参考 |
 | --- | --- | --- |
-| `uBot Physics Binding`（组件） | 加在 Actor 上，选后端，绑定与解绑，查询绑定状态 | [uBot Physics Binding](/reference/ubotphysics/uubotphysicsbindingcomponent/) |
-| `uBot Physics Library`（函数库，类别 `uBot\|Physics`） | 查询已注册的后端和它们的能力、哪个后端在模拟某个组件、丢弃的步数和后端看到的场景 | [uBot Physics Library](/reference/ubotphysics/uubotphysicslibrary/) |
-| `UBot Physics Body Binding`（结构体） | `Bodies` 里的一项：要交出的组件和它在后端模型里的名字 | [UBot Physics Body Binding](/reference/ubotphysics/structs/fubotphysicsbodybinding/) |
-| `UBot Physics Capabilities`（结构体） | 后端声明自己真的支持的能力 | [UBot Physics Capabilities](/reference/ubotphysics/structs/fubotphysicscapabilities/) |
-| `UBot Physics Scene Stats`（结构体） | 一个后端现在看到的场景：物体数、形状数和没能导出的组件数 | [UBot Physics Scene Stats](/reference/ubotphysics/structs/fubotphysicsscenestats/) |
+| `uBot Physics Binding`（组件） | 添加到 Actor 后，用于指定后端、绑定和解绑组件，以及查询绑定状态 | [uBot Physics Binding](/reference/ubotphysics/uubotphysicsbindingcomponent/) |
+| `uBot Physics Library`（函数库，类别 `uBot\|Physics`） | 查询已注册后端及其能力、组件所属后端、跳过的物理步数和后端接收的场景统计 | [uBot Physics Library](/reference/ubotphysics/uubotphysicslibrary/) |
+| `UBot Physics Body Binding`（结构体） | `Bodies` 数组中的一项，指定待绑定组件及其在后端模型中的名称 | [UBot Physics Body Binding](/reference/ubotphysics/structs/fubotphysicsbodybinding/) |
+| `UBot Physics Capabilities`（结构体） | 描述后端实际支持的能力 | [UBot Physics Capabilities](/reference/ubotphysics/structs/fubotphysicscapabilities/) |
+| `UBot Physics Scene Stats`（结构体） | 描述后端当前接收的场景，包括物体数、形状数和未能导出的组件数 | [UBot Physics Scene Stats](/reference/ubotphysics/structs/fubotphysicsscenestats/) |
 | `EUBot Physics Binding Status`（枚举） | 绑定状态：`Unbound`、`Bound`、`BackendMissing`、`Rejected` | [EUBot Physics Binding Status](/reference/ubotphysics/enums/eubotphysicsbindingstatus/) |
 
 ## 下一步
 
 - [绑定与所有权](/physics/binding/)：把一个 Actor 的组件交给后端，并读取绑定状态。
-- [场景几何](/physics/scene/)：后端怎样看到关卡里其余的碰撞体。
+- [场景几何](/physics/scene/)：向后端导出关卡中其余碰撞体的规则。
 - [给后端作者](/physics/backend-authors/)：用 C++ 注册自己的物理后端。

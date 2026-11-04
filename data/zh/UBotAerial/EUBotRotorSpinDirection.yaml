@@ -1,5 +1,5 @@
 EUBotRotorSpinDirection:
-  summary: 从上往下看，转子的旋转方向。
+  summary: "从转子上方向下观察时的旋转方向。"
   sourceHash: "72414a163bcc"
 
 EUBotRotorSpinDirection.Clockwise:

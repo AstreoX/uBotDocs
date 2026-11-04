@@ -1,31 +1,31 @@
 ---
 title: 标识与命名
-description: Sensor Id、Frame Id、Robot Id、Namespace 和 Base Frame Id 怎么取值，缺省时怎么回退。
+description: 传感器标识、坐标系标识、机器人标识和命名空间的取值规则及缺省行为。
 pageKind: concept
 packages: [UBotCore]
 sidebar:
   order: 40
 ---
 
-了解传感器和机器人怎样命名，以及这些名字留空时 uBot 怎样回退。
+uBot 通过传感器标识、坐标系标识、机器人标识和命名空间组织数据，并为未显式配置的字段提供回退值。
 
-| 名字 | 设在哪里 | 用在哪里 |
+| 标识或属性 | 配置位置 | 用途 |
 | --- | --- | --- |
-| `Sensor Id` | 传感器组件 | 帧头里的传感器 id；同一个 Actor 上同类型传感器不止一个时，用来区分 ROS 话题 |
-| `Frame Id` | 传感器组件 | 帧头里的坐标系名；ROS 消息的 `frame_id` 和 TF（相机加后缀 `_optical`） |
-| `Robot Id` | `uBot Identity` 组件 | 机器人的名字；默认的 `Namespace` 由它得出 |
+| `Sensor Id` | 传感器组件 | 帧头中的传感器标识；同一 Actor 上有多个同类型传感器时，用于区分 ROS 话题 |
+| `Frame Id` | 传感器组件 | 帧头中的坐标系名称，以及 ROS 消息的 `frame_id` 和坐标变换（TF）；相机光学坐标系追加后缀 `_optical` |
+| `Robot Id` | `uBot Identity` 组件 | 机器人标识，也是默认 `Namespace` 的来源 |
 | `Namespace` | `uBot Identity` 组件 | ROS 话题的前缀，形如 `/<namespace>/imu/data` |
-| `Base Frame Id` | `uBot Identity` 组件 | 机体坐标系的名字，默认 `base_link` |
-| `Base Component` | `uBot Identity` 组件 | 机体坐标系对应的场景组件，TF 用它的位姿 |
+| `Base Frame Id` | `uBot Identity` 组件 | 机体坐标系的名称，默认 `base_link` |
+| `Base Component` | `uBot Identity` 组件 | 机体坐标系对应的场景组件，TF 根据该组件的位姿计算变换 |
 
 ## Sensor Id 与 Frame Id
 
-两个名字都在传感器组件的「Details」面板里，留空时按下面的规则回退：
+这两个标识均在传感器组件的「Details」面板配置，留空时按以下规则解析：
 
-- `Sensor Id` 留空：用组件名。
-- `Frame Id` 留空：用解析后的 `Sensor Id`。
+- `Sensor Id` 留空时，使用组件名称。
+- `Frame Id` 留空时，使用解析后的 `Sensor Id`。
 
-每种传感器自带默认值，所以通常不会留空：
+各类传感器为这两个属性提供以下默认值：
 
 | 传感器 | `Sensor Id` | `Frame Id` |
 | --- | --- | --- |
@@ -37,32 +37,32 @@ sidebar:
 | `uBot RGB Camera Sensor` | `rgb_camera` | `rgb_camera` |
 | `uBot Depth Camera Sensor` | `depth_camera` | `depth_camera` |
 
-另有几个名字描述数据所在的坐标系，它们不是传感器自己的 `Frame Id`：Pose 传感器的 `Reference Frame Id`（默认 `world`），里程计的 `Odometry Frame Id`（默认 `odom`）和 `Child Frame Id`（默认 `base_link`）。
+部分属性描述测量数据使用的参考坐标系，与传感器自身的 `Frame Id` 含义不同，包括 Pose 传感器的 `Reference Frame Id`（默认 `world`），里程计的 `Odometry Frame Id`（默认 `odom`）和 `Child Frame Id`（默认 `base_link`）。
 
 ## Robot Id、Namespace 与 Base Frame Id
 
-这些名字在 `uBot Identity` 组件上，全部可选。留空或无效时按下表回退：
+这些属性由 `uBot Identity` 组件提供，均为可选配置。留空或无效时按下表回退：
 
 | 字段 | 默认 | 留空或无效时 |
 | --- | --- | --- |
-| `Robot Id` | 空 | 所属 Actor 的名字 |
-| `Namespace` | 空 | 净化后的 `Robot Id`（见下）；填写的值会去掉首尾的空白和 `/` |
+| `Robot Id` | 空 | 所属 Actor 的名称 |
+| `Namespace` | 空 | 经过名称净化的 `Robot Id`（规则见下文）；显式填写的值会移除首尾空白字符和 `/` |
 | `Base Frame Id` | `base_link` | `base_link` |
-| `Base Component` | 空 | Actor 的根组件；引用无法解析或不是场景组件时也一样 |
+| `Base Component` | 空 | 所属 Actor 的根组件；引用无法解析或引用对象不是场景组件时，同样采用根组件 |
 
-几点说明：
+解析时还应注意以下规则：
 
-- Actor 的名字取自 `AActor::GetName()`，不是「Outliner」面板里显示的标签，所以改标签不会改变结果，打包后结果也相同。
-- 没有 `uBot Identity` 组件也能工作：使用方得到同样的回退结果，也就是 Actor 名、净化后的 Actor 名、`base_link` 和根组件。组件只在需要显式命名时才添加。
-- 蓝图里用 `Get Resolved Robot Id`、`Get Resolved Namespace`、`Get Base Frame Id` 和 `Get Base Component` 读取解析结果，见 [Identity 组件](/core/identity/)。
+- Actor 名称取自 `AActor::GetName()`，与「Outliner」面板显示的标签无关，因此修改标签不会改变解析结果，打包后仍采用相同的解析规则。
+- 未添加 `uBot Identity` 组件时，使用方仍会分别回退到 Actor 名称、净化后的 Actor 名称、`base_link` 和根组件。需要显式配置这些字段时，再添加该组件。
+- 在蓝图中使用 `Get Resolved Robot Id`、`Get Resolved Namespace`、`Get Base Frame Id` 和 `Get Base Component` 读取解析结果，见 [Identity 组件](/core/identity/)。
 
 ## 名字的净化
 
-默认的 `Namespace` 要用作 ROS 名称，所以要先净化（sanitize）。uBotCore 用 `UBot::Identity::SanitizeNameToken` 处理名字，得到的名字可以直接用作 ROS 名称、C 标识符和文件名。规则如下：
+默认 `Namespace` 需要符合 ROS 命名要求，因此 uBotCore 使用 `UBot::Identity::SanitizeNameToken` 执行名称净化（sanitize）。处理结果可用作 ROS 名称片段、C 标识符和文件名，规则如下：
 
-- 只保留字母、数字和下划线，其余字符（包括中文）换成 `_`。
+- 只保留字母、数字和下划线，其余字符（包括中文）替换为 `_`。
 - 连续的下划线合并成一个。
-- 首字符是数字时，前面加 `_`。
+- 首字符是数字时，在名称前添加 `_`。
 - 输入为空时返回 `ubot`。
 
 | 输入 | 结果 |
@@ -75,20 +75,20 @@ sidebar:
 | `机器人` | `_` |
 | 空字符串 | `ubot` |
 
-`SanitizeNameToken` 是 C++ 函数，没有蓝图节点。uBotROS 的蓝图节点 `Sanitize ROS Name`（类别 `uBot|ROS|Conventions`）规则相同；uBotCore 里同名的旧节点已弃用。
+`SanitizeNameToken` 是 C++ 函数，没有蓝图节点。uBotROS 的蓝图节点 `Sanitize ROS Name`（类别 `uBot|ROS|Conventions`）规则相同；uBotCore 中的同名旧节点已弃用。
 
-你自己填写的 `Namespace`，`uBot Identity` 只去掉首尾的空白和 `/`。uBotROS 拿它做话题前缀时，会再把以 `/` 分隔的每一段净化一遍。
+对于显式填写的 `Namespace`，`uBot Identity` 仅移除首尾空白字符和 `/`。uBotROS 将该值用作话题前缀时，还会分别净化以 `/` 分隔的各级名称。
 
 ## 命名建议
 
-- 让话题名不依赖 Actor 名：给机器人显式填写 `Robot Id` 或 `Namespace`。
-- 一个关卡里有多个机器人时，每个机器人各放一个 `uBot Identity`，`Robot Id` 互不相同，话题就分到各自的命名空间下。
-- 同一个机器人上，同类型传感器的 `Sensor Id` 和所有传感器的 `Frame Id` 不能重复，否则 uBotROS 不发布，见[发布传感器数据](/ros/publish-sensors/)。
-- 多个机器人共用 `/tf` 和 `/tf_static`，frame id 重名会冲突。给每个机器人设不同的 `Frame Id`，或在 `uBot ROS Sensor Bridge` 上勾选 `Prefix Frames with Namespace`。
-- `Sensor Id`、`Frame Id` 和 `Namespace` 只用字母、数字和下划线，避免被净化后和你写的不一样。
+- 为机器人显式填写 `Robot Id` 或 `Namespace`，使话题名称不依赖 Actor 名称。
+- 同一关卡包含多个机器人时，应为每个机器人添加独立的 `uBot Identity`，并配置互不相同的 `Robot Id`，使话题归属各自的命名空间。
+- 同一个机器人上，同类型传感器的 `Sensor Id` 和所有传感器的 `Frame Id` 不能重复，否则 uBotROS 会拒绝发布，见[发布传感器数据](/ros/publish-sensors/)。
+- 多个机器人共用 `/tf` 和 `/tf_static`，坐标系标识重名会造成冲突。应为各机器人设置互不重复的 `Frame Id`，或在 `uBot ROS Sensor Bridge` 上勾选 `Prefix Frames with Namespace`。
+- `Sensor Id`、`Frame Id` 和 `Namespace` 应仅使用字母、数字和下划线，避免名称净化改变原始配置值。
 
 ## 相关页面
 
-- [Identity 组件](/core/identity/)：添加组件，字段与默认值，蓝图读取。
-- [帧头与采样状态](/concepts/frame-header/)：`Sensor Id` 和 `Frame Id` 在帧头里的位置。
-- [TF 与 /clock](/ros/tf-and-clock/)：`Base Frame Id` 和 `Frame Id` 在 TF 树里的位置。
+- [Identity 组件](/core/identity/)：组件添加步骤、属性默认值和蓝图读取方法。
+- [帧头与采样状态](/concepts/frame-header/)：`Sensor Id` 和 `Frame Id` 在帧头中的位置。
+- [TF 与 /clock](/ros/tf-and-clock/)：`Base Frame Id` 和 `Frame Id` 在 TF 树中的位置。

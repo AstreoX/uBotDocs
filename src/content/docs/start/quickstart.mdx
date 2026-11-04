@@ -1,6 +1,6 @@
 ---
 title: 五分钟上手
-description: 给 Actor 加一个 uBot IMU Sensor，运行后在屏幕上看到它的采样序号。
+description: 为 Actor 添加 uBot IMU Sensor 组件，并在运行时显示采样序号。
 pageKind: guide
 packages: [UBotSensor]
 sidebar:
@@ -9,11 +9,11 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-给一个 Actor 装上 IMU，运行后在屏幕左上角看到采样序号不断增加，确认插件已经正常工作。
+为 Actor 添加惯性测量单元（Inertial Measurement Unit，IMU）组件，并在运行时显示持续递增的采样序号，以验证传感器正常采样。
 
 ## 准备
 
-先按[安装](/start/install/)装好 `UBotCore` 和 `UBotSensor`，用 UE 5.5 打开工程。
+按照[安装 uBot](/start/install/)中的步骤安装 `UBotCore` 和 `UBotSensor`，然后使用 UE 5.5 打开工程。
 
 ## 添加一个 IMU 传感器
 
@@ -21,11 +21,11 @@ import { Steps } from "@astrojs/starlight/components";
 
 1. **新建 Actor 蓝图**
 
-   在「Content Browser」里右键，选「Blueprint Class → Actor」，命名为 `BP_ImuProbe`。
+   在「Content Browser」中右键，选择「Blueprint Class → Actor」，命名为 `BP_ImuProbe`。
 
 2. **添加 IMU 组件**
 
-   打开 `BP_ImuProbe`，在「Components」面板点「Add」，搜索 `uBot IMU Sensor`，把新组件重命名为 `IMU`。
+   打开 `BP_ImuProbe`，在「Components」面板点击「Add」，搜索 `uBot IMU Sensor`，把新组件重命名为 `IMU`。
 
    ![BP_ImuProbe 的组件树里只有 IMU，Details 面板里展开了 Sensor 类别：Sensor Id、Frame Id、Update Rate Hz、Auto Start 和 Sensor Enabled](../../../assets/start/imu-probe-component.png)
 
@@ -35,7 +35,7 @@ import { Steps } from "@astrojs/starlight/components";
 
 ## 在屏幕上打印采样序号
 
-选中 `IMU` 组件，在「Details」面板最下面的「Events」区点 `On Sensor Sampled` 旁的「+」，然后照下图连线：
+选中 `IMU` 组件，在「Details」面板最下面的「Events」区点 `On Sensor Sampled` 旁的「+」，然后按照下图连接节点：
 
 ![IMU 组件的 Details 面板只展开 Events：On Sensor Sampled 等事件，每个旁边有一个「+」按钮](../../../assets/start/imu-probe-events.png)
 
@@ -53,7 +53,7 @@ wires:
   - C.ReturnValue -> D.InString
 notes:
   C: 把 `Sequence` 直接连到 `In String`，编辑器会自动插入这个转换节点。
-  D: 展开 `Print String` 的高级引脚，给 `Key` 填一个固定值，同一行文字会原地刷新。
+  D: 展开 `Print String` 的高级引脚，将 `Key` 设置为固定值，使后续输出更新同一行文字。
 ```
 
 `On Sensor Sampled` 是所有 uBot 传感器共有的事件，`Header` 是这一次采样的[帧头](/concepts/frame-header/)。
@@ -68,14 +68,14 @@ notes:
 
 2. **运行**
 
-   点「Play」。屏幕左上角的数字不断增加。
+   点击「Play」。屏幕左上角的数字不断增加。
 
 </Steps>
 
-采样频率是 100 Hz，但每帧最多采样一次。帧率低于 100 FPS 时，数字每秒增加的量等于帧率，原因见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+采样频率是 100 Hz，但每帧最多采样一次。帧率低于每秒 100 帧（FPS）时，采样序号每秒的增量等于实际帧数，原因见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
 
 ## 下一步
 
-- [IMU 传感器](/sensor/imu/)：把姿态换算成 Roll、Pitch、Yaw。
+- [IMU 传感器](/sensor/imu/)：将姿态转换为横滚（Roll）、俯仰（Pitch）和偏航（Yaw）角。
 - [帧头与采样状态](/concepts/frame-header/)：`Sequence` 和状态码。
-- [选择组合](/start/recipes/)：需要把数据发布到 ROS 2 时，换一个组合。
+- [选择组合](/start/recipes/)：选择包含 ROS 2 数据发布功能的插件组合。

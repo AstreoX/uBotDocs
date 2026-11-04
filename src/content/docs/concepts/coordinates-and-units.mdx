@@ -1,13 +1,13 @@
 ---
 title: 坐标系与单位
-description: UE 与右手系（FLU，ROS 和 MuJoCo 等用的坐标系）的区别、uBot 输出用的单位，以及两边之间的转换规则。
+description: UE 与右手坐标系 FLU 的轴向差异、uBot 输出采用的单位，以及坐标转换规则。
 pageKind: concept
 packages: [UBotCore]
 sidebar:
   order: 30
 ---
 
-了解 UE 与右手系（FLU，ROS 和 MuJoCo 等外部世界用的坐标系）有什么不同，uBot 的数据用什么单位，以及两边之间怎样换算。
+uBot 的公共接口采用国际单位制，但默认保留 UE 坐标轴方向；与 ROS 或 MuJoCo 等系统交换数据时，需要按坐标约定转换轴向和单位。
 
 <figure>
 <svg viewBox="0 0 520 196" role="img" aria-labelledby="axes-title axes-desc" style={{ display: "block", width: "100%", maxWidth: "34rem" }}>
@@ -50,15 +50,15 @@ sidebar:
 | 长度单位 | 厘米 | 米 |
 | 角度单位 | 度（`Rotator`） | 弧度 |
 | 偏航（Yaw）的正方向 | 向右 | 向左 |
-| 用在哪里 | UE 的世界和 `Transform` | ROS（REP-103）；MuJoCo 等 Z 轴朝上的右手系引擎，在模型的 X 轴朝前时 |
+| 使用范围 | UE 的世界和 `Transform` | ROS（REP-103）；MuJoCo 等 Z 轴朝上的右手系引擎，在模型的 X 轴朝前时 |
 
 ## UE 的坐标系和单位
 
-UE 的世界和 `Transform` 用厘米，旋转（`Rotator`）在蓝图里用度。偏航是绕 Z 轴的旋转，正方向是向右转。
+UE 世界坐标和 `Transform` 的平移分量以厘米为单位，蓝图中的旋转类型 `Rotator` 以度为单位。偏航是绕 Z 轴的旋转，其正方向为向右转。
 
 ## uBot 输出用的单位
 
-uBot 的公共接口默认用国际单位制（SI）：米、秒、弧度。名字里带 `Centimeters` 或 `Degrees` 的属性除外。
+uBot 公共接口默认采用国际单位制（SI，International System of Units），包括米、秒和弧度。名称中包含 `Centimeters` 或 `Degrees` 的属性除外，应按名称标明的单位解释。
 
 | 量 | 单位 |
 | --- | --- |
@@ -68,25 +68,25 @@ uBot 的公共接口默认用国际单位制（SI）：米、秒、弧度。名�
 | 角度 | rad |
 | 角速度 | rad/s |
 | 时间 | s |
-| 世界变换 | cm，UE 的原样 |
+| 世界变换的平移分量 | cm，保留 UE 原始单位 |
 
-属性的名字里写着单位，比如 `Position Meters`、`Angular Velocity Rad Per Second`、`Linear Acceleration Meters Per Second Squared`。世界变换指点云帧、图像帧和 2D 激光雷达帧里的 `Sensor Transform World`。
+属性名称会标明单位，例如 `Position Meters`、`Angular Velocity Rad Per Second`、`Linear Acceleration Meters Per Second Squared`。此处的世界变换指点云帧、图像帧和 2D 激光雷达帧中的 `Sensor Transform World`。
 
-数值换成了米，但坐标轴仍然是 UE 的：X 前、Y 右、Z 上。uBotSensor 的输出不转换坐标轴，把数据交给外部时才转换，比如 uBotROS 在发布时。
+长度数值转换为米后，坐标轴仍遵循 UE 约定：X 向前、Y 向右、Z 向上。uBotSensor 输出数据时不改变坐标轴方向；坐标转换由对外交换数据的模块执行，例如 uBotROS 在发布 ROS 消息时执行转换。
 
-IMU 的线加速度是比力（specific force）：静止时读数约为 +9.8 m/s²（World 的重力加速度，默认 −980 cm/s²），方向是世界向上，用传感器坐标系表示。
+惯性测量单元（IMU）的线加速度输出表示比力（specific force）。在 World 默认重力加速度为 −980 cm/s² 时，静止传感器的比力大小约为 9.8 m/s²，方向为世界竖直向上，并以传感器坐标系表示。
 
 ## 右手系（FLU）的坐标系
 
-外部世界通常用右手系：X 前、Y 左、Z 上，单位米，简称 FLU（Forward-Left-Up）。ROS 遵循 REP-103，MuJoCo 等 Z 轴朝上的右手系引擎在模型的 X 轴朝前时也一样。
+uBot 的外部右手坐标约定为 X 向前、Y 向左、Z 向上，长度单位为米，简称 FLU（Forward-Left-Up）。该约定符合 ROS REP-103，也适用于模型 X 轴朝前、Z 轴朝上的 MuJoCo 等右手坐标系引擎。
 
-从 UE 到右手系是对 Y 轴的镜像，再换算单位。所有映射都是自逆的：`Right-Handed To UE …` 的公式和 `UE To Right-Handed …` 相同，只有单位换算反过来。
+从 UE 转换到 FLU 时，需要沿 Y 轴反向的镜像映射，并按数据类型换算长度单位。坐标分量映射具有自逆性：`Right-Handed To UE …` 与 `UE To Right-Handed …` 使用相同的分量映射，长度单位的换算方向相反。
 
-uBotCore 的这组约定是中立的，不带 ROS 或别的协议的名字：C++ 是 `UBot::RightHanded`，蓝图是 `UE To Right-Handed …` 和 `Right-Handed To UE …` 节点。
+uBotCore 使用与协议无关的名称提供这组转换：C++ 命名空间为 `UBot::RightHanded`，蓝图节点为 `UE To Right-Handed …` 和 `Right-Handed To UE …`。
 
 ## 转换规则
 
-镜像时，位置、速度这类极向量（polar vector）只翻转 Y，角速度、力矩这类轴向量（axial vector）翻转 X 和 Z。下表是 UE 到右手系的规则：
+镜像时，位置、速度等极向量（polar vector）仅翻转 Y 分量，角速度、力矩等轴向量（axial vector）翻转 X 和 Z 分量。下表是 UE 到右手系的规则：
 
 | 量 | UE → 右手系 | 蓝图节点 |
 | --- | --- | --- |
@@ -99,30 +99,30 @@ uBotCore 的这组约定是中立的，不带 ROS 或别的协议的名字：C++
 
 补充说明：
 
-- 位置从厘米换成米。线速度、加速度这一行也适用于已经是米的点。
+- 位置从厘米转换为米。线速度、加速度的分量映射也适用于已经以米表示的点坐标，且不再换算单位。
 - 旋转是四元数 `(x, y, z, w)`，转换后归一化。
-- 变换的平移从厘米换成米，缩放丢弃，输出缩放为 1。
-- 航向、扫描角和偏航角速度的单位是弧度。
+- 变换的平移从厘米转换为米，转换时丢弃缩放，输出缩放为 1。
+- 航向角和扫描角以 rad 表示，偏航角速度以 rad/s 表示；对应节点仅改变符号，保留输入单位。
 
-反方向用对应的 `Right-Handed To UE …` 节点。一个直观的结果：UE 里向右偏航，在右手系里是负的 `z` 角速度。
+反向转换使用对应的 `Right-Handed To UE …` 节点。例如，UE 中向右偏航的正 Z 角速度，转换到 FLU 后为负 Z 角速度。
 
-uBotCore 0.1.2 及更早的版本里，这些节点叫 `UE To ROS …` 和 `ROS To UE …`。0.1.3 起它们已弃用，结果与新节点相同，见[坐标约定库](/core/conventions/)。
+在 uBotCore 0.1.2 及更早版本中，这些节点名为 `UE To ROS …` 和 `ROS To UE …`。0.1.3 起它们已弃用，结果与新节点相同，见[坐标约定库](/core/conventions/)。
 
 ## ROS 专属的部分
 
-下面几项只对 ROS 有意义，不在 uBotCore 的约定里。从 uBotCore 0.1.3 起它们由 uBotROS 提供，蓝图节点在类别 `uBot|ROS|Conventions` 下，名字不变：
+以下转换属于 ROS 专用约定。从 uBotCore 0.1.3 起，对应实现由 uBotROS 提供；蓝图节点位于类别 `uBot|ROS|Conventions` 下，名称保持不变：
 
 | 内容 | 规则 | 蓝图节点 |
 | --- | --- | --- |
-| 相机光学系 | z 前、x 右、y 下；frame id 是相机的 frame id 加后缀 `_optical` | `Camera Link To Optical Rotation`、`Get Optical Frame Suffix` |
-| 时间 | 秒与 `(sec, nanosec)` 互转；负数或非有限值的秒得到 `(0, 0)` | `Seconds To ROS Time`、`ROS Time To Seconds` |
+| 相机光学系 | z 前、x 右、y 下；光学坐标系标识（frame id）由相机 frame id 追加后缀 `_optical` | `Camera Link To Optical Rotation`、`Get Optical Frame Suffix` |
+| 时间 | 以秒表示的时间与 `(sec, nanosec)` 双向转换；秒数为负数或非有限值时返回 `(0, 0)` | `Seconds To ROS Time`、`ROS Time To Seconds` |
 | ROS 名称 | 只保留字母、数字和下划线，规则见[标识与命名](/concepts/identity/) | `Sanitize ROS Name` |
 | 6×6 协方差 | 部分元素变号 | 无节点 |
 
-协方差第 r 行第 c 列的元素，在 r 和 c（从 0 数起）恰有一个是奇数时变号。没有蓝图节点，uBotROS 发布 Odometry 时自动处理。
+协方差第 r 行第 c 列的元素，在 r 和 c（索引从 0 开始）中恰有一个为奇数时变号。该转换没有蓝图节点，由 uBotROS 在发布里程计（Odometry）消息时自动执行。
 
 ## 相关页面
 
 - [坐标约定库](/core/conventions/)：这些转换节点的用法。
-- [TF 与 /clock](/ros/tf-and-clock/)：坐标系在 TF 树里的样子。
-- [发布传感器数据](/ros/publish-sensors/)：每种传感器发布到 ROS 时怎样换算。
+- [TF 与 /clock](/ros/tf-and-clock/)：坐标系在坐标变换（TF）树中的组织方式。
+- [发布传感器数据](/ros/publish-sensors/)：各类传感器数据发布到 ROS 时的转换规则。

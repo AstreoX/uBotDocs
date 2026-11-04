@@ -1,5 +1,5 @@
 UUBotRotorComponent:
-  summary: 多旋翼的可视转子：一个绕本地 Z 轴旋转的网格。同一 Actor 上的多旋翼运动组件每帧用相同 `Rotor Index` 的电机设置转速，并在开始游玩时按它的转子布局设置旋转方向。
+  summary: "用于显示多旋翼转子的网格组件，绕自身局部 Z 轴旋转。同一 Actor 上的运动组件每帧根据相同 `Rotor Index` 的电机转速更新其显示转速，并在开始播放时根据转子布局设置旋转方向。"
   sourceHash: "a9ebf329c950"
 
 UUBotRotorComponent.GetRotorSpeed:
@@ -15,7 +15,7 @@ UUBotRotorComponent.SetRotorSpeed:
   sourceHash: "365ef076c56e"
 
 UUBotRotorComponent.SpinDirection:
-  summary: 从上往下看的旋转方向，开始游玩时取自运动组件的转子布局。
+  summary: "从上往下看的旋转方向，开始播放时取自运动组件的转子布局。"
   sourceHash: "8ee58060ef2a"
 
 UUBotRotorComponent.VisualSpinScale:

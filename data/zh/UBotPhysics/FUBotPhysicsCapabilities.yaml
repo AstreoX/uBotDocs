@@ -1,9 +1,9 @@
 Break:FUBotPhysicsCapabilities:
-  summary: 把 UBot Physics Capabilities 拆成各项能力开关。
+  summary: "将 UBot Physics Capabilities 拆分为各项能力开关。"
   sourceHash: "c51a4d24cbf5"
 
 FUBotPhysicsCapabilities:
-  summary: 物理后端能模拟什么。字段只会追加，默认全部为 false，后端只声明自己真正支持的能力。
+  summary: "描述物理后端实际支持的模拟能力。所有字段默认为 false，后续仅追加新字段；后端应仅声明实际支持的能力。"
   sourceHash: "aa94dcbfe11e"
 
 FUBotPhysicsCapabilities.bAccelerations:
@@ -31,7 +31,7 @@ FUBotPhysicsCapabilities.bDifferentiable:
   sourceHash: "c76fe52a49ec"
 
 FUBotPhysicsCapabilities.bKinematicForeignBodies:
-  summary: 能把在别处模拟的物体（Chaos 或别的后端）作为运动学物体镜像进来。声明后，后端会收到场景里的运动学碰撞体。
+  summary: "支持将 Chaos 或其他后端模拟的物体作为运动学物体参与模拟。声明此能力后，后端会接收场景中的运动学碰撞体。"
   sourceHash: "3e5c730a98ee"
 
 FUBotPhysicsCapabilities.bMaximalCoordinateJoints:
@@ -51,7 +51,7 @@ FUBotPhysicsCapabilities.bSoftBodies:
   sourceHash: "330458f18c80"
 
 FUBotPhysicsCapabilities.bStaticSceneGeometry:
-  summary: 能和子系统交来的 UE 静态几何碰撞。声明后，后端会收到场景里的静态碰撞体。
+  summary: "支持与子系统导出的 UE 静态几何发生碰撞。声明此能力后，后端会接收场景中的静态碰撞体。"
   sourceHash: "e581fa1d0b47"
 
 Make:FUBotPhysicsCapabilities:

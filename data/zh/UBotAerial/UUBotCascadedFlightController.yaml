@@ -1,17 +1,17 @@
 UUBotCascadedFlightController:
-  summary: 内置飞控，级联结构：速度环（世界系 PID）给出推力向量和目标姿态，姿态环（四元数误差 P）给出角速度，角速度环（PI 加惯量前馈）再把推力分配给各旋翼。每种控制模式从各自对应的一级进入；默认增益适合默认机架和 1 kHz 物理步频。
+  summary: "内置串级飞行控制器：世界坐标系下的速度环采用比例、积分、微分（PID）控制，姿态环采用四元数误差的比例（P）控制，角速度环采用比例、积分（PI）控制和惯量前馈，最终分配各旋翼推力。各模式从对应控制环进入计算，默认增益适用于默认机架和 1 kHz 物理步进频率。"
   sourceHash: "009699419ad3"
 
 UUBotCascadedFlightController.AttitudeP:
-  summary: 姿态环 P 增益，机体系 X、Y、Z 三轴，单位 1/s。
+  summary: "姿态环的比例（P）增益，分别对应机体坐标系 X、Y、Z 三轴，单位 1/s。"
   sourceHash: "b4da5a961574"
 
 UUBotCascadedFlightController.MaxBodyRateDegreesPerSecond:
-  summary: 姿态环给出的最大角速度，机体系三轴，单位 deg/s。
+  summary: "姿态环给出的最大角速度，机体坐标系三轴，单位 deg/s。"
   sourceHash: "6f704d9b2cc7"
 
 UUBotCascadedFlightController.MaxThrustShare:
-  summary: 飞控给出的最大总推力，占最大推力的比例，给姿态控制留出余量。
+  summary: "飞行控制器给出的最大总推力，占最大推力的比例，给姿态控制留出余量。"
   sourceHash: "50a2b2afff19"
 
 UUBotCascadedFlightController.MaxTiltDegrees:
@@ -31,29 +31,29 @@ UUBotCascadedFlightController.PositionHoldMaxSpeed:
   sourceHash: "989a628baf67"
 
 UUBotCascadedFlightController.RateI:
-  summary: 角速度环 I 增益，机体系三轴，单位 1/s²。
+  summary: "角速度环的积分（I）增益，分别对应机体坐标系三轴，单位 1/s²。"
   sourceHash: "5b62b1602795"
 
 UUBotCascadedFlightController.RateIntegratorLimit:
-  summary: 角速度环积分项最多能加的角加速度，机体系三轴，单位 rad/s²。
+  summary: "角速度环积分项产生的最大角加速度，分别对应机体坐标系三轴，单位 rad/s²。"
   sourceHash: "4027d3b75484"
 
 UUBotCascadedFlightController.RateP:
-  summary: 角速度环 P 增益，机体系三轴，单位 1/s。
+  summary: "角速度环的比例（P）增益，分别对应机体坐标系三轴，单位 1/s。"
   sourceHash: "8154a13d7898"
 
 UUBotCascadedFlightController.VelocityD:
-  summary: 速度环 D 增益，世界系三轴，作用在测得的加速度上。
+  summary: "速度环的微分（D）增益，分别对应世界坐标系三轴，作用于测得的加速度。"
   sourceHash: "e15ab5fde729"
 
 UUBotCascadedFlightController.VelocityI:
-  summary: 速度环 I 增益，世界系三轴，单位 1/s²。
+  summary: "速度环的积分（I）增益，分别对应世界坐标系三轴，单位 1/s²。"
   sourceHash: "b87bffe50581"
 
 UUBotCascadedFlightController.VelocityIntegratorLimit:
-  summary: 速度环积分项最多能加的加速度，世界系三轴，单位 m/s²。
+  summary: "速度环积分项产生的最大加速度，分别对应世界坐标系三轴，单位 m/s²。"
   sourceHash: "1b8aba0a567b"
 
 UUBotCascadedFlightController.VelocityP:
-  summary: 速度环 P 增益，世界系三轴，单位 1/s。
+  summary: "速度环的比例（P）增益，分别对应世界坐标系三轴，单位 1/s。"
   sourceHash: "86d9f39a982d"

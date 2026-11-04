@@ -8,11 +8,11 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-让后端的物体和 UE 关卡里其余的碰撞体接触：了解哪些组件会按静态和运动学两类交给后端，并用蓝图查看后端现在看到的场景。
+uBotPhysics 将关卡中的其他碰撞体按静态和运动学两类导出给后端，使后端模拟的物体能够与场景接触，并支持通过蓝图查询场景统计。
 
 ## 快速用法
 
-后端只和自己模型里的东西接触；UE 场景里其余的碰撞体，由 uBotPhysics 按静态和运动学两类交给它，它自己的物体因此能和场景接触。后端现在看到什么，用 [`Get Physics Scene Stats`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsSceneStats) 查询，后端在这个世界里没有求解器时它返回 `false`：
+物理后端默认只能处理其内部模型中的碰撞关系。uBotPhysics 将 UE 场景中的其他碰撞体导出给后端，使其模拟物体能够与这些碰撞体接触；后端当前接收的场景统计可通过 [`Get Physics Scene Stats`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsSceneStats) 查询，指定后端在当前世界中没有求解器时，该节点返回 `false`：
 
 ```blueprint
 caption: 每个 Tick 显示后端没能导出的组件数
@@ -36,14 +36,14 @@ notes:
 
 ### 后端收到什么
 
-后端要在能力里声明想收哪一类：
+后端通过能力声明指定需要接收的场景类别：
 
 | 能力 | 收到什么 |
 | --- | --- |
 | `Static Scene Geometry`（C++ 里是 `bStaticSceneGeometry`） | 静态物体 |
 | `Kinematic Foreign Bodies`（C++ 里是 `bKinematicForeignBodies`） | 运动学物体 |
 
-两项都没有声明的后端什么也收不到。后端的能力用 [`Get uBot Physics Backend Capabilities`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsBackendCapabilities) 查询，结果是 [`UBot Physics Capabilities`](/reference/ubotphysics/structs/fubotphysicscapabilities/)：
+未声明这两项能力的后端不会收到场景几何。后端的能力用 [`Get uBot Physics Backend Capabilities`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsBackendCapabilities) 查询，结果是 [`UBot Physics Capabilities`](/reference/ubotphysics/structs/fubotphysicscapabilities/)：
 
 ```blueprint
 caption: 开始播放时检查后端会不会收到静态物体
@@ -70,7 +70,7 @@ wires:
 
 2. **绑定物体**
 
-   把自己的物体绑定给这个后端，见[绑定与所有权](/physics/binding/)。后端的求解器持有至少一个物体后，才会收到场景。
+   将待模拟物体绑定到该后端，见[绑定与所有权](/physics/binding/)。后端的求解器持有至少一个物体后，才会收到场景。
 
 3. **排除不想让后端看到的物体**
 
@@ -78,36 +78,36 @@ wires:
 
 4. **查看结果**
 
-   用 `Get Physics Scene Stats` 看后端收到了多少物体，有物理碰撞却没能导出的组件有多少。
+   使用 `Get Physics Scene Stats` 查询后端接收的物体数量，以及启用物理碰撞但未能导出的组件数量。
 
 </Steps>
 
 ## 关键属性
 
-子系统检查所有已加载关卡中每个 Actor 的每个 Primitive 组件，同时满足下面这些的才算场景：
+子系统检查所有已加载关卡中各 Actor 的图元组件（Primitive Component），仅将同时满足以下条件的组件纳入场景：
 
-1. 已注册，自己和所属 Actor 都不在销毁中。
-2. 碰撞带物理：`Collision Enabled` 是 `Query and Physics` 或 `Physics Only`。只有查询碰撞或没有碰撞的不算。
-3. 组件和它的 Actor 都没有标签 `UBotPhysics.NoScene`（组件的 `Component Tags`，或 Actor 的 `Tags`）。不想让后端看到的物体加上它。
+1. 组件已注册，且组件及其所属 Actor 均未进入销毁流程。
+2. 启用了物理碰撞：`Collision Enabled` 是 `Query and Physics` 或 `Physics Only`。仅启用查询碰撞或关闭碰撞的组件不会纳入场景。
+3. 组件和它的 Actor 都没有标签 `UBotPhysics.NoScene`（组件的 `Component Tags`，或 Actor 的 `Tags`）。需要从后端场景中排除物体时，可添加此标签。
 4. 能导出碰撞形状，见[导出的形状](#导出的形状)。
 
-满足的组件按 Mobility 分成两类：
+符合条件的组件按 Mobility 属性分为两类：
 
 | Mobility | 类别 | 怎么发给后端 |
 | --- | --- | --- |
-| `Static`、`Stationary` | 静态物体 | 加入时发一次，之后不再发送 |
-| `Movable` | 运动学物体 | 每帧发它的位姿 |
+| `Static`、`Stationary` | 静态物体 | 加入场景时发送一次，之后不再发送位姿 |
+| `Movable` | 运动学物体 | 每帧发送组件位姿 |
 
 运动学物体包括 Chaos 模拟的物体、别的后端的物体、被别的刚体状态源驱动的物体，以及被游戏代码移动的可移动组件。
 
 ## 输出与事件
 
-[`Get Physics Scene Stats`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsSceneStats) 给出一个后端现在看到的场景，结果是 [`UBot Physics Scene Stats`](/reference/ubotphysics/structs/fubotphysicsscenestats/)，用 [`Break UBot Physics Scene Stats`](/reference/ubotphysics/structs/fubotphysicsscenestats/#Break) 拆开：
+[`Get Physics Scene Stats`](/reference/ubotphysics/uubotphysicslibrary/#GetPhysicsSceneStats) 返回指定后端当前接收的场景统计，结果为 [`UBot Physics Scene Stats`](/reference/ubotphysics/structs/fubotphysicsscenestats/)，用 [`Break UBot Physics Scene Stats`](/reference/ubotphysics/structs/fubotphysicsscenestats/#Break) 读取各字段：
 
 | 输出 | 含义 |
 | --- | --- |
-| `Static Bodies` | 交给它的静态物体数 |
-| `Kinematic Bodies` | 交给它的运动学物体数 |
+| `Static Bodies` | 导出给该后端的静态物体数 |
+| `Kinematic Bodies` | 导出给该后端的运动学物体数 |
 | `Shapes` | 这些物体的形状总数 |
 | `Skipped Components` | 世界里有物理碰撞却没能导出的组件数，取自最近一次扫描 |
 | `Return Value` | 后端在这个世界里没有求解器时为 `false`，此时其余输出都是 0 |
@@ -118,15 +118,15 @@ wires:
 
 ### 自己的物体不在场景里
 
-- 绑定给某个后端的组件，以及附着在它们下面的组件，对这个后端是它自己的物体，所以不交给它；别的后端仍把它们当作运动学物体。
-- 解绑之后，它们在这个后端的下一次更新里加入，ID 不变。
-- 场景里的 Chaos 物体和别的后端的物体，对后端是运动学物体：后端的物体能撞上它们，它们不会被推动。
+- 绑定给某个后端的组件，以及附着在它们下面的组件，属于该后端自身的模拟对象，因此不会再次导出给该后端；其他后端仍将这些组件作为运动学物体接收。
+- 解绑后，这些组件会在该后端的下一次场景更新中加入场景，导出 ID 保持不变。
+- Chaos 和其他后端模拟的物体，在当前后端的场景中按运动学物体处理；当前后端的物体可与其碰撞，但无法通过此场景副本推动原物体。
 
 ### 什么时候发，位姿是哪一刻的
 
 - 每帧在步进之前，只要有求解器持有物体且声明了场景能力，就扫描一次世界的组件，开销与组件数成正比。
-- 有变化，或者有运动学物体时，才把更新发给后端。
-- 位姿是这一帧开始步进时各组件显示的样子：Chaos 物体落后一个物理帧，别的后端的物体是上一帧写回的位姿。
+- 场景发生变化或存在运动学物体时，子系统才向后端发送更新。
+- 导出位姿取自当前帧开始步进时的组件变换：Chaos 物体落后一个物理帧，别的后端的物体是上一帧写回的位姿。
 
 每帧的整体顺序见[每帧时序与步进](/physics/stepping/)。
 
@@ -140,8 +140,8 @@ wires:
 | 三角网格（TriangleMesh） | 只有碰撞复杂度是 `Use Complex Collision As Simple` 且三角网格已建好时才导出，此时导出的是三角网格，不是简单形状 |
 
 - 形状在物体自己的坐标系里，单位是米，轴是 UE 世界轴；组件的世界缩放已计入，物体的变换里没有缩放。镜像缩放会调换三角形的绕向。
-- 碰撞设置（通道、响应）不看，有物理碰撞就导出。摩擦和弹性取组件的简单物理材质，没有就取引擎的默认材质。
-- 形状在导出时读取一次。运行中原地修改同一个 Body Setup 里的形状（例如改盒体碰撞的 `Box Extent`）不会被发现，需要重新导出时切一下碰撞或缩放。
+- 导出不依据碰撞通道和响应设置筛选，只要启用物理碰撞且满足上述条件，就会导出。摩擦和弹性参数取自组件的简单物理材质；未指定材质时，使用引擎默认材质。
+- 形状在导出时读取一次。运行中原地修改同一个 Body Setup 里的形状（例如改盒体碰撞的 `Box Extent`）不会触发自动更新；需要重新导出时，可切换组件的碰撞启用状态或修改缩放。
 
 ### 不导出的
 
@@ -150,7 +150,7 @@ wires:
 | 地形高度场 | 整个组件不导出 |
 | 实例化静态网格（Instanced Static Mesh、Hierarchical Instanced Static Mesh） | 整个组件不导出 |
 | 蒙皮网格（骨骼网格） | 整个组件不导出 |
-| 锥形胶囊（Tapered Capsule）和水平集（Level Set）形状 | 被略过，同一个组件上的其余形状照常导出 |
+| 锥形胶囊（Tapered Capsule）和水平集（Level Set）形状 | 跳过这些形状，同一组件上的其余受支持形状仍会导出 |
 
 ## 相关参考
 

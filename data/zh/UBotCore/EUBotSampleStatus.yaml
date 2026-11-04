@@ -7,21 +7,21 @@ EUBotSampleStatus.Valid:
   sourceHash: "e3b0c44298fc"
 
 EUBotSampleStatus.WarmingUp:
-  summary: 预热中。靠差分计算的传感器（如 IMU）在启动或重置后的头几次采样。
+  summary: "传感器处于预热阶段。依赖差分计算的传感器（例如 IMU）在启动或重置后的前几次采样中，可能因历史样本不足而返回此状态。"
   sourceHash: "e3b0c44298fc"
 
 EUBotSampleStatus.InvalidDeltaTime:
-  summary: 与上次采样的时间间隔为 0 或超过上限，历史被清空，重新预热。
+  summary: "与上次采样的时间间隔为 0 或超过上限；传感器会清空历史样本并重新预热。"
   sourceHash: "e3b0c44298fc"
 
 EUBotSampleStatus.TeleportDetected:
-  summary: 两次采样之间的位移或转角超过阈值，判为瞬移，历史被清空。
+  summary: "两次采样之间的位移或转角超过阈值，判定发生瞬移，并清空历史样本。"
   sourceHash: "e3b0c44298fc"
 
 EUBotSampleStatus.Disabled:
-  summary: Sensor Enabled 为 false 时的采样。
+  summary: "`Sensor Enabled` 为 false 时生成的采样状态。"
   sourceHash: "e3b0c44298fc"
 
 EUBotSampleStatus.Error:
-  summary: 还没有采样过（帧头的默认值），或采样出错。
+  summary: "尚未执行采样时的默认状态，或采样发生错误时的状态。"
   sourceHash: "e3b0c44298fc"

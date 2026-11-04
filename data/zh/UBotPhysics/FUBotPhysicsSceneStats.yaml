@@ -1,13 +1,13 @@
 Break:FUBotPhysicsSceneStats:
-  summary: 把 UBot Physics Scene Stats 拆成静态物体数、运动学物体数、形状数和跳过的组件数。
+  summary: "将 UBot Physics Scene Stats 拆分为静态物体数、运动学物体数、形状数和跳过的组件数。"
   sourceHash: "4036245d47a9"
 
 FUBotPhysicsSceneStats:
-  summary: 一个后端当前看到的 UE 场景。
+  summary: "指定后端当前接收的 UE 场景统计。"
   sourceHash: "113682b913fc"
 
 FUBotPhysicsSceneStats.KinematicBodies:
-  summary: 交给后端的运动学（会动的）碰撞体数量。
+  summary: "导出给后端的运动学碰撞体数量。"
   sourceHash: "2137c06dd48e"
 
 FUBotPhysicsSceneStats.Shapes:

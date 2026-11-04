@@ -229,15 +229,18 @@ they are fixed in `lib/repositories.mjs`.
 
 ## Writing style
 
-This is the main thing the maintainer asked for: short pages, no walls of text, no card grids full of
-prose. Follow every rule.
+Write clear, complete technical documentation in Simplified Chinese. Keep pages focused and easy to
+scan, without walls of text or card grids full of prose. Completeness takes priority over brevity:
+never omit a condition, subject or result just to shorten a sentence. Follow every rule.
 
 - Start each page with one sentence saying what problem it solves, and say it about the subject: "用 `uBot IMU Sensor`
   读取姿态、角速度和比力，并了解噪声和状态码的作用。" Never about the page ("这一页说明……", "本页……", "本文……"):
   that is colloquial, and `npm run check` warns about it. Write a full sentence, not a bare noun phrase (a
   fragment under the title reads like a heading).
-- Paragraphs have at most 3 sentences. Prefer steps (`<Steps>`), tables and blueprint graphs over
-  prose. `npm run check` warns about paragraphs longer than about 200 characters or with more than
+- Give each paragraph one coherent point, normally in at most 3 sentences. When an explanation is
+  longer, split it at a logical boundary; do not remove information to meet a length target. Use steps
+  (`<Steps>`) for operations and tables or blueprint graphs when they make relationships clearer.
+  `npm run check` warns about paragraphs longer than about 200 characters or with more than
   3 sentences, about `:::note|tip|caution|danger` boxes with more than 2 sentences, and about
   `<Card>`/`<CardGrid>` outside the home page.
 - No cards or boxes of text (the maintainer does not like long text rectangles): use lists, tables and
@@ -248,6 +251,20 @@ prose. Follow every rule.
 - Node, pin and property names stay in English exactly as the Blueprint editor shows them, in code
   style: `Get Latest IMUData`, `Update Rate Hz`, `X (Roll)`. On first use of a Chinese technical term,
   give the English term: 横滚（Roll）, 自动启动（`Auto Start`）.
+- Use complete, natural sentences in explanatory prose. State who performs an action, what it affects,
+  when it applies and what result to expect wherever these would otherwise be ambiguous. Explain
+  success and failure conditions explicitly: replace “取不到就返回 false” with the specific query,
+  failure condition and return value. Imperative steps may omit the reader as subject; tables and
+  headings may use concise phrases when their context is clear.
+- Use a neutral technical register. Replace chat-like wording such as “跑起来”, “装好”, “接上”,
+  “拿到”, “自己兜底” and “就行” with concrete operations and outcomes. Avoid vague pronouns such as
+  “它”, “这个” and “那边” when more than one object could be meant. Do not inflate simple wording
+  into bureaucratic language or add claims that the documented API does not support.
+- Do not shorten Chinese technical terms into fragments such as “取数” or “下指令”. Introduce a
+  domain-specific abbreviation at its first explanatory use on a page, with its Chinese name or full
+  English term, then use it consistently. Keep established API identifiers and UI labels unchanged;
+  explain useful technical terms such as “回写” once rather than inventing replacements. Apply the
+  same standard to descriptions, diagram captions and notes, templates and `data/zh` summaries.
 - Labels you read or click in a window are quoted with 「」, in uBot Manager and in the Unreal Editor:
   menu paths (「Window > uBot」), buttons (「Play」, 「Add」), tabs, panels and dialogs (在「Details」面板),
   checkboxes and panel entries (「Loaded Packages」). Code names stay in backticks: nodes, pins and
@@ -375,8 +392,9 @@ UUBotImuSensorComponent.GetLatestIMUData:
 - When the English tooltip changes, the summary becomes stale: the site shows English again and
   `npm run check` warns. Update the text and the hash together.
 - Entries for ids that no longer exist fail `npm run check`.
-- Write summaries from the source code (vendor/), not from guesses: one or two short sentences, units
-  included.
+- Write summaries from the source code (vendor/), not from guesses: one or two complete sentences,
+  including units, relevant conditions and return behavior. A language-only edit keeps `sourceHash`
+  unchanged because the English source tooltip has not changed.
 
 ## API data (data/api)
 

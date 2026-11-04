@@ -1,5 +1,5 @@
 EUBotMotorCommandType:
-  summary: 电机指令里各个值的含义。
+  summary: "定义电机指令中各电机数值的解释方式。"
   sourceHash: "ed8d13dacebc"
 
 EUBotMotorCommandType.AngularVelocity:
@@ -7,5 +7,5 @@ EUBotMotorCommandType.AngularVelocity:
   sourceHash: "6f448f63d1a8"
 
 EUBotMotorCommandType.Normalized:
-  summary: 占每台电机最大值的比例，范围 0 到 1。
+  summary: "各电机指令值占对应电机最大值的比例，范围为 0 到 1。"
   sourceHash: "4f4ab1ca58ce"

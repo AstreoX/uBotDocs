@@ -1,5 +1,5 @@
 UUBotSensor:
-  summary: 能产生 uBot 样本的对象所实现的接口。uBotSensor 的全部传感器组件都实现了它，蓝图 Actor 和组件也可以实现。
+  summary: "产生 uBot 样本的对象所实现的接口。uBotSensor 的全部传感器组件均实现该接口，也支持自定义蓝图 Actor 或组件实现。"
   sourceHash: "e3b0c44298fc"
 
 UUBotSensor.GetLatestSensorHeader:
@@ -7,21 +7,21 @@ UUBotSensor.GetLatestSensorHeader:
   sourceHash: "e3b0c44298fc"
 
 UUBotSensor.GetSensorFrameComponent:
-  summary: 返回坐标系对应的场景组件，TF 用它的变换；可以为空。
+  summary: "返回传感器坐标系对应的场景组件，TF 根据其变换发布坐标关系；返回值可以为空。"
   sourceHash: "9ebf2c717cd6"
 
 UUBotSensor.GetSensorFrameId:
-  summary: 返回传感器所在的坐标系名（Frame Id）。
+  summary: "返回传感器所在坐标系的名称（Frame Id）。"
   sourceHash: "e3b0c44298fc"
 
 UUBotSensor.GetSensorId:
-  summary: 返回传感器 id（Sensor Id）。
+  summary: "返回传感器标识（Sensor Id）。"
   sourceHash: "e3b0c44298fc"
 
 UUBotSensor.GetSensorType:
-  summary: 返回稳定的短类型名，比如 Pose、Odometry、IMU、Lidar2D、Lidar3D、RGBCamera、DepthCamera。
+  summary: "返回稳定的简短类型名称，例如 Pose、Odometry、IMU、Lidar2D、Lidar3D、RGBCamera 或 DepthCamera。"
   sourceHash: "a43b0c4f5ec1"
 
 UUBotSensor.IsSensorRunning:
-  summary: 传感器是否正在按频率自动采样。
+  summary: "返回传感器是否正在按设定频率自动采样。"
   sourceHash: "e3b0c44298fc"

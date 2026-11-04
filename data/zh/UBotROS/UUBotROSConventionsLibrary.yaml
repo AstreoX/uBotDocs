@@ -1,13 +1,13 @@
 UUBotROSConventionsLibrary:
-  summary: 在蓝图里使用 ROS 专有的约定：相机光学系、builtin_interfaces/Time 的字段和 ROS 名字。对应 C++ 的 UBot::ROSConventions。ROS 用的 UE 与右手系轴向换算在 uBotCore 的坐标约定库里（类别 uBot|Conventions，节点 UE To Right-Handed …）。
+  summary: "提供 ROS 专用约定的蓝图函数，包括相机光学坐标系、builtin_interfaces/Time 字段和 ROS 名称处理，对应 C++ 的 UBot::ROSConventions。UE 与 ROS 所用右手坐标系之间的轴向换算由 uBotCore 坐标约定库提供（类别 uBot|Conventions，节点 UE To Right-Handed …）。"
   sourceHash: "8a2148431878"
 
 UUBotROSConventionsLibrary.CameraLinkToOpticalRotation:
-  summary: 相机光学系（z 向前、x 向右、y 向下）相对相机 link 系的旋转，ROS 约定。
+  summary: 相机光学坐标系（z 向前、x 向右、y 向下）相对相机 link 系的旋转，ROS 约定。
   sourceHash: "cb12ec14f663"
 
 UUBotROSConventionsLibrary.GetOpticalFrameSuffix:
-  summary: 接在相机 frame id 后面、组成光学系 frame id 的后缀 _optical。
+  summary: "返回光学坐标系标识的后缀 _optical，将该后缀追加到相机坐标系标识后可得到光学坐标系标识。"
   sourceHash: "2ac2345162a2"
 
 UUBotROSConventionsLibrary.RosTimeToSeconds:

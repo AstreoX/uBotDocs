@@ -1,6 +1,6 @@
 ---
 title: 位姿传感器
-description: 位姿传感器：输出组件自身的位置、姿态和速度，可选世界、父组件或自选组件作参考系。
+description: 位姿传感器：输出组件自身的位置、姿态和速度，可选择世界坐标系、父组件或指定组件作为参考系。
 pageKind: feature
 sidebar:
   order: 30
@@ -32,11 +32,11 @@ wires:
   - S.ReturnValue -> P.InString
   - C.True -> P.execute
 notes:
-  B: 选中节点，在「Details」面板里取消勾选不用的字段，引脚就会隐藏。
+  B: 选中节点，在「Details」面板中取消勾选不需要的字段，即可隐藏对应引脚。
   C: 没有速度时 `Has Velocity` 为 false，速度字段是 0。
 ```
 
-不想用事件时，在 `Event Tick` 里调用 `Get Latest Pose Data` 读最近一次的数据，后面的连法相同。
+如需主动读取数据，可在 `Event Tick` 中调用 `Get Latest Pose Data`，获取最近一次采样结果；对返回结构体的处理方式与事件参数相同。
 
 ## 步骤
 
@@ -44,21 +44,21 @@ notes:
 
 1. **添加组件**
 
-   在「Components」面板点「Add」，搜索 `uBot Pose Sensor`，把它挂到要测量的部件下。输出的就是这个组件自己的位姿。
+   在「Components」面板点击「Add」，搜索 `uBot Pose Sensor`，将其附着到待测部件。传感器输出自身组件的位姿。
 
 2. **选择参考系**
 
-   在「Details」面板的「Pose Sensor」类别里设置 `Reference Frame`。选 `Custom Component` 时，再在 `Custom Reference Component` 里选一个组件。
+   在「Details」面板的「Pose Sensor」类别中设置 `Reference Frame`。选择 `Custom Component` 时，还需通过 `Custom Reference Component` 指定参考组件。
 
    ![位姿传感器的 Details 面板：Pose Sensor 类别下有 Reference Frame、Custom Reference Component、Reference Frame Id 和 Include Velocity](../../../assets/sensor/pose.png)
 
-3. **设置参考系名**
+3. **设置参考系名称**
 
-   `Reference Frame Id` 默认是 `world`。参考系不是 `World` 时，把它改成真实的 frame 名，或者清空让传感器自动取组件名。
+   `Reference Frame Id` 默认是 `world`。参考系不是 `World` 时，应将该属性改为实际参考坐标系的名称，或留空以使用自动解析的组件名称。
 
-4. **连蓝图**
+4. **连接蓝图节点**
 
-   选中组件，在「Details」面板底部「Events」区点 `On Pose Data Updated` 旁的「+」，照上图连线。
+   选中组件，在「Details」面板底部「Events」区域点击 `On Pose Data Updated` 旁的「+」，按照上方节点图连接节点。
 
 </Steps>
 
@@ -66,15 +66,15 @@ notes:
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
-| `Reference Frame` | `World` | 位姿相对谁来表示，见下表 |
+| `Reference Frame` | `World` | 用于表示位姿的参考坐标系，见下表 |
 | `Custom Reference Component` | 空 | `Reference Frame` 为 `Custom Component` 时使用的组件 |
-| `Reference Frame Id` | `world` | 写入输出的参考系名；为空时按参考系自动取名 |
+| `Reference Frame Id` | `world` | 写入输出的参考系名称；为空时按参考系自动取名 |
 | `Include Velocity` | true | 是否输出速度。差分模式用相邻样本差分计算 |
-| `Use Body State` | true | 0.1.2 起。`Reference Frame` 为 `World` 且机体有刚体状态源时，速度读状态，关闭后总是差分，见[读取刚体状态](/sensor/body-state/)。在「Pose Sensor」类别里 |
+| `Use Body State` | true | 0.1.2 起。`Reference Frame` 为 `World` 且机体有刚体状态源时，从刚体状态读取速度；关闭后始终使用差分模式，见[读取刚体状态](/sensor/body-state/)。在「Pose Sensor」类别里 |
 | `Update Rate Hz` | 30 | 采样频率，单位 Hz |
 | `Sensor Id`、`Frame Id` | `pose_sensor` | 写入帧头的标识 |
 
-三种参考系：
+`Reference Frame` 支持以下三种参考系：
 
 | `Reference Frame` | 位姿相对于 | `Reference Frame Id` 为空时用 | 无效时 |
 | --- | --- | --- | --- |
@@ -86,22 +86,22 @@ notes:
 
 ## 输出与事件
 
-`Get Latest Pose Data` 返回 `UBot Pose Sensor Data`，用 `Break UBot Pose Sensor Data` 拆开：
+`Get Latest Pose Data` 返回 `UBot Pose Sensor Data`，通过 `Break UBot Pose Sensor Data` 访问各字段：
 
 | 字段 | 单位 | 说明 |
 | --- | --- | --- |
 | `Header` | | 帧头，见[帧头与采样状态](/concepts/frame-header/) |
-| `Reference Frame Id` | | 这一次实际使用的参考系名 |
+| `Reference Frame Id` | | 这一次实际使用的参考系名称 |
 | `Position Meters` | m | 在参考系里的位置，轴向是 UE 的 X 前、Y 右、Z 上 |
 | `Orientation Quaternion` | | 在参考系里的姿态，已归一化 |
 | `Linear Velocity Meters Per Second` | m/s | 位置差分得到的线速度，轴向与位置相同 |
 | `Angular Velocity Rad Per Second` | rad/s | 姿态差分得到的角速度，轴向与位置相同 |
 | `Has Velocity` | | 速度是否有值 |
 
-- `On Pose Data Updated`：每次采样都触发，引脚 `Data`。参考系无效时也会触发，此时 `Header` 的 `Status` 是 `Error`，其余字段为默认值。
+- `On Pose Data Updated`：每次采样都触发，通过 `Data` 引脚提供数据。参考系无效时也会触发，此时 `Header` 的 `Status` 是 `Error`，其余字段为默认值。
 - `Get Latest Pose Data`：返回最近一次的数据，不会触发采样。
 - `Sample Pose`：立即采样一次，样本为 `Valid` 时返回 true。
-- `Is Using Body State`、`Get Body State Age Seconds`（0.1.2 起）：最新样本的速度是否取自刚体状态，以及状态的年龄，单位 s。
+- `Is Using Body State`、`Get Body State Age Seconds`（0.1.2 起）：分别返回最新样本的速度是否取自刚体状态，以及所用状态的年龄（单位 s）。
 
 ### 状态码
 
@@ -116,13 +116,13 @@ notes:
 ## 注意事项
 
 - 差分模式下速度由相邻两个样本差分得到，所以启动后的第一个样本没有速度。`Include Velocity` 关闭，或两个样本的仿真时间相同，也没有速度。
-- 0.1.2 起，`Reference Frame` 为 `World` 且机体有刚体状态源（例如无人机）时，速度读状态，从第一个样本起就有；刚体有状态源但还没有状态时，位姿有效但没有速度。`Parent` 和 `Custom Component` 参考系总是差分。位姿传感器不检查状态的年龄。
-- 速度的轴向是参考系的轴向，不是传感器的本地轴向。IMU 和里程计的速度才是本地轴向。
-- 位姿传感器不做瞬移检测：Actor 被瞬间移走时，下一个样本的速度会很大。
+- 0.1.2 起，`Reference Frame` 为 `World` 且机体有刚体状态源（例如无人机）时，速度从刚体状态读取，首个样本即可提供；刚体具有状态源但尚未提供状态时，位姿有效但没有速度。采用 `Parent` 或 `Custom Component` 参考系时，始终使用差分模式。位姿传感器不检查状态的年龄。
+- 速度的轴向是参考系的轴向，不是传感器的本地轴向。IMU 和里程计的速度则在各自的本地坐标系中表示。
+- 位姿传感器不做瞬移检测：Actor 发生瞬移时，下一个样本的速度会很大。
 - `Noise Enabled` 对位姿传感器无效，输出始终是真值。
-- 参考组件的缩放不是 1 时，相对位置也会被缩放。尽量选没有缩放的组件作参考。
-- 数据保持 UE 的轴向，位置从厘米换算成米。需要右手系（ROS、MuJoCo 等用的坐标系）时，用 `UE To Right-Handed Vector`、`UE To Right-Handed Rotation` 和 `UE To Right-Handed Angular Velocity`，见[坐标约定库](/core/conventions/)。
-- 所有属性在蓝图里只读，要在「Details」面板里设置。
+- 参考组件的缩放不是 1 时，相对位置也会被缩放。建议选择缩放为 1 的组件作为参考。
+- 数据保持 UE 的轴向，位置从厘米换算成米。需要采用右手坐标系（例如 ROS 和 MuJoCo 的约定）时，用 `UE To Right-Handed Vector`、`UE To Right-Handed Rotation` 和 `UE To Right-Handed Angular Velocity`，见[坐标约定库](/core/conventions/)。
+- 所有属性在蓝图中只读，要在「Details」面板中设置。
 
 ## 相关参考
 

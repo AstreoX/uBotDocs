@@ -1,5 +1,5 @@
 UUBotROSSensorBridgeComponent:
-  summary: 把所属 Actor 上的每个 uBot 传感器发布到 ROS 2，并发布传感器 TF。为每个传感器建一个发布器，只搜索 Actor 本身和它的组件，不搜索子 Actor。发布器建好后进入 Ready，不等桥连接成功。
+  summary: "将所属 Actor 上的 uBot 传感器数据发布到 ROS 2，并发布传感器坐标变换（TF）。为每个传感器创建一个发布器，仅搜索 Actor 本身及其组件，不搜索子 Actor；发布器创建完成后进入 Ready 状态，无需等待桥连接成功。"
   sourceHash: "e825e6e25578"
 
 UUBotROSSensorBridgeComponent.BaseFrameOverride:
@@ -7,7 +7,7 @@ UUBotROSSensorBridgeComponent.BaseFrameOverride:
   sourceHash: "49811adde080"
 
 UUBotROSSensorBridgeComponent.BaseLinkComponent:
-  summary: 基组件，静态 TF 以它为参考。留空或无法解析时，用 uBot Identity 的 Base Component（默认是根组件）。
+  summary: "静态 TF 的参考组件。留空或无法解析时，使用 uBot Identity 的 Base Component，默认是 Actor 的根组件。"
   sourceHash: "3b5ff05dcdc8"
 
 UUBotROSSensorBridgeComponent.GetActivePublisherTopics:
@@ -19,7 +19,7 @@ UUBotROSSensorBridgeComponent.GetDiscoveredSensorCount:
   sourceHash: "efb4a109d87b"
 
 UUBotROSSensorBridgeComponent.GetROSBridgeError:
-  summary: 最近一次配置错误的文字，没有时为空。
+  summary: 最近一次配置错误的说明，没有时为空。
   sourceHash: "e3b0c44298fc"
 
 UUBotROSSensorBridgeComponent.GetROSBridgeStatus:
@@ -31,7 +31,7 @@ UUBotROSSensorBridgeComponent.GetResolvedBaseFrameId:
   sourceHash: "e6b94b9823c8"
 
 UUBotROSSensorBridgeComponent.GetResolvedNamespace:
-  summary: 默认话题用的命名空间，已净化，没有前导 /；根命名空间时为空。
+  summary: 默认话题用的命名空间，已经过名称规范化处理，没有前导 /；根命名空间时为空。
   sourceHash: "89edf2afffab"
 
 UUBotROSSensorBridgeComponent.IsROSBridgeReady:
@@ -47,7 +47,7 @@ UUBotROSSensorBridgeComponent.OnROSBridgeError:
   sourceHash: "e3b0c44298fc"
 
 UUBotROSSensorBridgeComponent.OnROSBridgeReady:
-  summary: 发布器建好、组件进入 Ready 时触发。
+  summary: 发布器创建完成、组件进入 Ready 时触发。
   sourceHash: "e3b0c44298fc"
 
 UUBotROSSensorBridgeComponent.OnROSPublishersRefreshed:
@@ -55,15 +55,15 @@ UUBotROSSensorBridgeComponent.OnROSPublishersRefreshed:
   sourceHash: "e3b0c44298fc"
 
 UUBotROSSensorBridgeComponent.RefreshSensorPublishers:
-  summary: 重新发现所属 Actor 的传感器并重建全部发布器，组件没在运行时先初始化。成功返回 true。
+  summary: 重新发现所属 Actor 的传感器并重建全部发布器，组件未在运行时，先执行初始化。成功时返回 true。
   sourceHash: "75c7a25db5ee"
 
 UUBotROSSensorBridgeComponent.RestartROSBridge:
-  summary: 拆掉发布器后重新初始化，成功返回 true。
+  summary: 移除发布器后重新初始化，成功时返回 true。
   sourceHash: "e3b0c44298fc"
 
 UUBotROSSensorBridgeComponent.RobotNamespaceOverride:
-  summary: 机器人的命名空间。留空时用 uBot Identity 的命名空间；只填 / 表示根命名空间（话题形如 /imu/data）。用 / 分隔多级，每一段都会被净化。
+  summary: 机器人的命名空间。留空时用 uBot Identity 的命名空间；只填 / 表示根命名空间（话题形如 /imu/data）。用 / 分隔多级，每一段都会进行名称规范化处理。
   sourceHash: "2225313945bc"
 
 UUBotROSSensorBridgeComponent.SensorDataQosOverride:
@@ -75,11 +75,11 @@ UUBotROSSensorBridgeComponent.StateQosOverride:
   sourceHash: "3d211babbed2"
 
 UUBotROSSensorBridgeComponent.StopROSBridge:
-  summary: 拆掉全部发布器和静态 TF，状态变为 Stopped。
+  summary: 移除全部发布器和静态坐标变换（TF），状态变为 Stopped。
   sourceHash: "e3b0c44298fc"
 
 UUBotROSSensorBridgeComponent.TopicOverrides:
-  summary: 按逻辑键替换默认话题：pose、odom、imu、scan、lidar、rgb_camera、rgb_camera.camera_info、depth_camera、depth_camera.camera_info。同类型有多个传感器时，键是净化后的 SensorId 和 <SensorId>.camera_info。
+  summary: 按逻辑键替换默认话题：pose、odom、imu、scan、lidar、rgb_camera、rgb_camera.camera_info、depth_camera、depth_camera.camera_info。同类型有多个传感器时，键是经过名称规范化处理的 SensorId 和 <SensorId>.camera_info。
   sourceHash: "9fae4d109be4"
 
 UUBotROSSensorBridgeComponent.bAutoInitialize:
@@ -87,7 +87,7 @@ UUBotROSSensorBridgeComponent.bAutoInitialize:
   sourceHash: "e3b0c44298fc"
 
 UUBotROSSensorBridgeComponent.bPrefixFramesWithNamespace:
-  summary: 所有发布的 frame id 变成 <namespace>/<frame>，用于多机器人的 TF 树。
+  summary: 所有发布的 坐标系标识改为 <namespace>/<frame>，用于多机器人的 TF 树。
   sourceHash: "9e9cd36b63c9"
 
 UUBotROSSensorBridgeComponent.bPublishDynamicTF:

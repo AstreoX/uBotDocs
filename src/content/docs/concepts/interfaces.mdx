@@ -1,6 +1,6 @@
 ---
 title: 插件之间怎么对接
-description: uBot 的插件靠接口对接：传感器、执行器、速度、姿态和电机指令，以及感知介质；谁实现、谁调用，以及怎样在蓝图里实现它们。
+description: uBot 共享接口的职责、实现方与调用方，以及在蓝图中实现接口的方法。
 pageKind: concept
 packages: [UBotCore]
 sidebar:
@@ -9,19 +9,19 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-uBot 的插件通过接口对接，而不是互相依赖对方的类，除了 `IUBotBodyStateSource`，这些接口在蓝图里也可以实现。
+uBot 插件通过共享接口实现交互，以避免使用方直接依赖提供方的具体类；除 `IUBotBodyStateSource` 外，以下接口也支持蓝图实现。
 
 | 接口 | 描述的是 |
 | --- | --- |
 | `UBot Sensor` | 能产生 uBot 样本的对象 |
-| `UBot Actuator` | 一个执行器（驱动、机械臂、夹爪等），与怎样给它下指令无关 |
-| `UBot Velocity Commandable` | 接受机体系（body frame）速度指令的对象 |
+| `UBot Actuator` | 一个执行器（驱动、机械臂、夹爪等），不限定具体的指令接收方式 |
+| `UBot Velocity Commandable` | 接受机体坐标系（body frame）速度指令的对象 |
 | `UBot Attitude Commandable` | 接受姿态指令和角速度指令的飞行器（0.1.2 起） |
-| `UBot Motor Commandable` | 接受单个电机指令的飞行器（0.1.2 起） |
-| `UBot Perception Medium` | 影响感知的介质，比如烟、雾 |
-| `IUBotBodyStateSource` | 推动一个物体并知道它真实状态的对象，只能在 C++ 里实现（0.1.3 起） |
+| `UBot Motor Commandable` | 接受逐电机指令的飞行器（0.1.2 起） |
+| `UBot Perception Medium` | 影响感知结果的介质，例如烟和雾 |
+| `IUBotBodyStateSource` | 负责推进物体运动并提供其真实状态的对象，仅支持 C++ 实现（0.1.3 起） |
 
-每个接口有几个函数，在蓝图里是调用这些节点：
+各接口提供的函数在蓝图中对应以下节点：
 
 - `UBot Sensor`：`Get Sensor Id`、`Get Sensor Frame Id`、`Get Sensor Type`、`Is Sensor Running`、`Get Latest Sensor Header`、`Get Sensor Frame Component`。
 - `UBot Actuator`：`Get Actuator Id`、`Get Actuator Type`、`Is Actuator Ready`。
@@ -30,50 +30,50 @@ uBot 的插件通过接口对接，而不是互相依赖对方的类，除了 `I
 - `UBot Motor Commandable`：`Apply Motor Command`、`Get Motor Count`、`Release Motor Command`。
 - `UBot Perception Medium`：`Get Medium Snapshot`。
 
-`UBot Sensor`、`UBot Actuator` 和三个指令接口可以由 Actor 或组件实现；`UBot Perception Medium` 只能由 Actor 实现，传感器只收集实现了它的 Actor。谁实现、谁使用：
+`UBot Sensor`、`UBot Actuator` 和三个指令接口可以由 Actor 或组件实现；`UBot Perception Medium` 通过 Actor 提供，传感器仅收集实现该接口的 Actor。现有实现方与使用方如下：
 
 | 接口 | 谁实现 | 谁使用 |
 | --- | --- | --- |
-| `UBot Sensor` | uBotSensor 的全部传感器组件，也可以是你自己的 | uBotROS 的 `uBot ROS Sensor Bridge` 用它找出 Actor 上的传感器并发布 |
-| `UBot Actuator` | uBotAerial 的 `uBot Multirotor Movement`（`uBot Simple Flight` 和 `uBot Multirotor Dynamics` 都是它的子类），也可以是你自己的 | 已发布的插件还没有用到它 |
-| `UBot Velocity Commandable` | 你自己的车辆、无人机等，Actor 或组件均可；uBotAerial 的 `uBot Simple Flight` 和 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Velocity Command` 把 `cmd_vel` 交给它；uBotAerial 的 `uBot Multirotor Manual Input` |
+| `UBot Sensor` | uBotSensor 的全部传感器组件，也支持自定义实现 | uBotROS 的 `uBot ROS Sensor Bridge` 通过该接口发现 Actor 上的传感器并发布其数据 |
+| `UBot Actuator` | uBotAerial 的 `uBot Multirotor Movement`（`uBot Simple Flight` 和 `uBot Multirotor Dynamics` 都是它的子类），也支持自定义实现 | 已发布插件尚无该接口的调用方 |
+| `UBot Velocity Commandable` | 自定义车辆、无人机等对象，Actor 或组件均可；uBotAerial 的 `uBot Simple Flight` 和 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Velocity Command` 通过该接口下发 `cmd_vel` 对应的速度指令；uBotAerial 的 `uBot Multirotor Manual Input` |
 | `UBot Attitude Commandable` | uBotAerial 的 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Attitude Command`；uBotAerial 的 `uBot Multirotor Manual Input`（`Angle`、`Rate` 模式） |
 | `UBot Motor Commandable` | uBotAerial 的 `uBot Multirotor Dynamics` | uBotROS 的 `uBot ROS Motor Command` |
-| `UBot Perception Medium` | 你自己的烟雾、雾等 Actor | uBotSensor 的激光雷达和相机 |
+| `UBot Perception Medium` | 自定义烟、雾等介质 Actor | uBotSensor 的激光雷达和相机 |
 
 三个指令接口都是独立的能力接口，实现它们不要求同时实现 `UBot Actuator`。
 
-环境提供者负责场景条件，使用者负责自己的物理或测量响应，双方通过 Core 的已有接口对接，不需要专用连接插件。接口归属、风场开发版的接入方式与后续烟雾的复用原则，见[环境与使用者的职责边界](/develop/package-authoring/#环境与使用者的职责边界)。
+环境提供者负责场景条件，使用者负责自身的物理或测量响应，双方通过 Core 的已有接口对接，不需要专用连接插件。接口归属、风场开发版的接入方式与后续烟雾的复用原则，见[环境与使用者的职责边界](/develop/package-authoring/#环境与使用者的职责边界)。
 
 ## 例子：ROS 的速度指令驱动一个对象
 
-uBotROS 只负责把 ROS 的 `cmd_vel` 翻译成 uBot 的速度指令（`UBot Velocity Command`），怎样让车辆动起来，由实现了 `UBot Velocity Commandable` 的对象决定。
+uBotROS 将 ROS 的 `cmd_vel` 转换为 uBot 速度指令（`UBot Velocity Command`）；实现 `UBot Velocity Commandable` 的对象负责根据该指令控制车辆运动。
 
-| 步骤 | 发生了什么 |
+| 步骤 | 处理行为 |
 | --- | --- |
-| 1 | `uBot ROS Velocity Command` 收到 `geometry_msgs/msg/Twist`，换算成机体系的 UE 坐标轴，`Source` 填 `ROS` |
+| 1 | `uBot ROS Velocity Command` 收到 `geometry_msgs/msg/Twist`，将速度转换为采用 UE 坐标轴的机体系数据，并将 `Source` 设为 `ROS` |
 | 2 | 限速后调用目标的 `Apply Velocity Command`；目标返回 false 表示拒绝 |
 | 3 | 超过 `Command Timeout Seconds`（默认 0.5 s）没有新指令，调用一次目标的 `Stop Motion` |
 
-目标由 `Target Component` 指定；留空时，Actor 实现了接口就用 Actor 本身，否则用 Actor 上第一个实现了接口的组件。
+目标由 `Target Component` 指定；留空时，优先使用实现该接口的所属 Actor；若 Actor 未实现接口，则使用 Actor 上第一个实现该接口的组件。
 
-收到的指令已经是 UE 的约定：机体系，X 前、Y 右、Z 上，线速度 m/s，角速度 rad/s，+Z 是向右偏航。会倾斜的接收者（无人机）按航向坐标系解释速度：X、Y 沿当前航向，Z 朝上。ROS 里的符号差异由 uBotROS 换算好，见[坐标系与单位](/concepts/coordinates-and-units/)。
+收到的指令已经是 UE 的约定：机体坐标系，X 向前、Y 向右、Z 向上，线速度 m/s，角速度 rad/s，+Z 是向右偏航。机体可能倾斜的接收者（例如无人机）按航向坐标系解释线速度：X、Y 沿当前航向，Z 朝上。ROS 与 UE 之间的符号差异由 uBotROS 完成转换，见[坐标系与单位](/concepts/coordinates-and-units/)。
 
 ## 例子：飞行器的姿态、角速度和电机指令
 
-研究飞控时，除了速度，还要给飞行器发更底层的指令。uBotCore 0.1.2 起为此提供两个接口，以及三种指令结构体：
+飞行控制开发除速度控制外，还需要姿态、机体角速度和逐电机控制能力。uBotCore 0.1.2 起为此提供两个接口和三种指令结构体：
 
 | 指令 | 接口函数 | 内容 |
 | --- | --- | --- |
-| `UBot Attitude Command` | `Apply Attitude Command` | 目标姿态（机体到世界的四元数），可选按偏航角速度转航向 |
-| `UBot Body Rate Command` | `Apply Body Rate Command` | 机体系目标角速度（rad/s） |
+| `UBot Attitude Command` | `Apply Attitude Command` | 目标姿态（机体到世界的四元数），也可选择按偏航角速度调整航向 |
+| `UBot Body Rate Command` | `Apply Body Rate Command` | 机体坐标系目标角速度（rad/s） |
 | `UBot Motor Command` | `Apply Motor Command` | 每个电机一个值，`Normalized`（0 到 1）或 `AngularVelocity`（rad/s） |
 
-姿态和角速度指令的推力有两种给法：`Use Thrust` 为 true 时用 `Normalized Thrust`（最大总推力的比例，0 到 1），否则由接收者按 `Vertical Velocity Meters Per Second` 控制升降，0 表示保持高度。
+姿态和角速度指令支持两种垂直控制方式：`Use Thrust` 为 true 时使用 `Normalized Thrust`（最大总推力的比例，0 到 1），否则由接收者按 `Vertical Velocity Meters Per Second` 控制升降，0 表示保持高度。
 
-发送方不再发送时，调用 `Release Attitude Command` 或 `Release Motor Command`，由飞行器自己兜底，比如悬停。`Apply …` 返回 false 表示拒绝，例如电机值的个数与 `Get Motor Count` 不符。
+发送方停止发送指令时，应调用 `Release Attitude Command` 或 `Release Motor Command`，由飞行器执行已配置的指令中断或丢失处理。`Apply …` 返回 false 表示拒绝，例如电机值的个数与 `Get Motor Count` 不符。
 
-在蓝图里用同名节点调用；C++ 里用 `UBot::Actuation::FindAttitudeCommandable` 和 `FindMotorCommandable` 在 Actor 上找到实现者。用 uBotAerial 的无人机时，实现者是 `uBot Multirotor Dynamics`，见 [物理无人机的指令与控制模式](/aerial/dynamics/)；从 ROS 2 下发这些指令见 [从 ROS 2 发飞行指令](/ros/flight-commands/)。
+在蓝图中通过同名节点调用；在 C++ 中通过 `UBot::Actuation::FindAttitudeCommandable` 和 `FindMotorCommandable` 查找 Actor 上的接口实现对象。使用 uBotAerial 无人机时，该接口由 `uBot Multirotor Dynamics` 实现，见 [物理无人机的指令与控制模式](/aerial/dynamics/)；从 ROS 2 下发这些指令见 [从 ROS 2 发飞行指令](/ros/flight-commands/)。
 
 ```blueprint
 caption: 给实现了姿态指令接口的对象（变量 Drone）发一条横滚角速度指令，推力 55%
@@ -90,74 +90,74 @@ wires:
 
 ## 例子：感知介质影响传感器
 
-烟、雾这类介质由球形单元组成，每个单元有位置和半径（单位 cm）、密度和边缘衰减（0 到 1）。实现了 `UBot Perception Medium` 的 Actor 在 `Get Medium Snapshot` 里交出当前的单元，传感器采样时收集世界里所有处于激活状态的介质，再各自处理：
+感知介质以球形单元描述，每个单元包含位置和半径（单位 cm）、密度和边缘衰减系数（范围 0 到 1）。实现 `UBot Perception Medium` 的 Actor 通过 `Get Medium Snapshot` 返回当前介质快照；传感器采样时收集本世界所有激活的介质，并按各自的测量模型处理：
 
 - 激光雷达：射线进入有效密度不低于阈值的单元时，在入口处被截断，按命中处理。
-- 深度相机：把深度换成射线进入介质的距离。
+- 深度相机：将深度值替换为射线进入介质时的距离。
 - RGB 相机：像素向介质的颜色混合。
 
-介质 Actor 不需要知道有哪些传感器，传感器也不需要知道介质是谁做的。实现一个介质见[感知介质](/sensor/medium/)。
+介质 Actor 无需查询具体传感器，传感器也无需依赖介质的具体实现。介质实现方法见[感知介质](/sensor/medium/)。
 
 ## 刚体状态源（0.1.3 起）
 
-uBotCore 0.1.3 起提供刚体状态源（Body State Source）接口 `IUBotBodyStateSource`，让传感器直接读到物体的真实速度和加速度，不必再对位姿做差分。这个接口是实验性的，小版本之间可能变化。
+uBotCore 0.1.3 起提供刚体状态源（Body State Source）接口 `IUBotBodyStateSource`，支持传感器直接读取物体的真实速度和加速度，减少对位姿差分的依赖。该接口为实验性接口，可能在小版本之间变化。
 
-实现它的是推动一个物体、并知道它真实状态的对象，比如物理后端的绑定，或者载具自己的积分器。接口只能在 C++ 里实现，没有蓝图节点：
+该接口由负责推进物体运动、同时掌握其真实状态的对象实现，例如物理后端绑定或载具自身的积分器。接口仅支持 C++ 实现，没有对应的蓝图节点：
 
 | 函数 | 作用 |
 | --- | --- |
-| `ProvidesBodyState(Body)` | 这个对象是否移动 `Body`（写它的变换）并能报告它的状态 |
-| `GetBodyState(Body, OutState)` | 取 `Body` 的最新状态；`Body` 不归它提供，或者还没有状态时返回 false |
+| `ProvidesBodyState(Body)` | 返回当前对象是否负责移动 `Body`（写入其变换）并提供其状态 |
+| `GetBodyState(Body, OutState)` | 获取 `Body` 的最新状态；当前对象不负责该物体，或状态尚不可用时返回 false |
 
-提供一个物体同时也是认领它：别的对象不应该再移动这个物体。状态 `FUBotBodyState` 是 C++ 结构体，用 UE 的世界轴和 SI 单位：
+对象声明提供某个物体的状态时，也声明了对该物体运动的控制权；其他对象不应同时修改其运动。状态结构体 `FUBotBodyState` 使用 UE 世界坐标轴和国际单位制：
 
 | 字段 | 内容 |
 | --- | --- |
 | `PositionMeters` | 物体原点，米 |
 | `Orientation` | 物体到世界的四元数 |
-| `LinearVelocityMetersPerSecond` | 世界系线速度，m/s |
-| `AngularVelocityRadiansPerSecond` | 世界系角速度，rad/s，UE 的旋转方向（+Z 是向右偏航） |
+| `LinearVelocityMetersPerSecond` | 世界坐标系线速度，m/s |
+| `AngularVelocityRadiansPerSecond` | 世界坐标系角速度，rad/s，UE 的旋转方向（+Z 是向右偏航） |
 | `LinearAccelerationMetersPerSecondSquared` | 原点的运动学加速度，m/s²，不含重力；`bHasLinearAcceleration` 为 true 时有效 |
-| `AngularAccelerationRadiansPerSecondSquared` | 世界系角加速度，rad/s²；`bHasAngularAcceleration` 为 true 时有效 |
+| `AngularAccelerationRadiansPerSecondSquared` | 世界坐标系角加速度，rad/s²；`bHasAngularAcceleration` 为 true 时有效 |
 | `TimestampSeconds` | 状态所属的仿真时间，不晚于当前仿真时间 |
-| `Source` | 谁模拟了这个物体，比如物理后端的名字 |
+| `Source` | 模拟该物体的来源标识，例如物理后端名称 |
 
-读状态的一方用 `UBot::BodyState` 命名空间里的三个函数找到来源：
+状态使用方可通过 `UBot::BodyState` 命名空间的以下三个函数查找状态源：
 
 | 函数 | 作用 |
 | --- | --- |
-| `FindSource(Body)` | 找出提供 `Body` 的对象：先问 `Body` 所属的 Actor（它实现了接口的话），再按 `GetComponents` 的顺序问它的组件，第一个 `ProvidesBodyState(Body)` 为 true 的胜出，没有则返回 `nullptr` |
-| `FindSourceInParents(Component, OutBody)` | 从 `Component` 起沿附着父级往上找，返回找到的第一个来源，`OutBody` 是它提供的物体 |
-| `GetNearestBodyState(Component, OutState, OutBody)` | 取 `Component` 或它的附着父级里最近一个被提供的物体的状态；只有返回 true 时才写 `OutState` |
+| `FindSource(Body)` | 查找 `Body` 的状态源：先检查实现接口的所属 Actor，再按 `GetComponents` 顺序检查其组件；返回第一个满足 `ProvidesBodyState(Body)` 的对象，未找到时返回 `nullptr` |
+| `FindSourceInParents(Component, OutBody)` | 从 `Component` 开始沿附着父级逐级查找，返回第一个状态源，并通过 `OutBody` 返回其负责的物体 |
+| `GetNearestBodyState(Component, OutState, OutBody)` | 获取 `Component` 或其附着父级中最近一个具有状态源的物体状态；仅在返回 true 时写入 `OutState` |
 
-已经用到它的插件：
+现有使用方包括：
 
 - uBotPhysics 0.1.0 的绑定为被绑定的组件提供状态，见 [uBotPhysics](/physics/body-state/)。
 - uBotAerial 0.1.1 起，无人机的 `Movement` 组件是一个状态源，见[无人机的刚体状态](/aerial/body-state/)。
-- uBotSensor 0.1.2 起，位姿、里程计和 IMU 读它，见[读取刚体状态](/sensor/body-state/)。
+- uBotSensor 0.1.2 起，位姿、里程计和 IMU 传感器通过该接口读取刚体状态，见[读取刚体状态](/sensor/body-state/)。
 
 ## 在蓝图里实现接口
 
-下面以 `UBot Velocity Commandable` 为例，给一个 Actor 蓝图 `BP_Rover` 加上接口。
+以下以 `UBot Velocity Commandable` 为例，为 Actor 蓝图 `BP_Rover` 添加接口实现。
 
 <Steps>
 
 1. **添加接口**
 
-   打开 `BP_Rover`，点工具栏的「Class Settings」，在「Details」面板的「Interfaces」区点「Add」，选择 `UBot Velocity Commandable`。
+   打开 `BP_Rover`，点击工具栏的「Class Settings」，在「Details」面板的「Interfaces」区域点击「Add」，选择 `UBot Velocity Commandable`。
 
 2. **打开函数**
 
-   在「My Blueprint」面板的「Interfaces」下，双击 `Apply Velocity Command`，打开它的函数图。没有输出的函数，比如 `Stop Motion`，作为事件实现：在事件图里右键，搜索 `Event Stop Motion`。
+   在「My Blueprint」面板的「Interfaces」下，双击 `Apply Velocity Command`，打开它的函数图。没有输出参数的函数，例如 `Stop Motion`，作为事件实现：在事件图中右键，搜索 `Event Stop Motion`。
 
 3. **照图实现**
 
-   `Command` 是收到的速度指令。实现完成后，用返回值告诉调用方有没有接受这条指令。
+   `Command` 是收到的速度指令。实现函数时，应通过返回值明确告知调用方是否接受该指令。
 
 </Steps>
 
 ```blueprint
-caption: 在 BP_Rover 里实现 Apply Velocity Command：打印线速度的大小，并接受指令
+caption: 在 BP_Rover 中实现 Apply Velocity Command，显示线速度大小并接受指令
 nodes:
   E: { inline: { title: Apply Velocity Command, kind: event, outputs: [{ name: "", type: exec }, { name: Command, type: "struct:FUBotVelocityCommand" }] } }
   B: { ref: Break:FUBotVelocityCommand, hideUnconnected: true }
@@ -173,7 +173,7 @@ wires:
   - S.ReturnValue -> P.InString
   - P.then -> R.execute
 notes:
-  E: 接口函数的入口，`Command` 是调用方传进来的速度指令。
+  E: 接口函数的入口，`Command` 是调用方传入的速度指令。
   R: 返回 false 表示拒绝这条指令。
 ```
 
@@ -182,5 +182,5 @@ notes:
 - [接收 cmd_vel](/ros/cmd-vel/)：`uBot ROS Velocity Command` 组件的属性、超时和限速。
 - [从 ROS 2 发飞行指令](/ros/flight-commands/)：姿态、角速度和电机指令组件。
 - [物理无人机的指令与控制模式](/aerial/dynamics/)：实现这些接口的无人机。
-- [感知介质](/sensor/medium/)：在蓝图里实现一个介质。
+- [感知介质](/sensor/medium/)：在蓝图中实现感知介质接口。
 - [在 C++ 中使用传感器与接口](/develop/cpp/)：查找实现了接口的对象，调用和实现接口。

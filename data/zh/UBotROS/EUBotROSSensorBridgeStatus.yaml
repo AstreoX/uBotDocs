@@ -11,13 +11,13 @@ EUBotROSSensorBridgeStatus.Initializing:
   sourceHash: "e3b0c44298fc"
 
 EUBotROSSensorBridgeStatus.Ready:
-  summary: 发布器已建好，不等桥连接成功。
+  summary: "发布器已创建完成，该状态不要求桥已连接成功。"
   sourceHash: "e3b0c44298fc"
 
 EUBotROSSensorBridgeStatus.Stopped:
-  summary: 已拆掉全部发布器：调用了 Stop ROSBridge，或组件结束运行。
+  summary: 已移除全部发布器：调用了 Stop ROSBridge，或组件结束运行。
   sourceHash: "e3b0c44298fc"
 
 EUBotROSSensorBridgeStatus.Uninitialized:
-  summary: 还没有初始化。
+  summary: 尚未初始化。
   sourceHash: "e3b0c44298fc"

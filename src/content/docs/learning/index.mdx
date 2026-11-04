@@ -14,7 +14,7 @@ uBotLearning 是规划中的 Learning Agents 对接插件，目前尚未发布�
 
 ## 定位
 
-对接 UE 的 Learning Agents，它是引擎插件 `LearningAgents`。
+uBotLearning 计划接入 UE 的 Learning Agents 功能，该功能由引擎插件 `LearningAgents` 提供。
 
 在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
 
@@ -24,20 +24,20 @@ uBotLearning 是规划中的 Learning Agents 对接插件，目前尚未发布�
 
 | 能力标签 | 含义 |
 | --- | --- |
-| `Learning.Observations` | 观测（observations），也就是交给 Learning Agents 的信息 |
-| `Learning.Actions` | 动作（actions），也就是 Learning Agents 输出的指令 |
+| `Learning.Observations` | 观测（observations），输入至 Learning Agents 的状态信息 |
+| `Learning.Actions` | 动作（actions），Learning Agents 输出的控制指令 |
 
-尚未确定：观测取自哪些传感器，动作交给哪些执行器，训练和推理的流程怎么接入。
+尚未确定：观测取自哪些传感器，动作交给哪些执行器，训练与推理流程的接入方式。
 
 ## 与现有插件的关系
 
 - uBotCore：按包索引，它只依赖 uBotCore 0.1.x，不依赖 uBotSensor。
 - 引擎插件：需要 `LearningAgents`。uBot Manager 只会在 `.uproject` 里启用引擎插件，不会安装；引擎里没有时报错。
-- uBotCore 里已有的接口：`UBot Sensor` 给出传感器的最新帧头，`UBot Velocity Commandable` 接收速度指令。uBotLearning 是否通过它们取得观测、交出动作，尚未确定。
+- uBotCore 里已有的接口：`UBot Sensor` 给出传感器的最新帧头，`UBot Velocity Commandable` 接收速度指令。uBotLearning 是否通过它们读取观测、发送动作指令，尚未确定。
 
 ## 发布前可以先怎么做
 
-- Learning Agents 是引擎插件，现在就可以直接启用和使用，不需要等 uBotLearning。
-- 观测可以自己从 uBotSensor 的传感器读取最近一次样本，使用前先检查帧头的 `Valid`，见 [帧头与采样状态](/concepts/frame-header/)。
+- 在 uBotLearning 发布前，可以直接启用并使用引擎自带的 `LearningAgents` 插件。
+- 可将 uBotSensor 传感器的最近一次样本作为观测数据，使用前先检查帧头的 `Valid`，见 [帧头与采样状态](/concepts/frame-header/)。
 - 动作要驱动机器人时，可以对实现了 `UBot Velocity Commandable` 的对象调用 `Apply Velocity Command`，见 [插件之间怎么对接](/concepts/interfaces/)。
-- uBotLearning 发布后，自己接的观测和动作要不要改、怎么改，尚未确定。
+- uBotLearning 发布后，现有观测与动作接口是否需要调整，以及具体迁移步骤，尚未确定。

@@ -11,7 +11,7 @@ FUBotOdometrySensorData.ChildFrameId:
   sourceHash: "e3b0c44298fc"
 
 FUBotOdometrySensorData.Header:
-  summary: 帧头，含 Valid 和 Status。
+  summary: 帧头，包含 Valid 和 Status 字段。
   sourceHash: "e3b0c44298fc"
 
 FUBotOdometrySensorData.LinearVelocityLocalMetersPerSecond:

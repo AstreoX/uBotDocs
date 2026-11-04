@@ -11,5 +11,5 @@ EUBotCommandLossAction.Hover:
   sourceHash: "744c36969edc"
 
 EUBotCommandLossAction.Land:
-  summary: 以 `Landing Speed` 原地下降，触地后和碰到其他表面一样被挡住。
+  summary: "以 `Landing Speed` 指定的速度保持水平位置并下降，接触地面后按普通碰撞面处理，停止向下运动。"
   sourceHash: "8f11ba18f307"

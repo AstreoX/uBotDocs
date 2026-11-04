@@ -1,17 +1,17 @@
 FUBotVelocityCommand:
-  summary: 机体系下的速度请求。生产者先把自己的坐标约定换成 UE 的，再填写各字段。
+  summary: "采用机体坐标系的速度指令。发送方需要先将数据转换为 UE 坐标约定，再填写指令字段。"
   sourceHash: "0c3958aad4c0"
 
 FUBotVelocityCommand.AngularVelocityRadiansPerSecond:
-  summary: 机体系角速度，用 UE 的坐标轴和旋转方向（+Z 是向右偏航），单位 rad/s。
+  summary: "机体坐标系角速度，单位 rad/s；采用 UE 坐标轴和旋转方向，+Z 表示向右偏航。"
   sourceHash: "b3f896c4ef54"
 
 FUBotVelocityCommand.LinearVelocityMetersPerSecond:
-  summary: 机体系线速度，用 UE 的坐标轴（X 前、Y 右、Z 上），单位 m/s。机体会倾斜的接收者（多旋翼）按航向坐标系理解：X、Y 沿当前航向，Z 向上。
+  summary: "机体坐标系线速度，单位 m/s，采用 UE 坐标轴（X 向前、Y 向右、Z 向上）。机体可能倾斜的接收方（例如多旋翼）按航向坐标系解释该值：X、Y 沿当前航向，Z 向上。"
   sourceHash: "814f419ac5d9"
 
 FUBotVelocityCommand.Source:
-  summary: 来源标签，格式自由，比如 ROS、MCP、Blueprint。
+  summary: "指令来源标签，采用自由格式，例如 ROS、MCP 或 Blueprint。"
   sourceHash: "9030c0986c07"
 
 FUBotVelocityCommand.TimestampSeconds:
@@ -23,5 +23,5 @@ Make:FUBotVelocityCommand:
   sourceHash: "7f19958aa5f0"
 
 Break:FUBotVelocityCommand:
-  summary: 把 UBot Velocity Command 拆成线速度、角速度、时间戳和来源。
+  summary: "将 UBot Velocity Command 拆分为线速度、角速度、时间戳和来源。"
   sourceHash: "923afc7e4011"

@@ -1,5 +1,5 @@
 UUBotFlightController:
-  summary: 物理多旋翼的飞控。多旋翼每个物理步（或每隔 `Controller Rate Divider` 步）带着真值状态和当前控制模式的目标调用一次 `Compute Motor Commands`，并执行它返回的归一化电机指令。在 C++ 里继承并重写 `_Implementation` 函数即可换成自己的飞控；蓝图子类也能用，但以物理频率（默认 1 kHz）经蓝图虚拟机运行，需要调大 `Controller Rate Divider`。
+  summary: "物理多旋翼飞行控制器的基类；运动组件以指定物理步间隔传入真值状态和当前设定值，调用 `Compute Motor Commands` 并执行返回的归一化电机指令。C++ 子类需重写对应 `_Implementation` 函数；蓝图子类经蓝图虚拟机运行，可增大 `Controller Rate Divider` 以降低默认 1 kHz 调用频率带来的开销。"
   sourceHash: "17d677c41420"
 
 UUBotFlightController.ComputeMotorCommands:
@@ -7,9 +7,9 @@ UUBotFlightController.ComputeMotorCommands:
   sourceHash: "11a6e229ab7d"
 
 UUBotFlightController.ResetController:
-  summary: 清空飞控的记忆（积分项和目标），并接收它要飞的机架。
+  summary: "清空飞行控制器的积分项和目标等内部状态，并接收所控制无人机的机架参数。"
   sourceHash: "f620ed89dba9"
 
 UUBotFlightController.SupportsControlMode:
-  summary: 这个飞控是否执行 `Mode` 的目标。电机模式不会到达飞控。
+  summary: "返回此飞行控制器是否支持 `Mode` 指定模式的设定值。电机模式不经过飞行控制器。"
   sourceHash: "12197ca4c482"

@@ -8,7 +8,7 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-用 `uBot 3D LiDAR Sensor` 在水平和垂直方向上扫描，并在蓝图里从点云（point cloud）帧中读出点和强度。
+用 `uBot 3D LiDAR Sensor` 在水平和垂直方向上扫描，并在蓝图中从点云（point cloud）帧中读出点和强度。
 
 ## 快速用法
 
@@ -32,7 +32,7 @@ wires:
 notes:
   B: "`Point Meters` 在传感器坐标系下，单位 m。"
   C: "`Return Value` 为 false 说明索引越界，例如这一帧没有任何命中点。"
-  D: 点到原点的长度就是这个点的距离。
+  D: 点的位置向量模长等于该点与传感器原点之间的距离。
 ```
 
 ## 步骤
@@ -41,7 +41,7 @@ notes:
 
 1. **添加组件**
 
-   在「Components」面板点「Add」，搜索 `uBot 3D LiDAR Sensor`，重命名为 `Lidar3D`，并附着到机器人上。
+   在「Components」面板点击「Add」，搜索 `uBot 3D LiDAR Sensor`，重命名为 `Lidar3D`，并附着到机器人上。
 
 2. **设置视场与线数**
 
@@ -49,11 +49,11 @@ notes:
 
    ![3D LiDAR 的 Details 面板：「3D Li DAR」类别下 Scan 里的量程、水平和垂直视场、Number Of Channels 和 Horizontal Samples](../../../assets/sensor/lidar-3d.png)
 
-   编辑器把类别名里的 `LiDAR` 拆成 `Li DAR`，按截图里显示的找。
+   编辑器将类别名称中的 `LiDAR` 显示为 `Li DAR`，查找时应以界面中的名称为准。
 
-3. **连蓝图**
+3. **连接蓝图节点**
 
-   在「Events」区点 `On 3DLidar Frame Ready` 旁的「+」，照上图连线。
+   在「Details」面板的「Events」区域点击 `On 3DLidar Frame Ready` 旁的「+」，按照上方节点图连接节点。
 
 4. **运行**
 
@@ -71,29 +71,29 @@ notes:
 | `Vertical Fov Up Degrees` | 15 | 向上的视场，单位 °，范围 0 到 90 |
 | `Vertical Fov Down Degrees` | 15 | 向下的视场，单位 °，范围 0 到 90 |
 | `Number Of Channels` | 16 | 垂直方向的线数（通道），范围 1 到 256。从向下到向上均匀分布，只有 1 个通道时水平射出 |
-| `Horizontal Samples` | 360 | 每个通道的射线数，范围 1 到 8192。水平视场是 360° 时首尾不重复，其他视场首尾都取到 |
+| `Horizontal Samples` | 360 | 每个通道的射线数，范围 1 到 8192。水平视场为 360° 时，首尾射线方向不重复；其他视场下，首尾射线分别位于视场边界 |
 | `Maximum Rays Per Scan` | 65536 | 单次扫描的射线数上限，见下方注意事项 |
 | `Minimum Range Meters` | 0.1 | 最小量程，单位 m |
 | `Maximum Range Meters` | 100 | 最大量程，单位 m，必须大于最小量程 |
 | `Range Noise Std Dev Meters` | 0 | 距离噪声的标准差，单位 m。同时需要开启 `Noise Enabled`，只作用于命中的射线 |
 | `Update Rate Hz` | 10 | 扫描频率，单位 Hz |
-| `Sensor Id`、`Frame Id` | `lidar_3d` | 帧头里的传感器 ID 和 TF frame id，见[帧头与采样状态](/concepts/frame-header/) |
+| `Sensor Id`、`Frame Id` | `lidar_3d` | 帧头中的传感器标识和坐标系标识，见[帧头与采样状态](/concepts/frame-header/) |
 
 ### 射线检测设置
 
-每束射线做一次按通道的单线检测（Line Trace by Channel）。
+每束射线执行一次按通道的单线检测（Line Trace by Channel）。
 
 | 属性 | 默认值 | 作用 |
 | --- | --- | --- |
-| `Trace Channel` | Visibility | 检测用的碰撞通道，只有对该通道设为阻挡（Block）的物体会被扫到 |
+| `Trace Channel` | Visibility | 检测用的碰撞通道，仅检测对该通道设置了阻挡（Block）响应的物体 |
 | `Trace Complex` | false | 为 true 时对复杂碰撞（逐三角面）检测，开销更高 |
-| `Ignore Owner` | true | 忽略传感器所属的 Actor，避免扫到机器人自己 |
+| `Ignore Owner` | true | 忽略传感器所属的 Actor，避免检测到机器人自身 |
 | `Ignored Actors` | 空 | 额外忽略的 Actor 列表 |
-| `Debug Visualization` | false | 运行时抽样画出一部分射线，命中为绿色，未命中为红色 |
+| `Debug Visualization` | false | 运行时抽样绘制部分射线，命中为绿色，未命中为红色 |
 
 ### 编辑器预览
 
-在编辑器视口里选中组件，会画出视场的外壳：填色的量程范围、按距离画的圆弧、按角度画的经纬线，以及距离标注。图中是示意：为了让外壳完整可见，量程和视场调小了，数值以设置表为准。
+在编辑器视口里选中组件，会画出视场的外壳：填色的量程范围、按距离画的圆弧、按角度画的经纬线，以及距离标注。下图为示意图：为了让外壳完整可见，量程和视场调小了，默认值以属性表为准。
 
 ![编辑器视口里选中 3D LiDAR 时画出的视场外壳（示意）](../../../assets/sensor/lidar-3d-visualizer.jpg)
 
@@ -103,7 +103,7 @@ notes:
 | --- | --- | --- |
 | `Range Preview Color` | 浅蓝 (0.05, 0.65, 1.0) | 外壳、网格和标注的颜色 |
 | `Range Preview Opacity` | 0.12 | 外壳填色的不透明度，范围 0 到 1；0 表示不填色 |
-| `Distance Grid Interval Meters` | 5 | 距离圆弧的间隔，单位 m，最小 0.1。圆弧最多 8 条，量程很大时间隔会自动加倍 |
+| `Distance Grid Interval Meters` | 5 | 距离圆弧的间隔，单位 m，最小 0.1。圆弧最多 8 条，量程较大时，圆弧间隔自动加倍 |
 | `Angular Grid Interval Degrees` | 15 | 角度网格线的间隔，单位 °，范围 1 到 90 |
 | `Show Range Labels` | true | 在圆弧上标出距离，格式如 `5 m` |
 
@@ -111,8 +111,8 @@ notes:
 
 ## 输出与事件
 
-- `On 3DLidar Frame Ready`：每次产生有效帧后触发，`Frame` 是这一帧。
-- `Get Latest 3DLidar Frame`：返回最近一帧，不会触发新的扫描；还没有采过样时为空。
+- `On 3DLidar Frame Ready`：每次产生有效帧后触发，`Frame` 引脚提供本次生成的帧对象。
+- `Get Latest 3DLidar Frame`：返回最近一帧，不会触发新的扫描；尚未完成采样时返回空值。
 - `Sample 3DLidar`：手动扫描一次，得到有效帧时返回 true。
 - 通用事件 `On Sensor Sampled`、`On Sensor Error` 见[传感器通用用法](/sensor/basics/)。
 
@@ -126,7 +126,7 @@ notes:
 | `Get Total Ray Count` | 这次扫描发射的射线总数 |
 | `Get Point by Index` | `Point Meters`、`Ring Index`、`Time Offset Seconds`、`Intensity`、`Has Intensity`，以及索引是否有效的 `Return Value` |
 | `Get Intensities` | 每个点一个强度，与点一一对应 |
-| `Has Intensity Data` | 这一帧有没有强度数据 |
+| `Has Intensity Data` | 该帧是否包含强度数据 |
 | `Copy All Points (High Cost)` | 全部点的副本 |
 | `Copy All Ring Indices (High Cost)` | 全部环号的副本 |
 | `Copy All Time Offsets (High Cost)` | 全部时间偏移的副本 |
@@ -136,18 +136,18 @@ notes:
 - `Ring Index`：点所在的通道序号（环号），0 是最下面的一条线。
 - `Time Offset Seconds`：目前恒为 0，一次扫描在同一仿真时刻完成。
 
-帧上的属性有 `Total Ray Count`、`Hit Point Count`、`Channel Count`、`Horizontal Sample Count`、`Horizontal Fov Radians`、`Vertical Fov Up Radians`、`Vertical Fov Down Radians`、`Minimum Range Meters`、`Maximum Range Meters`、`Scan Period Seconds` 和 `Header`。`Capture Duration Milliseconds` 是生成这一帧用的时间，单位 ms。`Sensor Transform World` 是扫描时传感器在 UE 世界里的变换，单位 cm。
+帧上的属性有 `Total Ray Count`、`Hit Point Count`、`Channel Count`、`Horizontal Sample Count`、`Horizontal Fov Radians`、`Vertical Fov Up Radians`、`Vertical Fov Down Radians`、`Minimum Range Meters`、`Maximum Range Meters`、`Scan Period Seconds` 和 `Header`。`Capture Duration Milliseconds` 是生成这一帧用的时间，单位 ms。`Sensor Transform World` 是扫描时传感器在 UE 世界坐标系中的变换，位置单位 cm。
 
 ### 强度
 
-强度（Intensity）范围是 0 到 255，计算式为 `255 * Clamp(Dot(-RayDirectionWorld, ImpactNormal), 0, 1)`：射线垂直打在表面上最强，擦着表面时接近 0。被烟雾截断的点强度为 0。
+强度（Intensity）范围是 0 到 255，计算式为 `255 * Clamp(Dot(-RayDirectionWorld, ImpactNormal), 0, 1)`：射线垂直入射时强度最大，接近切向入射时强度接近 0。被烟雾截断的点强度为 0。
 
 ## 注意事项
 
-- 没有命中的射线，以及距离小于 `Minimum Range Meters` 的命中，都不产生点。所以点的索引不对应固定的射线方向。`Ring Index` 只表示垂直方向的通道；要按水平方向处理，用 `Point Meters` 的 X、Y 算 `atan2(Y, X)`，向右为正。
+- 没有命中的射线，以及距离小于 `Minimum Range Meters` 的命中，都不产生点。所以点的索引不对应固定的射线方向。`Ring Index` 只表示垂直方向的通道；如需按水平方向处理点云，可使用 `Point Meters` 的 X、Y 分量计算 `atan2(Y, X)`，向右为正。
 - `Number Of Channels` 乘以 `Horizontal Samples` 超过 `Maximum Rays Per Scan` 时，这次采样的状态是 `Error`，触发 `On Sensor Error`，不产生帧，也不会截断射线数。
 - 最大量程不大于最小量程时，这次采样同样是 `Error` 状态。
-- `Copy All ...（High Cost）` 每次调用都复制整个数组。逐点处理用 `Get Point by Index`，需要全部数据时调用一次并存进变量。
+- `Copy All ...（High Cost）` 每次调用都会复制整个数组。逐点处理时使用 `Get Point by Index`，需要全部数据时调用一次并将结果保存到变量中。
 - 默认每次扫描发射 16 × 360 = 5760 条射线，10 Hz 时每秒 57600 次射线检测。`Capture Duration Milliseconds` 可以用来估算每帧耗时，各传感器的开销对比见[性能与采样频率](/sensor/performance/)。
 - 烟雾等感知介质会截断射线，见[感知介质（烟雾干扰）](/sensor/medium/)。
 

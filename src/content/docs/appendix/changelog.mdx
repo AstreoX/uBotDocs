@@ -1,12 +1,12 @@
 ---
 title: 版本记录
-description: 每个插件和 uBot Manager 已发布的版本，以及每个版本里用户看得到的变化。
+description: 各插件与 uBot Manager 的已发布版本及面向用户的变化。
 pageKind: concept
 sidebar:
   order: 20
 ---
 
-已发布的版本和用户看得到的变化按插件列在这里，没有发布的改动不列。
+以下按插件列出已发布版本及其功能变化，不包含尚未发布的改动。
 
 ## 版本一览
 
@@ -32,7 +32,7 @@ sidebar:
 | uBot Manager | 0.1.1 | 2026-10-17 | 不适用 |
 | uBot Manager | 0.1.0 | 2026-10-10 | 不适用 |
 
-更新已装的插件见[安装、更新、移除插件](/manager/packages/)。预编译包是什么，见[安装 uBot](/start/install/)。
+更新已安装插件的方法参见[安装、更新、移除插件](/manager/packages/)。预编译包的说明参见[安装 uBot](/start/install/)。
 
 ## uBotCore
 
@@ -40,20 +40,20 @@ sidebar:
 
 - 坐标约定改为中立的右手系：UE 的左手系、厘米与右手系 FLU、国际单位制之间互转，ROS（REP-103）和 MuJoCo 都适用。蓝图节点是 `UE To Right-Handed …` 和 `Right-Handed To UE …`，C++ 是 `UBot::RightHanded`，见[坐标约定库](/core/conventions/)。
 - 旧的 `UE To ROS …` 等 17 个节点和 C++ 的 `UBot::Ros` 保留，已弃用，结果相同。其中相机光学系、ROS 时间和 ROS 名字合法化这些 ROS 专属的节点移到了 uBotROS 0.1.3。
-- 新增刚体状态源接口 `IUBotBodyStateSource` 和状态结构体 `FUBotBodyState`（实验性，只能在 C++ 里实现）：移动一个物体的对象报告它的真实状态，传感器据此读取速度和加速度，见[插件之间怎么对接](/concepts/interfaces/)。
-- 采样调度器新增 `ConsumeDueSteps`（C++），一帧里补上所有到期的步，供固定步长的模拟使用，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- 新增刚体状态源接口 `IUBotBodyStateSource` 和状态结构体 `FUBotBodyState`（实验性，只能在 C++ 里实现）：负责驱动物体运动的对象提供其真实状态，传感器据此读取速度和加速度，见[插件之间怎么对接](/concepts/interfaces/)。
+- 采样调度器新增 `ConsumeDueSteps`（C++），返回当前帧应执行的全部到期步数，供调用者推进固定步长模拟，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
 - 扩展点注册表新增 `AddExtensionsChangedHandler` 和 `RemoveExtensionsChangedHandler`（C++）：扩展点或扩展增减之后通知处理函数，在任何线程都可以添加和移除。
 - `uBot Identity` 的默认命名空间改用 `UBot::Identity::SanitizeNameToken` 净化，规则不变。
 - Details 面板里的属性分类不再以 `uBot` 开头，之前会显示成「U Bot」。
 - 包索引新增 uBotSensor 0.1.2、uBotROS 0.1.3、uBotAerial 0.1.1 和 uBotPhysics 0.1.0 的条目。
-- 与 0.1.2 兼容：只新增和弃用 API。已发布的 uBotROS 0.1.2 和 uBotAerial 0.1.0 的预编译包不用重新编译，配合 uBotCore 0.1.3 和 uBotSensor 0.1.2 通过了它们的全部自动化测试。
+- 与 0.1.2 兼容：只新增和弃用 API。已发布的 uBotROS 0.1.2 和 uBotAerial 0.1.0 的预编译包无需重新编译，配合 uBotCore 0.1.3 和 uBotSensor 0.1.2 通过了它们的全部自动化测试。
 - 提供 UE 5.5 Win64 的预编译包。
 
 ### 0.1.2
 
 - 新增两个接口：`UBot Attitude Commandable` 接受姿态指令和角速度指令，`UBot Motor Commandable` 接受单个电机指令，供飞行器实现。新增三种指令结构体：`UBot Attitude Command`、`UBot Body Rate Command` 和 `UBot Motor Command`，见[插件之间怎么对接](/concepts/interfaces/)。
 - 约定：会倾斜的接收者（比如多旋翼）按航向坐标系解释速度指令，X、Y 沿当前航向，Z 朝上。
-- 新增 commandlet `UBotDocExport`，把插件的蓝图 API 导出成文档站使用的 `api.json`。这是给维护者用的，使用者用不到。
+- 新增 commandlet `UBotDocExport`，把插件的蓝图 API 导出成文档站使用的 `api.json`。该工具供文档维护者导出数据，普通使用者无需运行。
 - 包索引新增 uBotROS 0.1.2 和 uBotAerial 0.1.0 的条目，并列出规划中的 uBotMuJoCo。
 - 提供 UE 5.5 Win64 的预编译包。
 
@@ -80,11 +80,11 @@ sidebar:
 ### 0.1.2
 
 - 位姿、里程计和 IMU 在所在物体有刚体状态源时（比如 uBotAerial 的无人机、uBotPhysics 的物理后端绑定），直接读真实的速度和加速度，不再对位姿做差分，见[读取刚体状态](/sensor/body-state/)。IMU 加上杠杆臂项（α×r + ω×(ω×r)）。
-- 新增 `Use Body State`（默认开）：传感器装在会动的部件上时关闭它，总是差分。新增 `Is Using Body State` 和 `Get Body State Age Seconds`，后者给出状态的新旧；样本的时间戳仍是采样时刻。没有状态源时行为与 0.1.1 相同。
+- 新增 `Use Body State`（默认开）：传感器安装在相对机体运动的部件上时，应关闭该选项以始终使用差分计算。新增 `Is Using Body State` 和 `Get Body State Age Seconds`，后者返回最近一次采样时刻与所用状态时刻之差；样本的时间戳仍是采样时刻。没有状态源时行为与 0.1.1 相同。
 - 状态模式只需要一个预热样本，噪声和滤波与差分模式用同一段代码。
 - 修复：每个采样间隔转角小于 2e-4 rad 时，角速度被当成绕 X 轴的旋转；慢速偏航现在读数正确。
 - Details 面板里的属性分类不再以 `uBot` 开头。
-- 已发布的 uBotROS 0.1.2 的预编译包不用重新编译。
+- 已发布的 uBotROS 0.1.2 的预编译包无需重新编译。
 - 需要 uBotCore 0.1.3。
 - 提供 UE 5.5 Win64 的预编译包。
 
@@ -110,7 +110,7 @@ sidebar:
 ### 0.1.3
 
 - ROS 专属的坐标内容从 uBotCore 移到这里：相机光学系的旋转和后缀、`builtin_interfaces/Time` 与秒的互转、ROS 名字合法化。蓝图节点是类别 `uBot|ROS|Conventions` 下的 5 个，名字和显示名不变，行为不变，见[坐标约定库](/core/conventions/)。
-- uBotROS 自己的转换改用 uBotCore 的中立约定 `UBot::RightHanded`，不再调用已弃用的接口。
+- uBotROS 内部的坐标转换改用 uBotCore 的中立约定 `UBot::RightHanded`，不再调用已弃用的接口。
 - Details 面板里的属性分类不再以 `uBot` 开头（`ROS|…`）。
 - 与 ROS 桥握手时报告的 UE 端版本现在是 `uBot UE 0.1.3`。
 - 依赖改为 uBotCore 0.1.3 或更新的 0.1.x。
@@ -120,7 +120,7 @@ sidebar:
 
 - 新增 `uBot ROS Attitude Command` 组件：订阅 `/<namespace>/cmd_attitude`（`mavros_msgs/msg/AttitudeTarget`），把姿态指令或角速度指令交给实现了 `UBot Attitude Commandable` 的对象。
 - 新增 `uBot ROS Motor Command` 组件：订阅 `/<namespace>/cmd_motors`（`actuator_msgs/msg/Actuators`），把电机指令交给实现了 `UBot Motor Commandable` 的对象。
-- 两个组件的目标、超时（`Command Timeout Seconds`，默认 0.5 s）和错误事件与 `uBot ROS Velocity Command` 相同。超过超时没有新指令时，目标收到一次释放，由飞行器自己兜底，比如悬停。用法见[从 ROS 2 发飞行指令](/ros/flight-commands/)。
+- 两个组件的目标、超时（`Command Timeout Seconds`，默认 0.5 s）和错误事件与 `uBot ROS Velocity Command` 相同。超时后仍未收到新指令时，组件会向目标发送一次释放请求，由飞行器执行其配置的指令丢失处理行为，例如悬停。用法见[从 ROS 2 发飞行指令](/ros/flight-commands/)。
 - ROS 桥新增运行依赖 `mavros_msgs` 和 `actuator_msgs`，在 ROS 一侧安装 `ros-humble-mavros-msgs` 和 `ros-humble-actuator-msgs`。
 - 依赖改为 uBotCore 0.1.2 或更新的 0.1.x。
 - 与 ROS 桥握手时报告的 UE 端版本现在是 `uBot UE 0.1.2`。
@@ -150,7 +150,7 @@ sidebar:
 ### 0.1.1
 
 - 多旋翼的移动组件（`uBot Multirotor Movement`）成为 uBotCore 的刚体状态源：位置、姿态、线速度和线加速度取自最近一个物理步，角速度和新增的角加速度在世界系，时间戳是该步的仿真时间。它从注册起就认领根组件，uBotPhysics 的绑定不会接管无人机。uBotSensor 0.1.2 的位姿、里程计和 IMU 据此读取真实的速度和加速度，见[无人机的刚体状态](/aerial/body-state/)。
-- 修复：在无人机自己的 `BeginPlay` 之前发出的速度、姿态、角速度和电机指令，之前节点返回成功，随后被开始飞行时的重置清掉；现在会在重置之后生效。`Reset Flight` 和 `Stop Motion` 为 true 的 `Teleport Multirotor` 仍然清除指令。
+- 修复：在无人机的 `BeginPlay` 之前发送的速度、姿态、角速度和电机指令，之前节点返回成功，随后被飞行初始化过程清除；现在会在重置之后生效。`Reset Flight` 和 `Stop Motion` 为 true 的 `Teleport Multirotor` 仍然清除指令。
 - 修复：每个物理步转角小于 2e-4 rad 时，角速度被当成绕 X 轴的旋转；慢速偏航现在读数正确。
 - `uBot Multirotor Manual Input` 的类说明改为按飞行模式写明控制结束时的行为：`Velocity` 模式刹车并悬停，`Angle` 和 `Rate` 模式释放姿态指令，由 `Command Loss Action` 决定，见[键盘和手柄手动飞行](/aerial/manual-flight/)。
 - 需要 uBotCore 0.1.3。
@@ -160,10 +160,10 @@ sidebar:
 
 首个版本，建立在 uBotCore 0.1.2 之上，另需引擎插件 Enhanced Input。
 
-- 三个示例无人机蓝图，在插件内容的 `/UBotAerial/Examples/` 下，由插件的组件拼成：`BP_UBotNavigationDrone`（导航、规划、感知，接收速度和偏航角速度）、`BP_UBotPhysicsDrone`（需要真实动力学，接收速度、姿态、角速度和单电机）和 `BP_UBotBareAirframeDrone`（研究飞控，接收角速度和单电机）。见[示例无人机与试飞关卡](/aerial/examples/)。
+- 三个示例无人机蓝图，在插件内容的 `/UBotAerial/Examples/` 下，由插件提供的组件组合而成：`BP_UBotNavigationDrone`（导航、规划、感知，接收速度和偏航角速度）、`BP_UBotPhysicsDrone`（需要真实动力学，接收速度、姿态、角速度和单电机）和 `BP_UBotBareAirframeDrone`（研究飞控，接收角速度和单电机）。见[示例无人机与试飞关卡](/aerial/examples/)。
 - 演示地图 `/UBotAerial/Maps/L_UBotAerialDemo`，三架示例无人机并排放在里面。
 - `uBot Simple Flight`：导航级飞行模型，速度按一阶响应逼近指令，见[用速度指令飞导航无人机](/aerial/simple-flight/)。
-- `uBot Multirotor Dynamics`：物理级飞行模型，多旋翼刚体动力学，带内置的串级飞控 `uBot Cascaded Flight Controller`，见[物理无人机的指令与控制模式](/aerial/dynamics/)。自己写飞控时继承 `uBot Flight Controller`，见[自己写飞控](/aerial/flight-controller/)。
+- `uBot Multirotor Dynamics`：物理级飞行模型，多旋翼刚体动力学，带内置的串级飞控 `uBot Cascaded Flight Controller`，见[物理无人机的指令与控制模式](/aerial/dynamics/)。开发自定义飞行控制器时继承 `uBot Flight Controller`，见[自己写飞控](/aerial/flight-controller/)。
 - `uBot Rotor` 桨叶组件，随电机转速旋转。
 - `uBot Multirotor Manual Input`：键盘和手柄手动飞行，见[键盘和手柄手动飞行](/aerial/manual-flight/)。
 - 风：关卡里放置的 `uBot Wind` 和汇总所有风源的 `uBot Wind Subsystem`，见[风](/aerial/wind/)。
@@ -176,12 +176,14 @@ sidebar:
 
 ### 0.1.0
 
-首个版本，建立在 uBotCore 0.1.3 之上。它让同一个关卡里的不同物体由不同的物理后端计算，Chaos 仍是默认；自己不带物理引擎，后端是依赖它的独立插件，至少安装一个后端才能绑定物体。用法见 [uBotPhysics](/physics/)。
+首个版本，建立在 uBotCore 0.1.3 之上。
+
+uBotPhysics 支持将同一关卡中的不同物体分配给不同物理后端，默认仍由 Chaos 模拟。uBotPhysics 本身不包含物理引擎，其他后端通过依赖它的独立插件提供；绑定物体前至少需要安装一个后端。用法见 [uBotPhysics](/physics/)。
 
 - 后端扩展点 `UBotPhysics.Backend`，后端实现 `IUBotPhysicsBackendFactory` 和 `IUBotPhysicsSolver`（实验性，只能在 C++ 里实现，小版本之间可能变化）。
-- 绑定组件 `uBot Physics Binding`：选后端，播放时自动绑定；一个组件只归一个后端，全部成功或全部回滚。
-- 后端按 uBot 仿真时钟以自己的固定步长推进，每帧把位姿写回对应的 UE 组件；暂停时不步进，恢复后不补跑。
-- 场景几何：声明了相应能力的后端会把关卡里其余的碰撞体当作静态物体和运动学物体收到。
+- 绑定组件 `uBot Physics Binding`：选择后端后，在开始运行时自动绑定；每个组件只能绑定到一个后端，一次绑定操作中的全部组件要么全部成功，要么全部回滚。
+- 后端按 uBot 仿真时钟以自己的固定步长推进，每帧把位姿写回对应的 UE 组件；暂停时不步进，恢复后不会补执行暂停期间的物理步。
+- 场景几何：声明了场景能力的后端会接收关卡中其他碰撞体的静态物体或运动学物体表示。
 - 绑定组件是 uBotCore 的刚体状态源，传感器可以读到后端给出的真实速度。
 - 提供 UE 5.5 Win64 的预编译包。
 
@@ -189,14 +191,14 @@ sidebar:
 
 ### 0.1.2
 
-- 新增检查 uBot Manager 自己有没有新版本：启动时向 GitHub 询问一次最新的发布版本（可以在「设置 > 关于」里关闭），有新版本时状态栏出现「新版本 x.y.z」。「设置 > 关于」显示当前版本，「检查更新」可以手动检查，并链接到发布页面。不会下载或安装任何东西，见 [uBot Manager 设置](/manager/settings/)。
+- 新增 uBot Manager 更新检查：启动时通过 GitHub 查询最新发布版本（可在「设置 > 关于」中关闭），发现新版本时在状态栏显示「新版本 x.y.z」。「设置 > 关于」显示当前版本，「检查更新」可以手动检查，并链接到发布页面。更新检查本身不会下载或安装程序，见 [uBot Manager 设置](/manager/settings/)。
 - 安装包仍然没有代码签名。
 
 ### 0.1.1
 
 - 修复：从 MSIX 打包的应用（比如 Claude 桌面应用）里启动时，设置保存失败，也打不开项目。
 - 修复：不同文件夹里同名的项目，任务记录原来会混在一起，现在按项目路径区分。
-- 内置的包索引更新到当前版本：连不上 GitHub 又没有缓存时，也能用预编译版本，不用从源码编译。
+- 内置的包索引更新到当前版本：无法连接 GitHub 且没有缓存时，仍可使用内置索引中的预编译包信息，无需改为源码编译。
 - 安装包由 GitHub Actions 从源码构建，仍然没有代码签名。
 
 ### 0.1.0
@@ -205,7 +207,7 @@ sidebar:
 
 - 在 UE 5.5 工程里安装、更新、降级、启用、禁用和卸载 Package，自动处理依赖。
 - 依赖图、问题列表和快速修复。
-- 组合（Recipe）：一次装好一组 Package，也可以把当前项目的 Package 存成自己的组合。
+- 组合（Recipe）：统一安装一组 Package，并支持将当前项目的 Package 保存为自定义组合。
 - 预编译包安装：下载、校验、解压，不需要 git 和编译。
 - 命令行 `ubot`，包括 `ubot package`，用来制作预编译包。
 - 界面支持简体中文和英文，深色和浅色主题。安装包按当前用户安装，没有代码签名。
@@ -214,4 +216,4 @@ sidebar:
 
 - [简介](/start/introduction/)：所有插件和它们的依赖关系。
 - [安装、更新、移除插件](/manager/packages/)：怎样更新到新版本。
-- [从旧插件迁移](/develop/migration/)：从 `AgentSensorCore` 等旧插件切换过来。
+- [从旧插件迁移](/develop/migration/)：从 `AgentSensorCore` 等旧插件迁移至 uBot 插件。

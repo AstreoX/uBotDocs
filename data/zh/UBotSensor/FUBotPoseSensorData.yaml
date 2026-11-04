@@ -3,7 +3,7 @@ FUBotPoseSensorData:
   sourceHash: "e3b0c44298fc"
 
 FUBotPoseSensorData.Header:
-  summary: 帧头，含 Valid 和 Status。
+  summary: 帧头，包含 Valid 和 Status 字段。
   sourceHash: "e3b0c44298fc"
 
 FUBotPoseSensorData.ReferenceFrameId:
@@ -11,11 +11,11 @@ FUBotPoseSensorData.ReferenceFrameId:
   sourceHash: "e3b0c44298fc"
 
 FUBotPoseSensorData.PositionMeters:
-  summary: 组件在参考系里的位置，单位 m，轴向是 UE 的 X 前、Y 右、Z 上。
+  summary: 组件在参考系中的位置，单位 m，轴向是 UE 的 X 前、Y 右、Z 上。
   sourceHash: "e3b0c44298fc"
 
 FUBotPoseSensorData.OrientationQuaternion:
-  summary: 组件在参考系里的姿态，已归一化。
+  summary: 组件在参考系中的姿态，已归一化。
   sourceHash: "e3b0c44298fc"
 
 FUBotPoseSensorData.LinearVelocityMetersPerSecond:
