@@ -3,7 +3,7 @@ UUBotRgbCameraSensorComponent:
   sourceHash: "e3b0c44298fc"
 
 UUBotRgbCameraSensorComponent.FrameId:
-  summary: "帧头里的 Frame Id，为空时使用 Sensor Id。默认 rgb_camera。"
+  summary: "帧头中的 Frame Id，为空时使用 Sensor Id。默认 rgb_camera。"
   sourceHash: "e3b0c44298fc"
 
 UUBotRgbCameraSensorComponent.SampleRGBCamera:
@@ -11,5 +11,5 @@ UUBotRgbCameraSensorComponent.SampleRGBCamera:
   sourceHash: "e3b0c44298fc"
 
 UUBotRgbCameraSensorComponent.SensorId:
-  summary: "帧头里的 Sensor Id，为空时使用组件名。默认 rgb_camera。"
+  summary: "帧头中的 Sensor Id，为空时使用组件名。默认 rgb_camera。"
   sourceHash: "e3b0c44298fc"

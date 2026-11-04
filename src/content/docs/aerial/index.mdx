@@ -1,6 +1,6 @@
 ---
 title: uBotAerial 概述
-description: uBotAerial 提供三类多旋翼无人机、风、手动飞行和试飞关卡：各适合什么研究，包含哪些组件，装它需要什么。
+description: uBotAerial 提供三类多旋翼无人机、风、手动飞行和试飞关卡：各类无人机的适用场景、组件和安装依赖。
 pageKind: overview
 sidebar:
   order: 10
@@ -8,18 +8,18 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-用 uBotAerial 在 UE 里飞多旋翼无人机：导航研究用简化飞控，飞控研究用刚体动力学，自己写的飞控也能接进来。
+uBotAerial 为 UE 提供多旋翼无人机仿真：导航研究可使用简化飞行模型，飞行控制研究可使用刚体动力学模型，并支持接入自定义飞行控制器。
 
 ## 能做什么
 
-三类无人机对应三种研究需要，都是插件内容里的示例蓝图，由插件的组件拼成：
+插件提供三类适用于不同研究任务的示例无人机蓝图，均由插件组件构成：
 
 | 能力 | 适合 | 接收的指令 | 页面 |
 | --- | --- | --- | --- |
-| 导航级无人机（`BP_UBotNavigationDrone`） | 导航、规划、感知，不关心飞控 | 速度、偏航角速度 | [用速度指令飞导航无人机](/aerial/simple-flight/) |
-| 物理级无人机（`BP_UBotPhysicsDrone`） | 需要真实的动力学，直接用内置串级飞控 | 速度、姿态、角速度、单电机 | [物理无人机的指令与控制模式](/aerial/dynamics/) |
-| 裸机级无人机（`BP_UBotBareAirframeDrone`） | 研究飞控，控制器自己写 | 角速度、单电机 | [自己写飞控](/aerial/flight-controller/) |
-| 示例无人机与试飞关卡 | 马上飞起来 | | [示例无人机与试飞关卡](/aerial/examples/) |
+| 导航级无人机（`BP_UBotNavigationDrone`） | 导航、规划和感知，无需建模飞行控制过程 | 速度、偏航角速度 | [用速度指令飞导航无人机](/aerial/simple-flight/) |
+| 物理级无人机（`BP_UBotPhysicsDrone`） | 需要刚体动力学模拟，使用内置串级飞行控制器 | 速度、姿态、角速度、单电机 | [物理无人机的指令与控制模式](/aerial/dynamics/) |
+| 裸机级无人机（`BP_UBotBareAirframeDrone`） | 研究飞行控制，接入自定义控制器 | 角速度、单电机 | [自己写飞控](/aerial/flight-controller/) |
+| 示例无人机与试飞关卡 | 使用示例完成试飞 | | [示例无人机与试飞关卡](/aerial/examples/) |
 | 键盘和手柄手动飞行 | 手动试飞 | | [键盘和手柄手动飞行](/aerial/manual-flight/) |
 | 风 | 恒定风和阵风 | | [风](/aerial/wind/) |
 | 碰撞 | 撞到地面、墙和其他物体 | | [碰撞](/aerial/collision/) |
@@ -29,7 +29,7 @@ import PackageStatus from "../../../components/PackageStatus.astro";
 
 <PackageStatus name="UBotAerial" />
 
-uBotAerial 依赖 uBotCore 0.1.3 或更新的 0.1.x 和引擎插件 Enhanced Input，不依赖 uBotSensor 和 uBotROS；0.1.0 依赖的是 uBotCore 0.1.2 起的版本。用 [uBot Manager](/manager/) 安装，依赖会一并装好。
+uBotAerial 依赖 uBotCore 0.1.3 或更新的 0.1.x 和引擎插件 Enhanced Input，不依赖 uBotSensor 和 uBotROS；0.1.0 依赖的是 uBotCore 0.1.2 起的版本。用 [uBot Manager](/manager/) 安装，管理器会同时安装所需依赖。
 
 示例内容在 `/UBotAerial/Examples/` 下的三个示例蓝图和 `/UBotAerial/Maps/L_UBotAerialDemo`，用法见 [示例无人机与试飞关卡](/aerial/examples/)。
 
@@ -39,20 +39,20 @@ uBotAerial 依赖 uBotCore 0.1.3 或更新的 0.1.x 和引擎插件 Enhanced Inp
 | --- | --- | --- |
 | `uBot Simple Flight` | 导航级飞行模型：速度按一阶响应逼近指令 | [uBot Simple Flight](/reference/ubotaerial/uubotsimpleflightcomponent/) |
 | `uBot Multirotor Dynamics` | 物理级和裸机级的刚体动力学 | [uBot Multirotor Dynamics](/reference/ubotaerial/uubotmultirotordynamicscomponent/) |
-| `uBot Flight Controller` | 自己写飞控时继承的基类 | [uBot Flight Controller](/reference/ubotaerial/uubotflightcontroller/) |
-| `uBot Cascaded Flight Controller` | 内置的串级飞控 | [uBot Cascaded Flight Controller](/reference/ubotaerial/uubotcascadedflightcontroller/) |
+| `uBot Flight Controller` | 自定义飞行控制器使用的基类 | [uBot Flight Controller](/reference/ubotaerial/uubotflightcontroller/) |
+| `uBot Cascaded Flight Controller` | 内置的串级飞行控制器 | [uBot Cascaded Flight Controller](/reference/ubotaerial/uubotcascadedflightcontroller/) |
 | `uBot Rotor` | 随电机转速旋转的桨叶 | [uBot Rotor](/reference/ubotaerial/uubotrotorcomponent/) |
 | `uBot Multirotor Manual Input` | 键盘和手柄手动飞行 | [uBot Multirotor Manual Input](/reference/ubotaerial/uubotmultirotormanualinputcomponent/) |
 | `uBot Wind`（Actor） | 在关卡里放置的风源 | [uBot Wind](/reference/ubotaerial/aubotwind/) |
-| `uBot Wind Subsystem` | 汇总所有风源，也可以用蓝图设置风 | [uBot Wind Subsystem](/reference/ubotaerial/uubotwindsubsystem/) |
+| `uBot Wind Subsystem` | 汇总所有风源，也支持通过蓝图设置风场 | [uBot Wind Subsystem](/reference/ubotaerial/uubotwindsubsystem/) |
 | `uBot Multirotor Library` | 蓝图函数库：查找飞行模型、生成机架 | [uBot Multirotor Library](/reference/ubotaerial/uubotmultirotorlibrary/) |
 
 ## 模型来源
 
-示例无人机的模型是 Fab 上 HARTWEL JUNIOR KISAKA 的 [Animated Drone](https://www.fab.com/listings/c1f5f392-330a-418c-b0b0-e3c89639347f)，授权 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。插件的 `NOTICE` 写明了改动。
+示例无人机的模型是 Fab 上 HARTWEL JUNIOR KISAKA 的 [Animated Drone](https://www.fab.com/listings/c1f5f392-330a-418c-b0b0-e3c89639347f)，授权 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。插件的 `NOTICE` 记录了对模型的修改。
 
 ## 下一步
 
-- [示例无人机与试飞关卡](/aerial/examples/)：打开试飞关卡，马上飞起来。
-- [用速度指令飞导航无人机](/aerial/simple-flight/)：用蓝图给导航无人机发速度指令。
+- [示例无人机与试飞关卡](/aerial/examples/)：打开试飞关卡，使用示例完成试飞。
+- [用速度指令飞导航无人机](/aerial/simple-flight/)：通过蓝图向导航无人机发送速度指令。
 - [无人机的刚体状态](/aerial/body-state/)：传感器读到的速度和加速度从哪里来（0.1.1 起）。

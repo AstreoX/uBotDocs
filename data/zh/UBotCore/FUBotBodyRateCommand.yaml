@@ -1,13 +1,13 @@
 Break:FUBotBodyRateCommand:
-  summary: 把 UBot Body Rate Command 拆成机体角速度、推力、时间戳和来源等字段。
+  summary: "将 UBot Body Rate Command 拆分为机体角速度、推力、时间戳和来源等字段。"
   sourceHash: "3913f6d36fc1"
 
 FUBotBodyRateCommand:
-  summary: 飞行器的机体角速度请求：机体角速度，加推力或爬升速度。
+  summary: "飞行器机体角速度指令，包含目标机体角速度，并通过推力或爬升速度指定垂直控制目标。"
   sourceHash: "46bfdc5c5367"
 
 FUBotBodyRateCommand.BodyRateRadiansPerSecond:
-  summary: 期望的机体系角速度，用 UE 的坐标轴和旋转方向（+Z 是向右偏航），单位 rad/s。
+  summary: "目标机体坐标系角速度，单位 rad/s；采用 UE 坐标轴和旋转方向，+Z 表示向右偏航。"
   sourceHash: "2b72510b655c"
 
 FUBotBodyRateCommand.NormalizedThrust:
@@ -15,7 +15,7 @@ FUBotBodyRateCommand.NormalizedThrust:
   sourceHash: "27e6215f7b00"
 
 FUBotBodyRateCommand.Source:
-  summary: 来源标签，格式自由，比如 ROS、MCP、Blueprint。
+  summary: "指令来源标签，采用自由格式，例如 ROS、MCP 或 Blueprint。"
   sourceHash: "9030c0986c07"
 
 FUBotBodyRateCommand.TimestampSeconds:
@@ -23,11 +23,11 @@ FUBotBodyRateCommand.TimestampSeconds:
   sourceHash: "c2d8ddc4c0fb"
 
 FUBotBodyRateCommand.VerticalVelocityMetersPerSecond:
-  summary: 不使用推力时的爬升速度，单位 m/s，向上为正；0 表示保持高度。
+  summary: "未使用推力控制时的目标爬升速度，单位 m/s，向上为正；0 表示保持高度。"
   sourceHash: "adc1b4d6987c"
 
 FUBotBodyRateCommand.bUseThrust:
-  summary: 为 true 时使用 Normalized Thrust；否则由接收者自己调节推力，以达到 Vertical Velocity。
+  summary: "为 true 时使用 `Normalized Thrust` 指定推力；否则由接收方调节推力，以达到 `Vertical Velocity` 指定的垂直速度。"
   sourceHash: "c930cdcabd1a"
 
 Make:FUBotBodyRateCommand:

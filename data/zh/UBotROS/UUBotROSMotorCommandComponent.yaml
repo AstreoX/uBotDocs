@@ -1,11 +1,11 @@
 UUBotROSMotorCommandComponent:
-  summary: 接收 ROS 2 的 actuator_msgs/msg/Actuators，换算后交给实现了 UBot Motor Commandable 的目标（例如无人机的 uBot Multirotor Dynamics 组件）。话题是 /<namespace>/cmd_motors。velocity[]（rad/s）有值时用它，否则用 normalized[]（0 到 1）；position[] 被忽略。长度与目标电机数不同的指令不会下发。需要 actuator_msgs 包（ros-humble-actuator-msgs）。
+  summary: "接收 ROS 2 的 actuator_msgs/msg/Actuators 消息，经换算后传递给实现了 UBot Motor Commandable 的目标，例如无人机的 uBot Multirotor Dynamics 组件。默认话题为 /<namespace>/cmd_motors；velocity[] 非空时使用其中的电机转速（rad/s），否则使用 normalized[]（0 到 1）；position[] 被忽略。数组元素数量与目标电机数量不一致时，不分发该指令；需要 actuator_msgs 消息包（ros-humble-actuator-msgs）。"
   sourceHash: "4817ac325199"
 
 UUBotROSMotorCommandComponent.GetLastMotorCommand:
-  summary: 最近一条有效的电机指令；收到第一条之前为空。
+  summary: 最近一条有效的电机指令；收到首条指令之前为空。
   sourceHash: "8b8299468426"
 
 UUBotROSMotorCommandComponent.OnMotorCommand:
-  summary: 每条有效电机指令换算之后触发，有没有目标都触发。
+  summary: 每条有效电机指令换算之后触发，无论是否存在目标对象，均会触发。
   sourceHash: "bcc73b0638d9"

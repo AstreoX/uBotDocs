@@ -8,13 +8,13 @@ sidebar:
 
 import PackageStatus from "../../../components/PackageStatus.astro";
 
-uBotROS 把 uBot 传感器、TF 和仿真时钟发布到 ROS 2，并把 ROS 2 的速度、姿态和电机指令交给 UE 里的执行器。
+uBotROS 将 uBot 传感器数据、坐标变换（TF）和仿真时钟发布到 ROS 2，并将 ROS 2 的速度、姿态和电机指令传递给 UE 中的执行器。
 
 <figure class="not-content" style={{ margin: "1.25rem 0" }}>
   <div data-scrollable="架构图" style={{ overflowX: "auto", border: "1px solid var(--sl-color-gray-5)", borderRadius: "0.6rem", background: "var(--sl-color-gray-6)", padding: "0.75rem 0.5rem 0.5rem" }}>
     <svg viewBox="0 0 600 186" role="img" aria-labelledby="ros-arch-title ros-arch-desc" style={{ display: "block", width: "100%", minWidth: "480px", maxWidth: "720px", height: "auto", fontFamily: "var(--__sl-font)" }}>
       <title id="ros-arch-title">UE、TCP、ubot_ros_bridge 和 ROS 2 的关系</title>
-      <desc id="ros-arch-desc">UE 里的 UBotROS 插件是 TCP 客户端，经默认端口 8268 的一条 TCP 连接连到 ubot_ros_bridge。传感器、TF 和 /clock 的 CDR 字节从 UE 经桥发布到 ROS 2 话题；ROS 2 的 cmd_vel、姿态和电机指令经桥转发回 UE。</desc>
+      <desc id="ros-arch-desc">UE 中的 UBotROS 插件作为 TCP 客户端，通过默认端口 8268 连接 ubot_ros_bridge。传感器、TF 和 /clock 的 CDR 字节从 UE 经桥发布到 ROS 2 话题；ROS 2 的 cmd_vel、姿态和电机指令经桥转发回 UE。</desc>
       <defs>
         <marker id="ros-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
           <path d="M0 0 L10 5 L0 10 Z" fill="var(--sl-color-accent)" />
@@ -76,9 +76,9 @@ uBotROS 把 uBot 传感器、TF 和仿真时钟发布到 ROS 2，并把 ROS 2 �
   </div>
 </figure>
 
-UE 是 TCP 客户端，桥是 TCP 服务器：蓝色箭头是 UE 发给 ROS 2 的数据，灰色箭头是 ROS 2 发给 UE 的速度（`cmd_vel`）、姿态和电机指令。UE 侧不依赖 TempoROS、rclcpp 或其他第三方库，插件自己把消息编码成 ROS 2 的 CDR 字节。
+UE 作为 TCP 客户端连接桥，桥作为 TCP 服务器接收连接：蓝色箭头表示从 UE 发送到 ROS 2 的数据，灰色箭头表示从 ROS 2 发送到 UE 的速度（`cmd_vel`）、姿态和电机指令。UE 侧不依赖 TempoROS、rclcpp 或其他第三方库，插件直接将消息编码为 ROS 2 使用的通用数据表示（Common Data Representation，CDR）字节。
 
-桥是一个很小的 rclpy 节点，把收到的字节原样发布到 ROS 2 话题，并把 UE 订阅的话题原样转发回 UE。UE 可以在 Windows 上，桥和 ROS 2 在 WSL 或另一台 Linux 机器上，两边只靠这一条连接相连。
+桥是基于 ROS 2 Python 客户端库 rclpy 实现的节点，将收到的消息字节原样发布到 ROS 2 话题，并将 UE 所订阅话题的消息原样转发回 UE。UE 可以运行在 Windows 上，桥和 ROS 2 可以运行在适用于 Linux 的 Windows 子系统（WSL）或另一台 Linux 计算机上，双方通过同一条 TCP 连接通信。
 
 ## 能做什么
 
@@ -87,17 +87,17 @@ UE 是 TCP 客户端，桥是 TCP 服务器：蓝色箭头是 UE 发给 ROS 2 �
 | 把位姿、里程计、IMU、2D / 3D 激光雷达、RGB / 深度相机发布成 ROS 2 话题 | UE → ROS 2 | [发布传感器数据](/ros/publish-sensors/) |
 | 发布 `/tf`、聚合的 `/tf_static` 和 `/clock` | UE → ROS 2 | [TF 与 /clock](/ros/tf-and-clock/) |
 | 接收 `cmd_vel`，换算后交给实现了 `UBot Velocity Commandable` 的对象 | ROS 2 → UE | [接收 cmd_vel](/ros/cmd-vel/) |
-| 接收姿态、角速度和单电机指令，交给无人机（0.1.2 起） | ROS 2 → UE | [从 ROS 2 发飞行指令](/ros/flight-commands/) |
+| 接收姿态、角速度和各电机指令，交给无人机（0.1.2 起） | ROS 2 → UE | [从 ROS 2 发飞行指令](/ros/flight-commands/) |
 | 连接桥，断线自动重连并重新注册 | UE ↔ 桥 | [连接与状态](/ros/connection/) |
 | 在 WSL 或 Linux 上运行桥 | — | [准备 ROS 2 端](/ros/ros2-setup/) |
 
-桥子系统只存在于 Game 和 PIE 世界，所以点「Play」之后才会发布数据。
+桥子系统仅存在于游戏（Game）和编辑器内运行（Play In Editor，PIE）世界，因此需要点击「Play」启动游戏会话后才会发布数据。
 
 ## 依赖与安装
 
 <PackageStatus name="UBotROS" />
 
-用 [uBot Manager](/manager/) 安装，依赖会一并装好；应用组合「ROS 2 传感器」会同时装上 uBotCore、uBotSensor 和 uBotROS。插件在 Windows 上开发和测试，Linux 上的 UE 没有单独验证。
+通过 [uBot Manager](/manager/) 安装时，所需依赖也会一并安装；应用组合「ROS 2 传感器」会同时安装 uBotCore、uBotSensor 和 uBotROS。插件在 Windows 上开发和测试，Linux 上的 UE 没有单独验证。
 
 ROS 2 端要另外准备：ROS 2 Humble 和桥节点 `ubot_ros_bridge`。桥的源码随插件放在 `ros2/ubot_ros_bridge`，做法见[准备 ROS 2 端](/ros/ros2-setup/)。
 
@@ -106,9 +106,9 @@ ROS 2 端要另外准备：ROS 2 Humble 和桥节点 `ubot_ros_bridge`。桥的�
 | 组件 | 作用 | 参考 |
 | --- | --- | --- |
 | `uBot ROS Sensor Bridge` | 发现所属 Actor 上的 uBot 传感器，发布到 ROS 2，并发布传感器 TF | [uBot ROS Sensor Bridge](/reference/ubotros/uubotrossensorbridgecomponent/) |
-| `uBot ROS Velocity Command` | 订阅 `cmd_vel`，换算、限速后交给执行器，带超时 | [uBot ROS Velocity Command](/reference/ubotros/uubotrosvelocitycommandcomponent/) |
-| `uBot ROS Attitude Command` | 订阅 `cmd_attitude`，把姿态或角速度指令交给执行器，带超时（0.1.2 起） | [uBot ROS Attitude Command](/reference/ubotros/uubotrosattitudecommandcomponent/) |
-| `uBot ROS Motor Command` | 订阅 `cmd_motors`，把单电机指令交给执行器，带超时（0.1.2 起） | [uBot ROS Motor Command](/reference/ubotros/uubotrosmotorcommandcomponent/) |
+| `uBot ROS Velocity Command` | 订阅 `cmd_vel`，换算、限速后交给执行器，支持超时处理 | [uBot ROS Velocity Command](/reference/ubotros/uubotrosvelocitycommandcomponent/) |
+| `uBot ROS Attitude Command` | 订阅 `cmd_attitude`，把姿态或角速度指令交给执行器，支持超时处理（0.1.2 起） | [uBot ROS Attitude Command](/reference/ubotros/uubotrosattitudecommandcomponent/) |
+| `uBot ROS Motor Command` | 订阅 `cmd_motors`，把单电机指令交给执行器，支持超时处理（0.1.2 起） | [uBot ROS Motor Command](/reference/ubotros/uubotrosmotorcommandcomponent/) |
 | `UBot ROSBridge Subsystem` | 每个 Game / PIE 世界一条 TCP 连接；`/tf`、`/tf_static` 和 `/clock` 由它发布 | [UBot ROSBridge Subsystem](/reference/ubotros/uubotrosbridgesubsystem/) |
 | `uBot ROS`（项目设置） | 桥的地址、端口，`/clock`，队列限制 | [uBot ROS](/reference/ubotros/uubotrossettings/) |
 | `IUBotROSSensorPublisherFactory` | 扩展点 `UBotROS.SensorPublisher`，为自定义传感器添加发布器；内置 7 个工厂，对应 UBotSensor 的 7 种传感器 | [为自定义传感器添加 ROS 发布器](/develop/ros-publisher/) |
@@ -116,8 +116,8 @@ ROS 2 端要另外准备：ROS 2 Humble 和桥节点 `ubot_ros_bridge`。桥的�
 
 ## 下一步
 
-- [准备 ROS 2 端](/ros/ros2-setup/)：装好 Humble，启动桥，确认 UE 连得上。
+- [准备 ROS 2 端](/ros/ros2-setup/)：安装 Humble、启动桥，并验证 UE 与桥的连接。
 - [连接与状态](/ros/connection/)：地址、端口、连接状态和断线重连。
-- [发布传感器数据](/ros/publish-sensors/)：给 Actor 加 Sensor Bridge，在 ROS 2 里看到话题。
+- [发布传感器数据](/ros/publish-sensors/)：为 Actor 添加 Sensor Bridge，并在 ROS 2 中检查生成的话题。
 - [接收 cmd_vel](/ros/cmd-vel/)：用 ROS 2 的速度指令驱动 Actor。
-- [从 ROS 2 发飞行指令](/ros/flight-commands/)：从 ROS 2 给无人机发姿态、角速度和电机指令。
+- [从 ROS 2 发飞行指令](/ros/flight-commands/)：从 ROS 2 向无人机发送姿态、角速度和电机指令。

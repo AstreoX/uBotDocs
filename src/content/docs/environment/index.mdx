@@ -14,9 +14,9 @@ uBotEnvironment 统一提供场景环境，当前正在开发风场，尚未发�
 
 ## 定位
 
-提供可被多个机器人或传感器共同使用的场景环境，环境本身与无人机的飞行模型分开。
+提供可被多个机器人或传感器共同使用的场景环境，环境生成与无人机飞行模型分别由独立插件负责。
 
-本地开发版把 uBotAerial 的风场迁到这里；uBot Manager 中仍显示为「规划中」，现在不能安装。已经发布的 uBotAerial 0.1.1 仍自带风场，按[风](/aerial/wind/)中的步骤使用。
+开发版本正在将 uBotAerial 的风场实现迁移至 uBotEnvironment；uBot Manager 中仍显示为「规划中」，现在不能安装。已经发布的 uBotAerial 0.1.1 仍自带风场，按[风](/aerial/wind/)中的步骤使用。
 
 ## 计划提供的能力
 
@@ -31,10 +31,10 @@ uBotEnvironment 统一提供场景环境，当前正在开发风场，尚未发�
 
 ## 与现有插件的关系
 
-环境生成归 Environment，物理与测量响应归使用者；接口的实现与调用留在各自插件中，不新增连接插件，后续烟雾优先复用感知介质接口。完整约定见[环境与使用者的职责边界](/develop/package-authoring/#环境与使用者的职责边界)。
+uBotEnvironment 负责生成环境场，使用这些环境场的插件负责计算物理响应或测量响应。提供者和使用者分别在各自插件中实现或调用共享接口，无需新增连接插件；后续烟雾功能优先复用现有感知介质接口。完整约定见[环境与使用者的职责边界](/develop/package-authoring/#环境与使用者的职责边界)。
 
 - uBotCore：开发版通过 Core 的 `IUBotWindProvider` 和按世界隔离的 `UUBotWindQuerySubsystem` 连接风场与使用者，需要尚未发布的 uBotCore 0.1.4。
-- uBotAerial：开发版只向 Core 查询风速，由自己的飞行模型计算阻力和抗风响应；两个插件互不硬依赖。只使用无人机飞行时无需启用 uBotEnvironment，没有风提供者时风速为零。
+- uBotAerial：开发版只向 Core 查询风速，由自己的飞行模型计算阻力和抗风响应；两个插件之间不建立直接的必需依赖。只使用无人机飞行时无需启用 uBotEnvironment，没有风提供者时风速为零。
 - uBotSensor：已经能读取实现了 `UBot Perception Medium` 的 Actor；这不代表 uBotEnvironment 已提供烟雾或雾。
 - uBotCombat：规划中的「烟雾作战演示」仍需等待烟雾能力，不能用首版风场替代，见[选择组合](/start/recipes/)。
 
@@ -42,5 +42,5 @@ uBotEnvironment 统一提供场景环境，当前正在开发风场，尚未发�
 
 - 使用已发布的 uBotAerial 0.1.1 时，继续用它自带的风场；切换到本地开发版时，按[风场迁移说明](/develop/migration/#风场从-ubotaerial-迁到-ubotenvironment开发版)启用新插件并处理旧资产。
 - 需要烟雾或雾干扰时，可以自行制作实现 `UBot Perception Medium` 的 Actor：在 `Get Medium Snapshot` 里返回若干球形单元，每个单元有位置、半径（单位厘米）和密度（0 到 1）。
-- 把 uBotSensor 的激光雷达或相机放进场景，确认传感器上的 `Enable Smoke Interference` 是打开的（默认打开），就能看到介质对数据的影响。
+- 在包含上述介质 Actor 的场景中添加 uBotSensor 激光雷达或相机，并确认传感器的 `Enable Smoke Interference` 已启用（默认启用），即可验证介质对测量数据的影响。
 - 添加接口的做法见 [插件之间怎么对接](/concepts/interfaces/)，每种传感器受到的影响见 [感知介质](/sensor/medium/)。

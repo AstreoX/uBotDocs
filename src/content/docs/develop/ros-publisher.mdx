@@ -10,9 +10,9 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-为自己的传感器写一个发布器（publisher），让 uBot ROS Sensor Bridge 把它的数据也发布到 ROS 2 话题。
+自定义传感器可通过专用发布器（publisher），由 `uBot ROS Sensor Bridge` 将采样数据发布到 ROS 2 话题。
 
-Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为每个传感器选择扩展点（extension point）`UBotROS.SensorPublisher` 上支持它、优先级最高的工厂（factory）。你要写两样东西：一个发布器类和一个工厂。
+Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，并从扩展点（extension point）`UBotROS.SensorPublisher` 中，为每个传感器选择支持其类型且优先级最高的工厂（factory）。扩展实现需要提供发布器类及创建该发布器的工厂。
 
 ## 步骤
 
@@ -20,11 +20,11 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
 
 1. **准备传感器**
 
-   下面为一个假想的距离传感器 `UMyRangeSensorComponent` 发布 `sensor_msgs/msg/Range`。它的写法见[在 C++ 中使用传感器与接口](/develop/cpp/)：实现 `IUBotSensor`，每次采样触发 `OnRangeUpdated(const FMyRangeData&)`，`FMyRangeData` 带一个 `FUBotFrameHeader` 类型的 `Header`。
+   以下示例为自定义距离传感器 `UMyRangeSensorComponent` 发布 `sensor_msgs/msg/Range`。传感器实现见[在 C++ 中使用传感器与接口](/develop/cpp/)：实现 `IUBotSensor`，每次采样触发 `OnRangeUpdated(const FMyRangeData&)`，`FMyRangeData` 包含一个 `FUBotFrameHeader` 类型的 `Header`。
 
 2. **添加模块依赖**
 
-   发布器放在自己的模块里（这里叫 `MyRangeROS`），它依赖 `UBotROS`、`UBotCore` 和传感器所在的模块。
+   将发布器放在独立模块中（示例名称为 `MyRangeROS`），该模块依赖 `UBotROS`、`UBotCore` 和传感器所在的模块。
 
    ```csharp
    PublicDependencyModuleNames.AddRange(new[]
@@ -33,11 +33,11 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
    });
    ```
 
-   插件的 `.uplugin` 里要声明对 `UBotROS` 的依赖，写法见[编写自己的 uBot Package](/develop/package-authoring/)。
+   插件还需在 `.uplugin` 中声明对 `UBotROS` 的依赖，写法见[编写自己的 uBot Package](/develop/package-authoring/)。
 
 3. **写发布器类**
 
-   继承 `UUBotROSSensorPublisher`，重写 `Initialize` 和 `Shutdown`。`Initialize` 先调 `Super::Initialize`，再声明话题并绑定传感器事件；`Shutdown` 先解绑，再调 `Super::Shutdown`，它会取消声明所有话题。
+   继承 `UUBotROSSensorPublisher`，重写 `Initialize` 和 `Shutdown`。`Initialize` 首先调用 `Super::Initialize`，然后声明话题并绑定传感器事件。`Shutdown` 首先解除事件绑定，再调用 `Super::Shutdown` 取消所有话题声明。
 
    ```cpp
    // MyRangePublisher.h
@@ -65,7 +65,7 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
    };
    ```
 
-   `Range` 在 `UBotROSMessageTypes.h` 里没有结构体，所以用 `FUBotCdrWriter` 按 `.msg` 的字段顺序手写。有结构体的消息（`FUBotRos…`）直接 `PublishMessage(TopicId, Message)`。
+   `UBotROSMessageTypes.h` 未提供 `Range` 的消息结构体，因此示例使用 `FUBotCdrWriter`，按 `.msg` 定义的字段顺序编写通用数据表示（CDR，Common Data Representation）编码。对于已提供结构体的消息（`FUBotRos…`），可直接调用 `PublishMessage(TopicId, Message)`。
 
    ```cpp
    // MyRangePublisher.cpp
@@ -134,7 +134,7 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
 
 4. **写工厂并注册**
 
-   工厂告诉 Sensor Bridge 它支持哪些传感器，以及怎样创建发布器。在 `StartupModule` 里注册到扩展点，在 `ShutdownModule` 里用 `UnregisterAllFromPackage` 全部移除，免得扩展比实现它的代码活得更久。
+   工厂负责声明支持的传感器类型，并创建对应发布器。模块在 `StartupModule` 中向扩展点注册工厂，在 `ShutdownModule` 中通过 `UnregisterAllFromPackage` 注销本插件的全部扩展，确保模块卸载后不会残留扩展对象。
 
    ```cpp
    // MyRangeROSModule.cpp
@@ -179,21 +179,21 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
    IMPLEMENT_MODULE(FMyRangeROSModule, MyRangeROS)
    ```
 
-   要替换内置传感器的发布器，让工厂的 `GetPriority()` 返回大于 0 的值：优先级相同时保持注册顺序，优先级 0 的内置工厂赢得平局。
+   替换内置传感器发布器时，应让工厂的 `GetPriority()` 返回大于 0 的值。优先级相同的工厂按注册顺序选择，因此自定义工厂需要高于内置工厂的默认优先级 0。
 
 5. **编译并验证**
 
-   先启动 ROS 2 端的桥，见[准备 ROS 2 端](/ros/ros2-setup/)。在机器人 Actor 上添加 `UMyRangeSensorComponent` 和 `uBot ROS Sensor Bridge`，再加 `uBot Identity` 并把 `Namespace` 设为 `robot1`。进入 Play 后，Sensor Bridge 发现传感器并创建发布器，话题出现在 ROS 侧。
+   启动 ROS 2 端的桥接程序，见[准备 ROS 2 端](/ros/ros2-setup/)。在机器人 Actor 上添加 `UMyRangeSensorComponent` 和 `uBot ROS Sensor Bridge`，添加 `uBot Identity` 并将 `Namespace` 设为 `robot1`。点击「Play」后，Sensor Bridge 会发现传感器并创建发布器，随后即可在 ROS 2 端查询对应话题。
 
    ```bash
    ros2 topic list
    ros2 topic echo /robot1/range --once
    ```
 
-   示例里的 `UMyRangeSensorComponent` 不会自己采样：`PublishSample` 要由你调用，否则话题上没有数据，`ros2 topic echo` 会一直等下去。测试时让组件每帧发布一个样本，只在 `BeginPlay` 里调用一次不行，那时还没有订阅者，样本会被跳过。
+   示例中的 `UMyRangeSensorComponent` 不会自动采样，需要由采样逻辑调用 `PublishSample`；否则话题不会产生数据，`ros2 topic echo` 将持续等待。测试时可让组件每帧发布一个样本；如果仅在 `BeginPlay` 中发布一次，订阅者可能尚未建立，该样本会被跳过。
 
    ```cpp
-   // 测试用：构造函数里设置 PrimaryComponentTick.bCanEverTick = true，头文件里声明 TickComponent
+   // 仅用于测试：在构造函数中设置 PrimaryComponentTick.bCanEverTick = true，并在头文件中声明 TickComponent
    void UMyRangeSensorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
    {
        Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -201,11 +201,11 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
    }
    ```
 
-   正式使用时用 `FUBotSampleScheduler` 按固定频率调用 `PublishSample`，见[在 C++ 中使用传感器与接口](/develop/cpp/)。
+   正式使用时，应通过 `FUBotSampleScheduler` 按固定频率调用 `PublishSample`，见[在 C++ 中使用传感器与接口](/develop/cpp/)。
 
 6. **不经过传感器直接收发（可选）**
 
-   不需要传感器组件时，可以直接用桥子系统声明话题、发布和订阅。订阅回调在游戏线程里执行，数据视图只在回调期间有效。
+   不需要传感器组件时，可以直接通过桥子系统声明话题、发布消息和订阅消息。订阅回调在游戏线程中执行，数据视图只在回调期间有效。
 
    ```cpp
    #include "UBotCdr.h"
@@ -240,29 +240,29 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
 | 成员 | 作用 |
 | --- | --- |
 | `Initialize(Sensor, Context, OutError)` | `Super::Initialize` 缓存传感器、桥、`Context` 和 frame id；失败时返回 `false` 并写入 `OutError` |
-| `Shutdown()` | 解绑传感器事件，再调 `Super::Shutdown()` 取消声明所有话题；可以重复调用 |
-| `AdvertiseTopic(LogicalKey, DefaultRelativePath, MessageType, Qos, OutError)` | 按 `TopicOverrides`、话题校验和冲突检测得到话题并声明；返回发布者 ID（大于 0），失败返回 0 |
-| `ShouldPublishSample(Header)` | 已初始化，并且样本有效（或 `bPublishInvalidSamples` 开启） |
-| `WantsMessage(PublisherId)` | 没有订阅者（`bSkipWhenNoSubscribers` 开启时），或 best_effort 话题而桥没连上时返回 `false`，这时不必编码 |
-| `PublishMessage(Id, Message)`、`PublishCdr(Id, Cdr)` | 发送一条消息；前者接受 `FUBotRos…` 结构体，后者接受编码好的 CDR 字节 |
-| `GetContext().SensorQos`、`StateQos` | 传感器数据（默认 best_effort / volatile / 5）和状态（默认 reliable / volatile / 10）的 QoS，已包含 Sensor Bridge 上的覆盖 |
-| `GetSensorFrameId()`、`GetOpticalFrameId()` | 传感器 frame id，和加了 `_optical` 后缀的光学坐标系 id |
-| `IsSoleSensorOfType()`、`GetSensorToken()` | 同类型传感器是否只有一个；净化后的 `SensorId`，用在多个同类型传感器的话题路径里 |
-| `PublishesPhysicalFrame()` | 默认 `true`；传感器 frame 不是机器人上的物理连杆时返回 `false`，不发布 base 到它的静态 TF |
+| `Shutdown()` | 解绑传感器事件，再调用 `Super::Shutdown()` 取消声明所有话题；可以重复调用 |
+| `AdvertiseTopic(LogicalKey, DefaultRelativePath, MessageType, Qos, OutError)` | 根据 `TopicOverrides` 解析话题，完成话题校验和冲突检测后进行声明；返回发布者 ID（大于 0），失败返回 0 |
+| `ShouldPublishSample(Header)` | 已初始化，且样本有效或已启用 `bPublishInvalidSamples` 时返回 true |
+| `WantsMessage(PublisherId)` | 启用 `bSkipWhenNoSubscribers` 且没有订阅者，或 best_effort 话题的桥接连接尚未建立时返回 `false`；此时可跳过编码 |
+| `PublishMessage(Id, Message)`、`PublishCdr(Id, Cdr)` | 发送一条消息；前者接受 `FUBotRos…` 结构体，后者接受已编码的 CDR 字节 |
+| `GetContext().SensorQos`、`StateQos` | 传感器数据（默认 best_effort / volatile / 5）和状态（默认 reliable / volatile / 10）的服务质量（QoS）配置，已应用 Sensor Bridge 的覆盖设置 |
+| `GetSensorFrameId()`、`GetOpticalFrameId()` | 分别返回传感器坐标系标识，以及追加 `_optical` 后缀的光学坐标系标识 |
+| `IsSoleSensorOfType()`、`GetSensorToken()` | 分别返回同类型传感器是否唯一，以及净化后的 `SensorId`；后者用于区分多个同类型传感器的话题路径 |
+| `PublishesPhysicalFrame()` | 默认 `true`；传感器坐标系不对应机器人上的物理连杆时应返回 `false`，以禁止发布基座到该坐标系的静态 TF |
 | `UsesOpticalFrame()` | 默认 `false`；发布光学坐标系（相机）时返回 `true` |
 | 工厂的 `GetPriority()` | 默认 0；大于 0 的工厂优先于内置工厂 |
 
 ## 输出与事件
 
 - 话题是 `/<namespace>/range`；同一个 Actor 上有多个同类型传感器时是 `/<namespace>/<SensorId>`。
-- `AdvertiseTopic` 的 `LogicalKey` 就是 Sensor Bridge 的 `TopicOverrides` 的键，这里是 `range`，所以话题可以在「Details」面板里替换。
-- 传感器 frame 的静态 TF 由 Sensor Bridge 按 `GetSensorFrameComponent` 自动发布，发布器不用管。
+- `AdvertiseTopic` 的 `LogicalKey` 对应 Sensor Bridge 的 `TopicOverrides` 键；示例中使用 `range`，可在「Details」面板中配置该键对应的话题覆盖值。
+- 传感器坐标系的静态 TF 由 Sensor Bridge 根据 `GetSensorFrameComponent` 返回的组件自动发布，发布器无需自行发布。
 - `Get Active Publisher Topics` 返回所有已声明的话题，`On ROSPublishers Refreshed` 在发布器重建后触发。
 
 ## 注意事项
 
-- 消息类型必须是 ROS 侧已经安装的接口，否则桥回 `unknown_type`。示例按 ROS 2 Humble 的 `sensor_msgs/msg/Range` 字段顺序写，只在 Humble 上验证过 uBotROS。
-- 编码在游戏线程完成，所以先用 `ShouldPublishSample` 和 `WantsMessage` 过滤，再编码。
+- 消息类型必须是 ROS 侧已经安装的接口，否则桥接程序会返回 `unknown_type`。示例按 ROS 2 Humble 的 `sensor_msgs/msg/Range` 字段顺序编码；uBotROS 目前仅在 Humble 上完成验证。
+- 编码在游戏线程完成，应通过 `ShouldPublishSample` 和 `WantsMessage` 筛选需要发布的样本后再编码。
 - Sensor Bridge 只搜索所属 Actor 本身和它的组件，不搜索子 Actor。
 - 没有对应工厂的传感器会被跳过。
 - Sensor Bridge 会检查配置：`SensorId` 或 `FrameId` 为空、同类型内 `SensorId` 重复、`FrameId` 重复，或话题不合法、被分配两次时，组件进入 `Error`，不发布任何话题。
@@ -272,4 +272,4 @@ Sensor Bridge 会发现 Actor 上所有实现 `IUBotSensor` 的传感器，为�
 - [uBot ROS Sensor Bridge](/reference/ubotros/uubotrossensorbridgecomponent/)：组件的属性、事件和函数。
 - [UBot ROSBridge Subsystem](/reference/ubotros/uubotrosbridgesubsystem/)：连接状态和事件。
 - [发布传感器数据](/ros/publish-sensors/)：内置话题、QoS、话题覆盖与校验。
-- [在 C++ 中使用传感器与接口](/develop/cpp/)：怎样写 `UMyRangeSensorComponent`。
+- [在 C++ 中使用传感器与接口](/develop/cpp/)：`UMyRangeSensorComponent` 的实现示例。

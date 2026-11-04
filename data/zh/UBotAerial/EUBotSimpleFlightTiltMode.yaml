@@ -3,13 +3,13 @@ EUBotSimpleFlightTiltMode:
   sourceHash: "773d0177c887"
 
 EUBotSimpleFlightTiltMode.Body:
-  summary: 根组件倾斜，挂在上面的传感器能读到真实多旋翼会有的姿态。
+  summary: "根组件随机体倾角变化，附着于根组件的传感器也采用该倾斜姿态。"
   sourceHash: "3edfe95fea9a"
 
 EUBotSimpleFlightTiltMode.None:
-  summary: 什么都不倾斜，无人机只偏航。
+  summary: "根组件和视觉组件均不倾斜，无人机仅改变偏航角。"
   sourceHash: "e5b1d2b3b41e"
 
 EUBotSimpleFlightTiltMode.Visual:
-  summary: 只有视觉组件倾斜，根组件和挂在它上面的所有东西保持水平。
+  summary: "仅视觉组件倾斜，根组件及附着于根组件的其他组件保持水平。"
   sourceHash: "b34dba444655"

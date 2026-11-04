@@ -1,5 +1,5 @@
 UUBotMultirotorDynamicsComponent:
-  summary: 用于飞控研究的刚体多旋翼：有电机滞后的旋翼、推力与反扭矩、相对空气的阻力和重力，按 uBot 仿真时间以固定步长积分。接受速度（航向系）、姿态、角速度和单电机指令，前三者由飞控换算成电机指令。
+  summary: "用于飞行控制研究的刚体多旋翼模型，模拟电机响应滞后、旋翼推力、反扭矩、空气相对阻力和重力，并按 uBot 仿真时间以固定步长积分。支持航向坐标系下的速度指令，以及姿态、角速度和单电机指令；前三类由飞行控制器转换为电机指令。"
   sourceHash: "01beaa0b9708"
 
 UUBotMultirotorDynamicsComponent.Airframe:
@@ -11,19 +11,19 @@ UUBotMultirotorDynamicsComponent.CommandLossAction:
   sourceHash: "72ae36687aa3"
 
 UUBotMultirotorDynamicsComponent.CommandTimeoutSeconds:
-  summary: 指令超过这么多仿真秒没有更新就算中断，单位 s；0 表示由发送方负责超时（uBot ROS 组件自带超时）。
+  summary: "指令未更新的仿真时长超过此值时，判定为指令中断，单位 s。0 表示由发送方负责超时处理；uBot ROS 组件具有独立的超时设置。"
   sourceHash: "1356f82560c1"
 
 UUBotMultirotorDynamicsComponent.ControllerRateDivider:
-  summary: 飞控每隔这么多个物理步运行一次，其间保持上一次的电机指令；默认 1，即每步运行。
+  summary: "飞行控制器两次运行之间间隔的物理步数，期间保持上一次的电机指令。默认值为 1，即每个物理步运行一次。"
   sourceHash: "47a817d0b874"
 
 UUBotMultirotorDynamicsComponent.DynamicsBackendName:
-  summary: 动力学后端的名字，取自扩展点 UBotAerial.DynamicsBackend。实验性；BuiltIn 是插件自带的积分器。
+  summary: "动力学后端名称，取自扩展点 `UBotAerial.DynamicsBackend`。该接口属于实验性功能；`BuiltIn` 表示插件内置积分器。"
   sourceHash: "9539c10be757"
 
 UUBotMultirotorDynamicsComponent.FlightController:
-  summary: 处理速度、姿态和角速度指令的飞控。可以换成自己的子类。
+  summary: "处理速度、姿态和角速度指令的飞行控制器。可以换成自定义子类。"
   sourceHash: "3c250e6b6853"
 
 UUBotMultirotorDynamicsComponent.GetActiveControlMode:
@@ -31,7 +31,7 @@ UUBotMultirotorDynamicsComponent.GetActiveControlMode:
   sourceHash: "ab4273c3b35b"
 
 UUBotMultirotorDynamicsComponent.GetFlightSetpoint:
-  summary: 飞控当前正在飞的设定值。
+  summary: "返回飞行控制器当前跟踪的设定值。"
   sourceHash: "fef2d536ffe7"
 
 UUBotMultirotorDynamicsComponent.GetHoverMotorCommand:
@@ -51,7 +51,7 @@ UUBotMultirotorDynamicsComponent.PhysicsRateHz:
   sourceHash: "da19aece6c79"
 
 UUBotMultirotorDynamicsComponent.SetFlightController:
-  summary: 替换飞控，并立即重置它。传入空值时回退到内置的级联飞控。
+  summary: "替换飞行控制器，并立即重置它。传入空值时回退到内置的级联飞行控制器。"
   sourceHash: "f82d0f0c42e8"
 
 UUBotMultirotorDynamicsComponent.bAcceptAttitudeCommands:

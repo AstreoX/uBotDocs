@@ -11,7 +11,7 @@ EUBotROSBridgeStatus.Connecting:
   sourceHash: "e3b0c44298fc"
 
 EUBotROSBridgeStatus.Disabled:
-  summary: 没有在连接：调用了 Disconnect，或 Auto Connect 关闭且没有调用过 Connect。
+  summary: "当前未启用连接：已调用 Disconnect，或 Auto Connect 已关闭且尚未调用 Connect。"
   sourceHash: "e3b0c44298fc"
 
 EUBotROSBridgeStatus.Error:

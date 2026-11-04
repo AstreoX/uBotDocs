@@ -3,15 +3,15 @@ UUBotCameraSensorComponent:
   sourceHash: "ce0fa598a2c7"
 
 UUBotCameraSensorComponent.CaptureGroupId:
-  summary: "非空时，相机不再自己采样，由同组的相机采集协调器统一触发。"
+  summary: "非空时，相机不再独立采样，由同组的相机采集协调器统一触发。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.ExternalRenderTarget:
-  summary: "使用自己的 Render Target 代替自动创建的。格式必须与相机编码匹配（RGB 相机为 RGBA8，深度相机为 R32f），图像尺寸取自它。"
+  summary: "使用用户指定的渲染目标（Render Target），代替相机自动创建的渲染目标。格式必须与相机编码匹配（RGB 相机为 RGBA8，深度相机为 R32f），图像尺寸由该渲染目标决定。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.GetLatestImageFrame:
-  summary: "返回最近一帧，不会触发新的采集。还没有采过样时为空。"
+  summary: "返回最近一帧，不会触发新的采集。尚未完成采样时返回空值。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.GetPreviewRenderTarget:
@@ -31,11 +31,11 @@ UUBotCameraSensorComponent.MaximumSmokeInterferenceOpacity:
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.OnImageFrameReady:
-  summary: "每次产生有效帧后触发，Frame 是这一帧。"
+  summary: "每次产生有效帧后触发，通过 Frame 参数提供本次生成的帧对象。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.PreviewDistanceMeters:
-  summary: "编辑器视口里视锥的长度，单位 m。也是 RGB 相机烟雾叠加的最远距离。"
+  summary: "编辑器视口中视锥的长度，单位 m。也是 RGB 相机烟雾叠加的最远距离。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.ResolutionHeight:
@@ -51,15 +51,15 @@ UUBotCameraSensorComponent.SmokeCellRadiusScale:
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.SmokeDensityThreshold:
-  summary: "有效密度（Density 乘以 Edge Factor）低于它的烟雾单元被忽略。"
+  summary: "烟雾单元的有效密度（Density 乘以 Edge Factor）低于该阈值时，忽略该单元。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.SmokeInterferenceOpacityScale:
-  summary: "有效密度乘以它得到烟雾的不透明度。仅 RGB 相机使用。"
+  summary: "有效密度与该比例系数相乘，得到烟雾的不透明度。仅 RGB 相机使用。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.SmokeInterferenceTint:
-  summary: "旧版标签路径的烟雾颜色；来自 UBot Perception Medium 接口的快照用自己的 Tint。仅 RGB 相机使用。"
+  summary: "旧版标签路径的烟雾颜色；来自 UBot Perception Medium 接口的快照使用快照中的 Tint。仅 RGB 相机使用。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.SmokeVolumeActorTag:
@@ -67,7 +67,7 @@ UUBotCameraSensorComponent.SmokeVolumeActorTag:
   sourceHash: "5053cb9f6faa"
 
 UUBotCameraSensorComponent.UpdateRateHz:
-  summary: "采集频率，单位 Hz，默认 30。属于采集组的相机不使用它。"
+  summary: "采集频率，单位 Hz，默认 30 Hz。属于采集组的相机不使用该频率进行调度。"
   sourceHash: "e3b0c44298fc"
 
 UUBotCameraSensorComponent.bEnableSmokeInterference:

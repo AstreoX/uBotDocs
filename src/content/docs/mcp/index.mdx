@@ -14,7 +14,7 @@ uBotMCP 是规划中的大模型接入插件，目前尚未发布。
 
 ## 定位
 
-通过 MCP（Model Context Protocol）把传感器和执行器开放给大模型（LLM）。
+通过 MCP（Model Context Protocol）把传感器和执行器开放给大语言模型（Large Language Model，LLM）。
 
 在 uBot Manager 里它显示为「规划中」，按钮是「暂不可用」，现在不能安装。
 
@@ -26,7 +26,7 @@ uBotMCP 是规划中的大模型接入插件，目前尚未发布。
 | --- | --- |
 | `MCP.Tools` | 以 MCP 工具（tools）的形式开放给大模型的能力 |
 
-uBotCore 里已有统一的入口，不用知道具体是哪个传感器或执行器：
+uBotCore 提供统一的查询接口，调用者无需依赖具体的传感器或执行器类型：
 
 - `UBot Sensor` 接口给出传感器的编号、类型、运行状态和最新的帧头，`UBot::Sensors::FindSensors` 能找到一个 Actor 上所有实现了它的对象。
 - `UBot Velocity Commandable` 接口接收速度指令，`UBot::Actuation::FindVelocityCommandable` 能找到可以接收的对象。速度指令里的来源标签 `Source` 的示例值就包括 `MCP`。
@@ -42,5 +42,5 @@ uBotCore 里已有统一的入口，不用知道具体是哪个传感器或执�
 
 - 在蓝图里读取 uBotSensor 的传感器数据，见 [传感器通用用法](/sensor/basics/)。
 - 如果你的大模型工具链能访问 ROS 2，可以先用 uBotROS 把传感器数据发布出去，见 [发布传感器数据](/ros/publish-sensors/)。
-- 自己写 C++ 服务时，可以用上面的查找函数和接口取数据、下指令，见 [在 C++ 中使用传感器与接口](/develop/cpp/)。
-- uBotMCP 发布后，自己写的服务要不要改、怎么改，尚未确定。
+- 开发自定义 C++ 服务时，可以通过上述查找函数和接口读取数据、发送控制指令，见 [在 C++ 中使用传感器与接口](/develop/cpp/)。
+- uBotMCP 发布后，自定义服务是否需要调整，以及具体迁移步骤，尚未确定。

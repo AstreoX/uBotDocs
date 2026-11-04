@@ -1,5 +1,5 @@
 Break:FUBotMultirotorState:
-  summary: 把 UBot Multirotor State 拆成位置、姿态、线速度、角速度、线加速度、比力、旋翼转速和仿真时间。
+  summary: "将 UBot Multirotor State 拆分为位置、姿态、线速度、角速度、线加速度、比力、旋翼转速和仿真时间。"
   sourceHash: "db5f5e388c66"
 
 FUBotMultirotorState:
@@ -7,19 +7,19 @@ FUBotMultirotorState:
   sourceHash: "7bc5be6be514"
 
 FUBotMultirotorState.AngularVelocityRadiansPerSecond:
-  summary: 机体系角速度，单位 rad/s，采用 UE 的转向（+Z 为向右偏航）。
+  summary: "机体坐标系角速度，单位 rad/s，采用 UE 的转向（+Z 为向右偏航）。"
   sourceHash: "6eb888c6d176"
 
 FUBotMultirotorState.LinearAccelerationMetersPerSecondSquared:
-  summary: 世界系线加速度，取最近一个物理步，单位 m/s²。
+  summary: "世界坐标系线加速度，取最近一个物理步，单位 m/s²。"
   sourceHash: "03b6bd15d766"
 
 FUBotMultirotorState.LinearVelocityMetersPerSecond:
-  summary: 世界系线速度，单位 m/s。
+  summary: "世界坐标系线速度，单位 m/s。"
   sourceHash: "81fa17a897d3"
 
 FUBotMultirotorState.Orientation:
-  summary: 机体姿态（机体系到世界系）。
+  summary: "机体姿态（机体坐标系到世界坐标系）。"
   sourceHash: "6d9542ced8ba"
 
 FUBotMultirotorState.PositionMeters:
@@ -35,7 +35,7 @@ FUBotMultirotorState.SimTimeSeconds:
   sourceHash: "9bf2f89b2d4d"
 
 FUBotMultirotorState.SpecificForceMetersPerSecondSquared:
-  summary: 机体上理想加速度计的读数（加速度减去重力，机体系），单位 m/s²。悬停时 Z 轴约为 +9.81。
+  summary: "机体上理想加速度计测得的比力，即线加速度减去重力后在机体坐标系下的表示，单位 m/s²。悬停时，Z 分量约为 +9.81 m/s²。"
   sourceHash: "6c344d066f56"
 
 Make:FUBotMultirotorState:

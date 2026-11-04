@@ -19,7 +19,7 @@ UUBotROSSettings.MaxPayloadBytes:
   sourceHash: "723df3a06c54"
 
 UUBotROSSettings.MaxQueuedBytes:
-  summary: 等待发送的数据和等待分发的接收消息的字节预算。超出时先丢弃最旧的 best_effort 数据，再拒绝新的 reliable 数据并警告；小于 Max Payload Bytes + 12 时，连接时自动提高到这个值并警告。
+  summary: "等待发送的数据和等待分发的接收消息占用的字节预算。超过预算时，先丢弃最旧的 best_effort 数据，再拒绝新的 reliable 数据并记录警告；该预算小于 Max Payload Bytes + 12 时，连接启动过程会将预算提高到 Max Payload Bytes + 12，并记录警告。"
   sourceHash: "89b7f6e24ec2"
 
 UUBotROSSettings.ReconnectIntervalSeconds:

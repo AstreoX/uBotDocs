@@ -1,6 +1,6 @@
 ---
 title: 自己拼一架无人机
-description: 不用示例蓝图，用插件的组件把任意 Pawn 拼成无人机，并让转子和机架对上。
+description: 使用插件组件构建无人机 Pawn，并使可视转子与动力学机架的布局一致。
 pageKind: feature
 sidebar:
   order: 60
@@ -8,14 +8,14 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-用插件的组件把任意 Pawn 拼成一架无人机，并用转子布局核对桨叶的位置和机架一致。
+使用插件组件构建无人机 Pawn，并根据转子布局校准可视桨叶的位置，使其与动力学机架一致。
 
 ## 快速用法
 
-最简单的办法是复制一个示例蓝图再改，见 [示例无人机与试飞关卡](/aerial/examples/)。从零拼时，转子布局告诉你每个电机在哪、往哪个方向转：
+可通过复制并修改示例蓝图创建无人机，见 [示例无人机与试飞关卡](/aerial/examples/)。从空白 Pawn 构建时，可查询转子布局，确认各电机的位置和旋转方向：
 
 ```blueprint
-caption: BeginPlay 时把每个电机的位置（m，机体系）打印出来，用来核对桨叶的摆放
+caption: BeginPlay 时输出各电机的位置（m，机体坐标系），用于校准可视桨叶位置
 nodes:
   A: AActor.ReceiveBeginPlay
   M: { var: Movement, class: UUBotMultirotorMovementComponent }
@@ -38,19 +38,19 @@ wires:
 
 1. **新建 Pawn**
 
-   新建一个 Pawn 蓝图。根组件用一个碰撞形状（Box、Sphere 或 Capsule）：飞行模型每步扫掠的就是根组件的形状。用键盘或手柄飞时必须是 Pawn，见第 4 步。
+   新建一个 Pawn 蓝图。使用碰撞形状组件（Box、Sphere 或 Capsule）作为根组件，飞行模型会在每个物理步对该形状执行扫掠检测。键盘和手柄输入要求所属 Actor 为 Pawn，见第 4 步。
 
-   示例的根组件是 `CollisionBox`，在「Details」面板的 `Box Extent` 里设半尺寸：
+   示例的根组件是 `CollisionBox`，通过「Details」面板的 `Box Extent` 设置各轴半尺寸：
 
    ![示例无人机根组件 CollisionBox 的 Details 面板：Shape 下的 Box Extent 是 19.5、25.4、6.7](../../../assets/aerial/physics-collision-box.png)
 
 2. **加飞行模型**
 
-   添加 `uBot Simple Flight`（导航）或 `uBot Multirotor Dynamics`（物理），重命名为 `Movement`。它以根组件为 `Updated Component`，不用另外指定。`Visual Component` 只有 `uBot Simple Flight` 有：要让外观倾斜，把它指向要倾斜的 Scene 组件。`uBot Multirotor Dynamics` 没有这个属性，物理无人机是根组件自己倾斜。
+   添加 `uBot Simple Flight`（导航）或 `uBot Multirotor Dynamics`（物理），重命名为 `Movement`。该组件会自动以根组件作为 `Updated Component`，无需额外指定。仅 `uBot Simple Flight` 提供 `Visual Component` 属性；需要外观倾斜时，将该属性设置为承载外观的 Scene 组件。`uBot Multirotor Dynamics` 直接改变根组件姿态，因此不提供此属性。
 
 3. **加桨叶（可选）**
 
-   添加 `uBot Rotor` 组件，`Rotor Index` 设为电机序号，放在 `Get Rotor Layout` 返回的位置乘 100 cm 处，相对根组件。旋向在 `BeginPlay` 时按机架自动设置，「Details」里只读。
+   添加 `uBot Rotor` 组件，`Rotor Index` 设为电机序号，将 `Get Rotor Layout` 返回的米制位置乘以 100，作为该组件相对根组件的位置，单位为 cm。旋转方向在 `BeginPlay` 时根据机架自动设置，在「Details」面板中为只读属性。
 
    ![uBot Rotor 组件 Rotor0 的 Details 面板：Transform 下的 Location 是桨毂位置，Static Mesh 是桨叶网格，Rotor 下有 Rotor Index、只读的 Spin Direction 和 Visual Spin Scale](../../../assets/aerial/physics-rotor.png)
 
@@ -58,7 +58,7 @@ wires:
 
 4. **加手动输入、身份和相机（可选）**
 
-   添加 `uBot Multirotor Manual Input` 用键盘和手柄飞，它只在 Pawn 上起作用：Owner 不是 Pawn 时，`BeginPlay` 直接返回，也不打警告。添加 `uBot Identity` 设置机器人 ID 和 ROS 命名空间，添加弹簧臂相机。相机的弹簧臂要关掉 `Inherit Pitch` 和 `Inherit Roll`，视角才不会随机体倾斜。
+   添加 `uBot Multirotor Manual Input`，以支持键盘和手柄控制。该组件仅对 Pawn 生效：Owner 不是 Pawn 时，`BeginPlay` 会直接返回，且不记录警告。添加 `uBot Identity` 设置机器人 ID 和 ROS 命名空间，添加弹簧臂相机。关闭相机弹簧臂的 `Inherit Pitch` 和 `Inherit Roll`，可避免视角随机体俯仰和横滚。
 
 </Steps>
 
@@ -66,11 +66,11 @@ wires:
 
 | 属性或节点 | 说明 |
 | --- | --- |
-| `Rotor Index`（`uBot Rotor`） | 这个桨叶跟随的电机序号，按机架转子的顺序 |
+| `Rotor Index`（`uBot Rotor`） | 该桨叶对应的电机序号，按机架转子的顺序 |
 | `Visual Spin Scale`（`uBot Rotor`） | 显示转速相对真实转速的比例，默认 0.04，避免在帧率下混叠 |
 | `Airframe`（`uBot Multirotor Dynamics`） | 机架：质量、转动惯量、阻力系数和每个转子的位置、旋向、推力系数 |
 | `Make Quad X Airframe` | 按臂长（m）和质量（kg）生成四旋翼 X 机架，转动惯量按（质量 / 1.5）×（臂长 / 0.225）² 缩放，其余参数保持默认 |
-| `Get Rotor Layout` | 返回按电机序号排列的转子位置（m，机体系，UE 轴）和旋向 |
+| `Get Rotor Layout` | 返回按电机序号排列的转子位置（m，机体坐标系，UE 轴）和旋向 |
 
 默认机架的臂长是 0.225 m，转子位于 (±D, ±D)，D = 0.225 / √2 ≈ 0.159 m。机体受到与转子旋向相反的反扭矩。
 
@@ -80,9 +80,9 @@ wires:
 
 ## 注意事项
 
-- 物理级机架里转子的位置要和模型的电机位置一致。示例用的是模型实测的位置，相对根组件为 (±14.53, ±17.08, 4.75) cm，换成别的模型时要重新量。
-- 机架无效（质量或转动惯量不为正、没有转子、转子不产生推力）时，日志报错，并改用默认机架。
-- 改 `Airframe` 后，在下一次 `Reset Flight` 生效。但机架有效性检查和 `uBot Rotor` 的旋向只在 `BeginPlay` 时设置，`Reset Flight` 之后不会重新检查或设置。
+- 物理级机架里转子位置必须与模型中的电机位置一致。示例用的是模型实测的位置，相对根组件为 (±14.53, ±17.08, 4.75) cm，更换模型后应重新测量。
+- 机架无效（质量或转动惯量不为正、没有转子、转子不产生推力）时，组件记录错误日志，并使用默认机架。
+- 修改 `Airframe` 后，改动在下一次调用 `Reset Flight` 时生效。机架有效性仅在 `BeginPlay` 时检查，`uBot Rotor` 的旋转方向也仅在此时设置；`Reset Flight` 不会重复这些操作。
 
 ## 相关参考
 

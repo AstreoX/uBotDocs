@@ -6,7 +6,7 @@ sidebar:
   order: 50
 ---
 
-了解 uBotROS 发布哪些 TF 变换，以及 `/clock` 怎样让 ROS 2 节点使用仿真时间。
+uBotROS 发布坐标变换（TF），并通过 `/clock` 向 ROS 2 节点提供仿真时间。
 
 <figure class="not-content" style={{ margin: "1.25rem 0" }}>
   <div data-scrollable="TF 树图" style={{ overflowX: "auto", border: "1px solid var(--sl-color-gray-5)", borderRadius: "0.6rem", background: "var(--sl-color-gray-6)", padding: "0.75rem 0.5rem 0.5rem" }}>
@@ -34,7 +34,7 @@ sidebar:
 
       <rect x="10" y="8" width="110" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-gray-4)" stroke-width="1.5" stroke-dasharray="5 4" />
       <text x="65" y="29" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-gray-3)">map</text>
-      <text x="134" y="28" font-size="12" fill="var(--sl-color-gray-3)">由 SLAM 或 AMCL 发布，uBotROS 不发布</text>
+      <text x="134" y="28" font-size="12" fill="var(--sl-color-gray-3)">由建图或定位节点发布</text>
 
       <rect x="40" y="56" width="110" height="32" rx="6" fill="var(--sl-color-black)" stroke="var(--sl-color-gray-5)" stroke-width="1.5" />
       <text x="95" y="77" text-anchor="middle" font-size="13" font-family="var(--sl-font-mono)" fill="var(--sl-color-white)">odom</text>
@@ -67,38 +67,38 @@ sidebar:
 | `odom → base_link`（动态） | `/tf` | 第一个里程计传感器的每个有效样本 |
 | `base_link → <传感器 frame>`（静态） | `/tf_static` | 组件初始化和 `Refresh Sensor Publishers` 之后，以及每次重连之后 |
 | `<frame> → <frame>_optical`（静态） | `/tf_static` | 同上，只有相机 |
-| `map → odom` | — | uBotROS 不发布，由 SLAM 或 AMCL 提供 |
+| `map → odom` | — | uBotROS 不发布，由同时定位与建图（SLAM）或自适应蒙特卡洛定位（AMCL）节点提供 |
 
 ## 静态 TF
 
-- `base_link → <传感器 frame>` 是传感器的 frame 组件相对基组件的位置和朝向，去掉缩放，在组件初始化和 `Refresh Sensor Publishers` 时算一次。之后传感器相对机体移动，TF 不会更新。
+- `base_link → <传感器 frame>` 是定义传感器坐标系的组件相对基组件的位置和朝向，计算时忽略缩放，在组件初始化和 `Refresh Sensor Publishers` 时计算一次。如果传感器随后相对机体移动，该静态 TF 不会自动更新。
 - 基组件是 `Base Link Component`；留空时用 `uBot Identity` 的 `Base Component`，默认是根组件。
-- 相机另外发布 `<frame> → <frame>_optical`：平移为零，旋转是四元数 `(x=-0.5, y=0.5, z=-0.5, w=0.5)`。图像和 `camera_info` 的 `frame_id` 用光学系，约定是 z 向前、x 向右、y 向下。
+- 相机另外发布 `<frame> → <frame>_optical`：平移为零，旋转是四元数 `(x=-0.5, y=0.5, z=-0.5, w=0.5)`。图像和 `camera_info` 的 `frame_id` 用光学坐标系，约定是 z 向前、x 向右、y 向下。
 - 里程计传感器没有静态 TF：它的 `Frame Id`（默认 `odom`）是基坐标系的父坐标系，再发布 `base_link → odom` 会和动态的 `odom → base_link` 成环，并且与 `map → odom` 冲突。
-- 其他传感器的 frame 恰好等于里程计坐标系时，也会被跳过并记一条 Warning；frame 等于基坐标系的传感器不需要静态 TF。
-- 所有 Sensor Bridge 登记的静态变换，由子系统合并成一条锁存的 `/tf_static` 消息，QoS 是 reliable / transient_local / 1。变换集合变化时和每次重连后，它会重新发布。
-- 同一个 child frame 被多个组件设置时，后注册的生效，内容不同时记 Warning。
-- 订阅 `/tf_static` 的节点要用 transient_local，才能拿到锁存的消息。
+- 其他传感器的坐标系标识与里程计坐标系相同时，也会跳过其静态 TF，并记录一条警告（Warning）；传感器坐标系与基坐标系相同时，则无需静态 TF。
+- 所有 Sensor Bridge 登记的静态变换，由子系统合并成一条锁存的 `/tf_static` 消息，QoS 是 reliable / transient_local / 1。变换集合变化或连接重新建立后，子系统重新发布该消息。
+- 多个组件为同一个子坐标系注册静态变换时，使用后注册的变换；如果变换内容不同，则记录警告（Warning）。
+- 订阅 `/tf_static` 的节点要用 transient_local，才能接收到为后续订阅者保留的消息。
 
 ## 动态 `odom → base_link`
 
-- 取所属 Actor 上第一个里程计传感器，每个有效样本发布一条到 `/tf`（reliable / volatile / 100），时间戳是样本的仿真时间。`Publish Invalid Samples` 开启时，无效样本也发布。
-- 前提是这个传感器跟踪的组件就是基组件，并且它的 `Odometry Frame Id` 和 `Child Frame Id` 与组件的 `Odometry Frame` 和基坐标系一致。否则日志里记 Error，动态 TF 关闭，组件仍然是 `Ready`。
+- 使用所属 Actor 上的第一个里程计传感器，为每个有效样本向 `/tf` 发布一条变换消息（reliable / volatile / 100），时间戳是样本的仿真时间。`Publish Invalid Samples` 开启时，无效样本也发布。
+- 发布前提是该里程计传感器跟踪的组件与基组件相同，且传感器的 `Odometry Frame Id`、`Child Frame Id` 分别与 Sensor Bridge 的 `Odometry Frame`、基坐标系一致。否则在日志中记录错误（Error），动态 TF 关闭，组件仍然是 `Ready`。
 - `Publish Dynamic TF` 和 `Publish Static Sensor TF` 可以分别关闭两类 TF。
 
 ## 多个机器人
 
-同一个世界里有多个机器人时，`/tf`、`/tf_static` 和 `/clock` 是共享的，frame id 重名会冲突，静态 TF 里后注册的会覆盖先注册的。
+同一个世界中存在多个机器人时，`/tf`、`/tf_static` 和 `/clock` 是共享的，坐标系标识重名会冲突，静态 TF 中，后注册的同名变换会覆盖先注册的变换。
 
-- 开启 `Prefix Frames with Namespace`：所有 frame id 变成 `<namespace>/<frame>`，例如 `robot1/base_link`、`robot1/odom` 和 `robot1/rgb_camera_optical`。已经以命名空间开头的不会重复加，世界参考的位姿所用的 `world` 不加前缀。
+- 开启 `Prefix Frames with Namespace`：所有坐标系标识改为 `<namespace>/<frame>`，例如 `robot1/base_link`、`robot1/odom` 和 `robot1/rgb_camera_optical`。已有对应命名空间前缀的标识不会重复添加前缀，采用世界参考系的位姿数据所使用的 `world` 不添加前缀。
 - 或者给每个机器人设不同的 `Base Frame Override` 和传感器 `Frame Id`。
 
 ## `/clock` 与 `use_sim_time`
 
 - 子系统在 `Publish Clock` 开启（默认）且桥已连接时，每个世界 Tick 向 `Clock Topic`（默认 `/clock`）发布一条 `rosgraph_msgs/msg/Clock`，QoS 是 reliable / volatile / 10。
-- 时间是 uBot 仿真时间，基准是世界的游戏时间，遵循暂停和时间膨胀，不是墙上时间。每个新的 PIE 或 Game 会话从 0 开始，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
-- 暂停时子系统仍在 Tick，所以 `/clock` 继续以冻结的值发布；暂停时传感器不采样。
-- `Clock Topic` 在运行中改动会重建发布者；它不是合法的绝对话题时，`/clock` 不发布，日志里记一条 Warning。
+- 时间是 uBot 仿真时间，基准是世界的游戏时间，遵循暂停和时间膨胀，而非实际经过的时间（Wall Time）。每个新的 PIE 或 Game 会话从 0 开始，见[仿真时钟与采样调度](/concepts/clock-and-scheduling/)。
+- 暂停时子系统仍执行 Tick，所以 `/clock` 继续以冻结的值发布；暂停时传感器不采样。
+- 运行期间修改 `Clock Topic` 会重建发布者；该属性不是合法的绝对话题名称时，`/clock` 不发布，在日志中记录一条警告（Warning）。
 
 ROS 2 节点要使用仿真时间，启动时把 `use_sim_time` 设为 true：
 
@@ -107,11 +107,11 @@ ros2 run <package> <executable> --ros-args -p use_sim_time:=true
 ros2 launch <package> <launch file> use_sim_time:=true   # 取决于 launch 文件是否暴露该参数
 ```
 
-新的 PIE 会话把时间重新从 0 开始，对 ROS 2 来说是时间回跳，TF 缓冲等通常会被清空。桥节点本身不使用时间戳。
+新 PIE 会话将仿真时间重置为 0，ROS 2 将其视为时间向后跳变，TF 缓冲等通常会被清空。桥节点本身不使用时间戳。
 
 ## 相关页面
 
 - [发布传感器数据](/ros/publish-sensors/)：传感器消息的 `frame_id` 和时间戳。
 - [坐标系与单位](/concepts/coordinates-and-units/)：UE 到 ROS 的位置、旋转和角速度换算。
-- [标识与命名](/concepts/identity/)：命名空间和基坐标系怎么确定。
+- [标识与命名](/concepts/identity/)：命名空间和基坐标系的解析规则。
 - [uBotROS 设置项](/ros/settings/)：`Publish Clock` 和 `Clock Topic`。

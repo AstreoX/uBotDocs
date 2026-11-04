@@ -1,17 +1,17 @@
 UUBotImageFrame:
-  summary: "一次相机采集。图像在 GPU 的 Render Target 里，像素只在调用 Request Pixel Readback 后才读到 CPU，并且只有最新一次采集的帧能读回。"
+  summary: "表示一次相机采集生成的图像帧。图像保存在 GPU 的渲染目标（Render Target）中，调用 Request Pixel Readback 后才会将像素读回 CPU；仅最新一次采集的帧支持读回。"
   sourceHash: "61c2fe9268fb"
 
 UUBotImageFrame.CaptureGroupId:
-  summary: "所属采集组的 ID，不在采集组里时为空。"
+  summary: "所属采集组的 ID，不在采集组中时为空。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.CaptureSequence:
-  summary: "组序号，从 1 开始，每采集一组加 1，同一次组采集里的所有相机相同。不在采集组里时为 0。"
+  summary: "组序号，从 1 开始，每采集一组加 1，同一次组采集产生的所有相机帧均使用相同序号。不在采集组中时为 0。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.CaptureTimestampSeconds:
-  summary: "采集时间，单位 s。在采集组里是组时间戳，否则等于帧头里的时间戳。"
+  summary: "采集时间，单位 s。在采集组中是组时间戳，否则等于帧头中的时间戳。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.ClearCPUPixelData:
@@ -51,27 +51,27 @@ UUBotImageFrame.GeneratePointCloud:
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.GetBGRAPixelByCoordinates:
-  summary: "读取坐标 (X, Y) 处的像素颜色，原点在左上角。坐标越界、不是 BGRA8 帧或像素还没读回时返回 false。"
+  summary: "读取坐标 (X, Y) 处的像素颜色，原点在左上角。坐标越界、不是 BGRA8 帧或像素尚未读回时返回 false。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.GetDepthMetersByCoordinates:
-  summary: "读取坐标 (X, Y) 处的深度，单位 m，0 表示无效。坐标越界、不是深度帧或深度还没读回时返回 false。"
+  summary: "读取坐标 (X, Y) 处的深度，单位 m，0 表示无效。坐标越界、不是深度帧或深度尚未读回时返回 false。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.GetDepthPreviewTexture:
-  summary: "返回最近一次 Update Depth Preview 生成的贴图，还没生成过时为空。"
+  summary: "返回最近一次调用 Update Depth Preview 生成的贴图；尚未生成预览贴图时返回空值。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.GetPixelDataSizeBytes:
-  summary: "CPU 上像素数据的字节数，还没读回时为 0。"
+  summary: "返回 CPU 内存中像素数据的字节数，尚未读回时为 0。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.HasCPUPixelData:
-  summary: "像素或深度是否已经读到 CPU。"
+  summary: "返回像素或深度数据是否已读回 CPU。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.Header:
-  summary: "帧头，含 Valid 和 Status。"
+  summary: "帧头，包含 Valid 和 Status 字段。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.Height:
@@ -95,11 +95,11 @@ UUBotImageFrame.RowStrideBytes:
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.SensorTransformWorld:
-  summary: "采集时传感器在 UE 世界里的变换，位置单位 cm。"
+  summary: "采集时传感器在 UE 世界坐标系中的变换，位置单位 cm。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.UpdateDepthPreview:
-  summary: "把已读回的深度生成一张预览贴图，无效像素为黑色。预览范围的上限必须大于下限，否则失败；深度还没读回时会先读回。"
+  summary: "把已读回的深度生成一张预览贴图，无效像素为黑色。预览范围的上限必须大于下限，否则失败；深度尚未读回时会先读回。"
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.VerticalFovRadians:
@@ -111,5 +111,5 @@ UUBotImageFrame.Width:
   sourceHash: "e3b0c44298fc"
 
 UUBotImageFrame.bSynchronized:
-  summary: "在采集组里采集的帧为 true。"
+  summary: "在采集组中采集的帧为 true。"
   sourceHash: "e3b0c44298fc"

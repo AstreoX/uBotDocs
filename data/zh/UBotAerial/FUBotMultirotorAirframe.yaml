@@ -1,5 +1,5 @@
 Break:FUBotMultirotorAirframe:
-  summary: 把 UBot Multirotor Airframe 拆成质量、转动惯量、旋翼、三组阻力系数和电机指令映射。
+  summary: "将 UBot Multirotor Airframe 拆分为质量、转动惯量、旋翼、三组阻力系数和电机指令映射。"
   sourceHash: "e7d73c74df54"
 
 FUBotMultirotorAirframe:

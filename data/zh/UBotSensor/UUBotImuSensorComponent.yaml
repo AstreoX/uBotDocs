@@ -23,7 +23,7 @@ UUBotImuSensorComponent.ResetIMUHistory:
   sourceHash: "e3b0c44298fc"
 
 UUBotImuSensorComponent.GetBodyStateAgeSeconds:
-  summary: 最新样本所用刚体状态的年龄，即取样时刻减去状态时刻（物理步落后取样多久），单位 s；没有用到状态时为 0。
+  summary: 最新样本所用刚体状态的年龄，即取样时刻减去状态时刻（刚体状态相对于采样时刻的时间延迟），单位 s；未使用刚体状态时为 0。
   sourceHash: "622fe636a5b1"
 
 UUBotImuSensorComponent.IsUsingBodyState:
@@ -71,7 +71,7 @@ UUBotImuSensorComponent.MaxLinearAcceleration:
   sourceHash: "e3b0c44298fc"
 
 UUBotImuSensorComponent.MaxSampleDeltaSeconds:
-  summary: 相邻样本的间隔超过它，样本为 Invalid Delta Time，历史被清空。单位 s。
+  summary: 相邻样本的时间间隔超过该上限时，样本为 Invalid Delta Time，历史被清空。单位 s。
   sourceHash: "e3b0c44298fc"
 
 UUBotImuSensorComponent.SensorId:
@@ -79,15 +79,15 @@ UUBotImuSensorComponent.SensorId:
   sourceHash: "e3b0c44298fc"
 
 UUBotImuSensorComponent.TeleportAngleDegrees:
-  summary: 相邻样本间转角超过它，样本为 Teleport Detected，历史被清空。单位度。
+  summary: 相邻样本间的转角超过该阈值时，样本为 Teleport Detected，历史被清空。单位度。
   sourceHash: "e3b0c44298fc"
 
 UUBotImuSensorComponent.TeleportDistanceMeters:
-  summary: 相邻样本间位移超过它，样本为 Teleport Detected，历史被清空。单位 m。
+  summary: 相邻样本间的位移超过该阈值时，样本为 Teleport Detected，历史被清空。单位 m。
   sourceHash: "e3b0c44298fc"
 
 UUBotImuSensorComponent.UpdateRateHz:
-  summary: 自动采样频率，默认 100 Hz。运行中修改请用 Set Update Rate Hz。
+  summary: 自动采样频率，默认 100 Hz。运行期间修改该值时，应调用 Set Update Rate Hz。
   sourceHash: "e3b0c44298fc"
 
 UUBotImuSensorComponent.bClampOutput:
@@ -99,5 +99,5 @@ UUBotImuSensorComponent.bLowPassFilterEnabled:
   sourceHash: "e3b0c44298fc"
 
 UUBotImuSensorComponent.bUseBodyState:
-  summary: 机体由刚体状态源（物理后端的绑定、载具自己的积分器）驱动时，角速度和加速度读该状态，而不是对位姿差分。刚体到传感器之间的部分按刚性连接处理；传感器装在会自己运动的部件上（例如云台）时关闭。
+  summary: 机体由刚体状态源（物理后端的绑定、载具自身的积分器）驱动时，角速度和加速度从该状态读取，无需通过位姿差分计算。刚体到传感器之间的部分按刚性连接处理；传感器安装在相对刚体运动的部件上（例如云台）时，应关闭该属性。
   sourceHash: "350d18a16f61"

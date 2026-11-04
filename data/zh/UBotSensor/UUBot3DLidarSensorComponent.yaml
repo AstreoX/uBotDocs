@@ -3,19 +3,19 @@ UUBot3DLidarSensorComponent:
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.AngularGridIntervalDegrees:
-  summary: "编辑器视口预览里角度辅助线的间隔，单位 °。仅编辑器使用。"
+  summary: "编辑器视口预览中角度辅助线的间隔，单位 °。仅编辑器使用。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.DistanceGridIntervalMeters:
-  summary: "编辑器视口预览里距离辅助线的间隔，单位 m。仅编辑器使用。"
+  summary: "编辑器视口预览中距离辅助线的间隔，单位 m。仅编辑器使用。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.FrameId:
-  summary: "帧头里的 Frame Id，为空时使用 Sensor Id。默认 lidar_3d。"
+  summary: "帧头中的 Frame Id，为空时使用 Sensor Id。默认 lidar_3d。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.GetLatest3DLidarFrame:
-  summary: "返回最近一帧点云，不会触发新的扫描。还没有采过样时为空。"
+  summary: "返回最近一帧点云，不会触发新的扫描。尚未完成采样时返回空值。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.HorizontalFovDegrees:
@@ -35,7 +35,7 @@ UUBot3DLidarSensorComponent.MaximumRangeMeters:
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.MaximumRaysPerScan:
-  summary: "单次扫描的射线数上限。通道数乘以每通道射线数超过它时，这次采样报错，不会截断。"
+  summary: "单次扫描的射线数上限。通道数与每通道射线数的乘积超过该上限时，本次采样报错，不会通过截断射线数继续扫描。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.MinimumRangeMeters:
@@ -47,7 +47,7 @@ UUBot3DLidarSensorComponent.NumberOfChannels:
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.On3DLidarFrameReady:
-  summary: "每次产生有效帧后触发，Frame 是这一帧点云。"
+  summary: "每次产生有效帧后触发，通过 Frame 参数提供本次生成的点云帧。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.RangeNoiseStdDevMeters:
@@ -67,7 +67,7 @@ UUBot3DLidarSensorComponent.Sample3DLidar:
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.SensorId:
-  summary: "帧头里的 Sensor Id，为空时使用组件名。默认 lidar_3d。"
+  summary: "帧头中的 Sensor Id，为空时使用组件名。默认 lidar_3d。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.SmokeCellRadiusScale:
@@ -75,7 +75,7 @@ UUBot3DLidarSensorComponent.SmokeCellRadiusScale:
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.SmokeDensityThreshold:
-  summary: "有效密度（Density 乘以 Edge Factor）低于它的烟雾单元被忽略。"
+  summary: "烟雾单元的有效密度（Density 乘以 Edge Factor）低于该阈值时，忽略该单元。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.SmokeVolumeActorTag:
@@ -103,7 +103,7 @@ UUBot3DLidarSensorComponent.bIgnoreOwner:
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.bShowRangeLabels:
-  summary: "在编辑器视口预览里显示距离标签。仅编辑器使用。"
+  summary: "在编辑器视口预览中显示距离标签。仅编辑器使用。"
   sourceHash: "e3b0c44298fc"
 
 UUBot3DLidarSensorComponent.bTraceComplex:

@@ -1,6 +1,6 @@
 ---
 title: 简介
-description: uBot 是什么，能做什么，由哪些插件组成，这份文档怎么读。
+description: uBot 的功能、插件组成、依赖关系与文档阅读顺序。
 pageKind: concept
 sidebar:
   order: 10
@@ -10,15 +10,15 @@ import DependencyGraph from "../../../components/DependencyGraph.astro";
 import PackageList from "../../../components/PackageList.astro";
 import RepositoryOverview from "../../../components/RepositoryOverview.astro";
 
-uBot 是一套面向 Unreal Engine（UE）5.5 的具身智能（Embodied AI）仿真插件，具备传感器、统一的仿真时钟、ROS 2 接入等多种功能。借助 UE 的 Lumen、Nanite、物理系统和 Fab 上丰富的资产，可以搭建画面接近真机、场景足够复杂的仿真环境。
+uBot 是一套面向 Unreal Engine（UE）5.5 的具身智能（Embodied AI）仿真插件，具备传感器、统一的仿真时钟、ROS 2 接入等多种功能。开发者可以结合 UE 的 Lumen、Nanite、物理系统与 Fab 资产，构建具有视觉细节和物理交互的仿真场景。
 
-搭配 [uBot Manager](/manager/)，可以按需安装，根据需求下载最合适的插件。对新手来说，uBot 也是不错的起点：功能在蓝图中就能使用，不写 C++ 也能上手，文档里面提供直观的蓝图节点展示。
+[uBot Manager](/manager/) 支持按需安装插件，并自动处理依赖。uBot 提供蓝图接口，开发者可以通过蓝图使用这些功能；手册中的节点图展示了对应的操作方法。
 
-uBot 既有提供仿真时钟、坐标系和统一接口的 [uBotCore](/core/)，也有多样的传感器 [uBotSensor](/sensor/)，还可以通过 [uBotROS](/ros/) 对接 ROS 2，让实机上使用的 ROS 2 算法直接连上仿真。
+uBot 既有提供仿真时钟、坐标系和统一接口的 [uBotCore](/core/)，也有多样的传感器 [uBotSensor](/sensor/)，还可以通过 [uBotROS](/ros/) 接入 ROS 2，使机器人算法能够接收仿真数据并发送控制指令。
 
-[uBotAerial](/aerial/) 已经提供多旋翼无人机：导航级和物理级的飞行模型、风、碰撞，以及键盘和手柄手动飞行，面向低空无人机导航和飞控研究。
+[uBotAerial](/aerial/) 已经提供多旋翼无人机：导航级和物理级飞行模型、风场与碰撞响应，以及键盘和手柄控制，面向低空无人机导航和飞控研究。
 
-[uBotPhysics](/physics/) 让同一个 UE 项目、同一个场景里的不同对象，可以由不同的物理后端计算，Chaos 仍是默认；后端是依赖它的独立插件。后续还会提供 [uBotVehicles](/vehicles/) 等插件，面向自动驾驶等场景，以及 [MuJoCo](/mujoco/)、PhysX 等物理后端。
+[uBotPhysics](/physics/) 支持在同一 UE 场景中将不同对象分配给不同的物理后端。未绑定其他后端的对象仍由 Chaos 模拟；其他物理后端通过依赖 uBotPhysics 的独立插件提供。后续还会提供 [uBotVehicles](/vehicles/) 等插件，面向自动驾驶等场景，以及 [MuJoCo](/mujoco/)、PhysX 等物理后端。
 
 ## 插件依赖图
 
@@ -36,28 +36,28 @@ uBot 既有提供仿真时钟、坐标系和统一接口的 [uBotCore](/core/)�
 
 ## 怎么读这份文档
 
-| 你想 | 去这里 |
+| 使用目标 | 对应文档 |
 | --- | --- |
-| 把插件装进工程 | [安装 uBot](/start/install/) |
-| 先跑起来看看 | [五分钟上手](/start/quickstart/) |
-| 不知道该装哪些插件 | 在 [uBot Manager](/manager/recipes/) 里选一个组合方案（Recipe），各适合什么场景见[选择组合](/start/recipes/) |
-| 弄懂各插件共用的机制 | 核心概念：[帧头与采样状态](/concepts/frame-header/)、[仿真时钟与采样调度](/concepts/clock-and-scheduling/)、[坐标系与单位](/concepts/coordinates-and-units/)、[标识与命名](/concepts/identity/)、[插件之间怎么对接](/concepts/interfaces/) |
-| 在蓝图里使用传感器 | [uBotSensor](/sensor/) |
+| 在工程中安装插件 | [安装 uBot](/start/install/) |
+| 运行第一个传感器示例 | [五分钟上手](/start/quickstart/) |
+| 选择所需的插件 | 在 [uBot Manager](/manager/recipes/) 里选一个组合方案（Recipe），各组合的适用场景见[选择组合](/start/recipes/) |
+| 了解插件共用的机制 | 核心概念：[帧头与采样状态](/concepts/frame-header/)、[仿真时钟与采样调度](/concepts/clock-and-scheduling/)、[坐标系与单位](/concepts/coordinates-and-units/)、[标识与命名](/concepts/identity/)、[插件之间怎么对接](/concepts/interfaces/) |
+| 在蓝图中使用传感器 | [uBotSensor](/sensor/) |
 | 把数据发布到 ROS 2 | [uBotROS](/ros/) |
 | 安装、更新、移除插件 | [uBot Manager](/manager/) |
-| 在 C++ 里使用，或写自己的插件 | [开发者](/develop/cpp/) |
-| 查某个节点或属性 | [参考](/reference/)，按名称找用[节点索引](/reference/nodes/) |
-| 查一个词的意思 | [术语表](/appendix/glossary/) |
+| 通过 C++ 调用接口或开发插件 | [开发者](/develop/cpp/) |
+| 查询节点或属性 | [参考](/reference/)，按名称检索时使用[节点索引](/reference/nodes/) |
+| 查询术语含义 | [术语表](/appendix/glossary/) |
 
-文档里有几个约定：
+文档采用以下约定：
 
-- 节点、引脚和属性的名字保持英文，和蓝图编辑器里显示的一样，用等宽字体，比如 `Update Rate Hz`。
+- 节点、引脚和属性名称与英文蓝图编辑器保持一致，并使用等宽字体，例如 `Update Rate Hz`。
 - 示例画成蓝图编辑器里的样子，点击节点可查看说明与引脚。
 - 每个插件手册的页面标题下有一行“需要：…”，写明该页需要哪些插件和版本。
-- 每个类、节点和属性的完整说明在参考部分，由 UE 导出的数据自动生成，手册只讲怎么用。
+- 参考部分由 UE 导出的数据生成，包含类、节点和属性的完整说明；手册说明使用方法和注意事项。
 
 ## 相关页面
 
-- [安装 uBot](/start/install/)：用 uBot Manager 给工程装上插件。
-- [五分钟上手](/start/quickstart/)：给 Actor 加一个 IMU，在屏幕上看到采样序号。
-- [术语表](/appendix/glossary/)：文档里用到的词，中英对照。
+- [安装 uBot](/start/install/)：通过 uBot Manager 在工程中安装插件。
+- [五分钟上手](/start/quickstart/)：为 Actor 添加惯性测量单元（IMU），并在屏幕上显示采样序号。
+- [术语表](/appendix/glossary/)：查询文档术语的中英文名称及定义。

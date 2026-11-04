@@ -1,5 +1,5 @@
 EUBotManualFlightMode:
-  summary: 键盘和手柄输入如何驾驶多旋翼。
+  summary: "键盘和手柄输入所采用的多旋翼控制模式。"
   sourceHash: "3cccd5dc775c"
 
 EUBotManualFlightMode.Angle:

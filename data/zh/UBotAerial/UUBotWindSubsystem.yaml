@@ -1,5 +1,5 @@
 UUBotWindSubsystem:
-  summary: 世界的风：所有已启用的 `uBot Wind` Actor 加上蓝图设置的脚本风的总和。风场空间均匀，位置参数仅为以后扩展保留。
+  summary: "管理当前世界的风场，将全部已启用 `uBot Wind` Actor 的风速与蓝图设置的脚本风叠加。风场空间均匀，位置参数保留用于后续扩展。"
   sourceHash: "d069a5467893"
 
 UUBotWindSubsystem.GetWindVelocityAt:

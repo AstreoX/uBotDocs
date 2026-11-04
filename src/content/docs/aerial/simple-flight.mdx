@@ -8,7 +8,7 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-用速度和偏航角速度指令控制导航无人机（`uBot Simple Flight`），并了解它的响应、刹车和倾斜怎样设置。
+用速度和偏航角速度指令控制导航无人机（`uBot Simple Flight`），并配置速度响应、制动和倾斜行为。
 
 ## 快速用法
 
@@ -28,7 +28,7 @@ wires:
   - W.ReturnValue -> C.AngularVelocityRadiansPerSecond
   - C.UBotVelocityCommand -> D.Command
 notes:
-  A: Actor 引脚接无人机；从 Pawn 蓝图内部调用时接 `Get Self`。
+  A: 将无人机引用连接到 Actor 引脚；从 Pawn 蓝图内部调用时，使用 `Get Self`。
 ```
 
 最新的一条指令一直有效，直到被新指令替换或调用 `Stop Motion`。超过 `Velocity Limits` 的部分被截断。
@@ -43,7 +43,7 @@ notes:
 
 2. **发指令**
 
-   对它调用 `Apply Velocity Command`，`Command` 用 `Make UBot Velocity Command` 组装。返回 `false` 表示指令被拒绝，例如含 NaN。
+   对它调用 `Apply Velocity Command`，`Command` 用 `Make UBot Velocity Command` 组装。返回 `false` 表示指令被拒绝，例如指令包含非数值（NaN）。
 
 3. **停下**
 
@@ -51,7 +51,7 @@ notes:
 
 </Steps>
 
-用 uBotROS 的 `uBot ROS Velocity Command` 组件时，不用改任何东西就能驱动它，见 [接收 cmd_vel](/ros/cmd-vel/)。
+用 uBotROS 的 `uBot ROS Velocity Command` 组件时，可通过同一速度指令接口驱动导航无人机，见 [接收 cmd_vel](/ros/cmd-vel/)。
 
 ## 关键属性
 
@@ -67,12 +67,12 @@ notes:
 | `Yaw Time Constant Seconds` | 0.15 s | 偏航角速度响应的时间常数 |
 | `Brake Time Constant Seconds` | 0.1 s | `Stop Motion` 之后刹车的时间常数 |
 | `Brake Horizontal Acceleration Meters Per Second Squared` | 6 m/s² | 刹车时水平减速度上限 |
-| `Tilt Mode` | `Visual` | 什么随加速度倾斜 |
+| `Tilt Mode` | `Visual` | 指定随加速度倾斜的组件范围 |
 | `Max Tilt Degrees` | 25° | 最大倾角，范围 0 到 60 |
 
 ![导航无人机 Movement 组件的 Details 面板：Simple Flight 下有 Tilt Mode、Max Tilt Degrees 和 Visual Component，以及 Tracking、Braking、Wind 子类别](../../../assets/aerial/navigation-movement.png)
 
-在蓝图编辑器里，`Visual Component` 显示为 `None`。这是 UE 的组件选择器对蓝图里添加的组件的显示限制：示例实际指向 `VisualRoot`，运行时生效，不用去改它。
+在蓝图编辑器里，`Visual Component` 显示为 `None`。这是 UE 的组件选择器对蓝图里添加的组件的显示限制：示例实际指向 `VisualRoot`，该引用在运行时生效，无需修改。
 
 `Velocity Limits`（在共有属性里）默认水平 10 m/s、爬升 3 m/s、下降 2 m/s、偏航 π/2 rad/s。其余属性见 [uBot Simple Flight](/reference/ubotaerial/uubotsimpleflightcomponent/) 和 [uBot Multirotor Movement](/reference/ubotaerial/uubotmultirotormovementcomponent/)。
 
@@ -101,12 +101,12 @@ wires:
 
 ## 注意事项
 
-- 倾斜不是动力学的结果：机体 Z 轴指向加速度减去重力的方向，倾角不超过 `Max Tilt Degrees`。`Tilt Mode` 决定哪一部分跟着倾斜：
-  - `None`：都不倾斜，只偏航。
+- 倾斜不是动力学的结果：机体 Z 轴指向加速度减去重力的方向，倾角不超过 `Max Tilt Degrees`。`Tilt Mode` 决定参与倾斜的组件范围：
+  - `None`：根组件和视觉组件均不倾斜，仅改变偏航角。
   - `Visual`（默认）：只有 `Visual Component` 指向的外观倾斜，挂在根组件上的传感器保持水平。
-  - `Body`：根组件倾斜，传感器看到真实多旋翼会有的姿态。
+  - `Body`：根组件倾斜，附着于根组件的传感器会随机体姿态变化。
 - `Get Tilted Attitude` 在任何模式下都返回倾斜后的姿态。
-- 物理步频默认 500 Hz，`Physics Rate Hz` 可以调，范围 100 到 4000 Hz。它按 uBot 仿真时钟推进，暂停时不动；恒定指令下，不同帧率的结果相同，新指令从下一帧开始生效。
+- 物理步进频率默认为 500 Hz，可通过 `Physics Rate Hz` 调整，范围 100 到 4000 Hz。它按 uBot 仿真时钟推进，暂停时停止推进；恒定指令下，不同帧率的结果相同，新指令从下一帧开始生效。
 - 导航无人机没有姿态、角速度和电机指令的接口，需要它们时用 [物理无人机](/aerial/dynamics/)。
 
 ## 相关参考

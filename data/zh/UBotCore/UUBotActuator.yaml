@@ -1,15 +1,15 @@
 UUBotActuator:
-  summary: 描述一个执行器（驱动、机械臂、夹爪等）的接口，与怎样给它下指令无关。
+  summary: "描述执行器（驱动、机械臂、夹爪等）标识、类型和就绪状态的接口，不限定具体的指令接收方式。"
   sourceHash: "e3b0c44298fc"
 
 UUBotActuator.GetActuatorId:
-  summary: 返回执行器 id。
+  summary: "返回执行器标识。"
   sourceHash: "e3b0c44298fc"
 
 UUBotActuator.GetActuatorType:
-  summary: 返回执行器的类型名。
+  summary: "返回执行器类型名称。"
   sourceHash: "e3b0c44298fc"
 
 UUBotActuator.IsActuatorReady:
-  summary: 执行器是否就绪。
+  summary: "返回执行器是否已就绪。"
   sourceHash: "e3b0c44298fc"

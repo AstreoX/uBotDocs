@@ -1,10 +1,10 @@
 ---
 title: uBot 文档
-description: uBot 是一套用 Unreal Engine 搭建具身智能仿真的插件：高质量场景、多种传感器，可接入 ROS 2、MuJoCo、PhysX 等，按需组合，蓝图里就能上手。
+description: uBot 是一套面向 Unreal Engine 的具身智能仿真插件，提供传感器、仿真时钟和 ROS 2 接入，支持按需安装与蓝图调用；MuJoCo、PhysX 等物理后端仍在规划中。
 template: splash
 hero:
   title: uBot
-  tagline: 用 Unreal Engine 搭建具身智能仿真：高质量场景、多种传感器，可接入 ROS 2、MuJoCo、PhysX 等，以插件的方式按需组合。
+  tagline: 用 Unreal Engine 构建具身智能仿真，按需组合传感器、仿真时钟、无人机模型与 ROS 2 接入插件。
   actions:
     - text: 下载 uBot Manager
       link: https://github.com/AstreoX/uBotManager/releases
@@ -33,7 +33,7 @@ import RepositoryOverview from "../../components/RepositoryOverview.astro";
   <li>
     <Icon name="puzzle" size="1.5rem" />
     <h3>原版 UE 即可使用</h3>
-    <p>以插件形式安装在原版 UE 5.5 上，uBot Manager 提供预编译包，免去编译。</p>
+    <p>以插件形式安装到 UE 5.5 工程中；使用 uBot Manager 安装预编译包时，无需在本地编译编辑器模块。</p>
   </li>
   <li>
     <Icon name="pencil" size="1.5rem" />
@@ -48,12 +48,12 @@ import RepositoryOverview from "../../components/RepositoryOverview.astro";
   <li>
     <Icon name="random" size="1.5rem" />
     <h3>模拟多种复杂真实环境</h3>
-    <p>例如烟雾会影响激光雷达和相机的感知。</p>
+    <p>传感器可通过感知介质接口模拟烟雾等介质对测量的影响；环境效果的生成仍在规划中。</p>
   </li>
   <li>
     <Icon name="link" size="1.5rem" />
     <h3>可接入 ROS 2、MuJoCo 等</h3>
-    <p>实机上使用的 ROS 2 算法可以连接到仿真；MuJoCo、PhysX 等物理引擎在规划中。</p>
+    <p>机器人算法可通过 ROS 2 交换仿真数据与控制指令；MuJoCo、PhysX 等物理引擎在规划中。</p>
   </li>
 </ul>
 
@@ -65,16 +65,16 @@ import RepositoryOverview from "../../components/RepositoryOverview.astro";
 
 ## 从这里开始
 
-[uBot Manager](/manager/) 是安装 uBot 的入口：它在 UE 工程里选择、安装和更新插件，启动时检查新版本，并处理插件之间的依赖。目前提供 Windows 版本，到 [Releases 页面](https://github.com/AstreoX/uBotManager/releases)下载安装包，安装步骤见[安装 uBot](/start/install/)。
+[uBot Manager](/manager/) 是安装 uBot 的入口：管理器支持在 UE 工程中选择、安装和更新插件，启动时检查新版本，并处理插件之间的依赖。目前提供 Windows 版本，到 [Releases 页面](https://github.com/AstreoX/uBotManager/releases)下载安装包，安装步骤见[安装 uBot](/start/install/)。
 
 <CardGrid>
   <LinkCard title="简介" description="uBot 是什么、能做什么、各插件的关系。" href="/start/introduction/" />
-  <LinkCard title="安装 uBot" description="用 uBot Manager 给工程装上插件。" href="/start/install/" />
-  <LinkCard title="五分钟上手" description="给 Actor 加一个 IMU，在屏幕上看到采样序号。" href="/start/quickstart/" />
+  <LinkCard title="安装 uBot" description="通过 uBot Manager 在工程中安装插件。" href="/start/install/" />
+  <LinkCard title="五分钟上手" description="为 Actor 添加 IMU 传感器，并显示采样序号。" href="/start/quickstart/" />
   <LinkCard title="发布到 ROS 2" description="传感器话题、TF、/clock 和 cmd_vel。" href="/ros/" />
 </CardGrid>
 
-每个类、节点和属性的完整说明在[参考](/reference/)里，按名称找节点用[节点索引](/reference/nodes/)。
+类、节点和属性的完整说明参见[参考](/reference/)。如需按名称查找节点，可使用[节点索引](/reference/nodes/)。
 
 ## GitHub 仓库
 

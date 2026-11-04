@@ -63,11 +63,11 @@ UUBotSimpleFlightComponent.VisualComponent:
   sourceHash: "d3d91af8a8e2"
 
 UUBotSimpleFlightComponent.WindRejectionTimeConstantSeconds:
-  summary: 无人机补偿风变化的快慢，单位 s。
+  summary: "补偿风速变化的时间常数，单位 s。"
   sourceHash: "87b1d5480e53"
 
 UUBotSimpleFlightComponent.WindResponse:
-  summary: 无人机在补偿之前随风漂移的比例（占风变化的份额）。0 表示忽略风。
+  summary: "补偿前由风速变化引起的漂移速度比例。0 表示忽略风。"
   sourceHash: "f6031497e37f"
 
 UUBotSimpleFlightComponent.YawTimeConstantSeconds:

@@ -23,7 +23,7 @@ UUBotSensorComponent.GetLatestFrameHeader:
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.GetDroppedSampleCount:
-  summary: 因为一帧跨过了多个采样时刻而跳过的采样次数。Start Sensor 时清零。
+  summary: 因单帧跨越多个采样时刻而跳过的采样次数。调用 Start Sensor 时清零。
   sourceHash: "f85e1ad02e9f"
 
 UUBotSensorComponent.OnSensorSampled:
@@ -31,7 +31,7 @@ UUBotSensorComponent.OnSensorSampled:
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.UpdateRateHz:
-  summary: 自动采样频率，单位 Hz。运行中修改请用 Set Update Rate Hz。
+  summary: 自动采样频率，单位 Hz。运行期间修改该值时，应调用 Set Update Rate Hz。
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.bAutoStart:
@@ -39,7 +39,7 @@ UUBotSensorComponent.bAutoStart:
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.bSensorEnabled:
-  summary: 为 false 时无法启动；手动采样只得到 Disabled 帧头。
+  summary: 为 false 时无法启动；手动采样仅返回状态为 Disabled 的帧头。
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.SensorId:
@@ -47,11 +47,11 @@ UUBotSensorComponent.SensorId:
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.FrameId:
-  summary: 写入帧头的坐标系名（TF frame id）。为空时用传感器标识；各传感器有自己的默认值。
+  summary: 写入帧头的坐标系名（TF 坐标系标识）。为空时用传感器标识；各传感器有自己的默认值。
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.RandomSeed:
-  summary: 噪声随机序列的种子。每次 Start Sensor 都用它重置随机序列。
+  summary: 噪声随机序列的种子。每次调用 Start Sensor 时，均使用该种子重置随机序列。
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.bNoiseEnabled:
@@ -67,7 +67,7 @@ UUBotSensorComponent.bHideSensorModelInGame:
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.IsSensorModelVisibleInGame:
-  summary: 返回游戏中是否显示传感器模型，等于 Hide Sensor Model in Game 取反。
+  summary: "返回游戏中是否显示传感器模型，返回值等于 Hide Sensor Model in Game 的逻辑非。"
   sourceHash: "e3b0c44298fc"
 
 UUBotSensorComponent.SetSensorModelVisibleInGame:

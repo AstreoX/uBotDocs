@@ -1,6 +1,6 @@
 ---
 title: Identity 组件
-description: 给 Actor 加 Identity 组件，统一 Robot Id、Namespace 和 Base Frame。
+description: 通过 Identity 组件统一配置 Actor 的 Robot Id、Namespace 和 Base Frame。
 pageKind: feature
 sidebar:
   order: 40
@@ -8,13 +8,13 @@ sidebar:
 
 import { Steps } from "@astrojs/starlight/components";
 
-给机器人 Actor 加上 `uBot Identity` 组件，统一它的机器人 ID（`Robot Id`）、命名空间（`Namespace`）和基座坐标系（`Base Frame Id`），并在蓝图里读取最终生效的值。
+为机器人 Actor 添加 `uBot Identity` 组件，统一配置机器人标识（`Robot Id`）、命名空间（`Namespace`）和基座坐标系标识（`Base Frame Id`），并在蓝图中读取解析后的有效值。
 
-uBotROS 从这个组件读取机器人的名字，所以名字只需要在一处设置。
+uBotROS 从该组件读取机器人标识，因此可以集中管理相关命名设置。
 
 ## 快速用法
 
-`Get Resolved Namespace` 返回回退之后的结果：`Namespace` 留空时，用机器人 ID 净化后的名字。
+`Get Resolved Namespace` 返回应用缺省规则后的命名空间：`Namespace` 留空时，返回机器人标识经过名称净化后的结果。
 
 ```blueprint
 caption: 开始运行时打印机器人的 Namespace
@@ -37,17 +37,17 @@ notes:
 
 1. **添加组件**
 
-   打开机器人的 Actor 蓝图，在「Components」面板点「Add」，搜索 `uBot Identity`（在「uBot」分类下）。
+   打开机器人的 Actor 蓝图，在「Components」面板点击「Add」，搜索 `uBot Identity`（在「uBot」分类下）。
 
 2. **填写字段**
 
-   在「Details」面板里按需要填 `Robot Id`、`Namespace` 等。全部字段都可以留空，留空时按下表回退。
+   在「Details」面板按需填写 `Robot Id`、`Namespace` 等属性。所有字段均可留空；留空时采用下表列出的回退值。
 
    ![uBot Identity 组件的 Details 面板：Identity 分类下有 Robot Id、Namespace、Base Frame Id 和 Base Component](../../../assets/core/identity.png)
 
 3. **读取结果**
 
-   需要名字时，从组件上拖出 `Get Resolved Robot Id`、`Get Resolved Namespace` 或 `Get Base Frame Id`。直接读 `Robot Id` 等属性拿到的是没有回退的原始值，可能是空的。
+   需要读取有效标识时，从组件引用创建 `Get Resolved Robot Id`、`Get Resolved Namespace` 或 `Get Base Frame Id` 节点。直接读取 `Robot Id` 等属性只会返回原始值，不会应用回退规则，因此结果可能为空。
 
 </Steps>
 
@@ -55,40 +55,40 @@ notes:
 
 | 属性 | 默认值 | 留空或无效时 |
 | --- | --- | --- |
-| `Robot Id` | 空 | 用所属 Actor 的名字；首尾的空白会被去掉 |
-| `Namespace` | 空 | 用净化后的机器人 ID（`UBot::Identity::SanitizeNameToken`，规则见[标识与命名](/concepts/identity/)）；填写的值只去掉首尾的空白和 `/`，不会净化 |
-| `Base Frame Id` | `base_link` | 用 `base_link` |
-| `Base Component` | 空 | 用所属 Actor 的根组件 |
+| `Robot Id` | 空 | 使用所属 Actor 的名称；移除首尾空白字符 |
+| `Namespace` | 空 | 使用经过名称净化的机器人标识（`UBot::Identity::SanitizeNameToken`，规则见[标识与命名](/concepts/identity/)）；显式填写的值仅移除首尾空白字符和 `/`，不执行名称净化 |
+| `Base Frame Id` | `base_link` | 使用 `base_link` |
+| `Base Component` | 空 | 使用所属 Actor 的根组件 |
 
-Actor 的名字是 `AActor::GetName()` 的结果，不是「Outliner」里显示的标签，所以打包后结果不变。`Base Component` 指向的必须是场景组件（Scene Component），否则同样回退到根组件。
+Actor 名称取自 `AActor::GetName()`，与「Outliner」面板显示的标签无关，打包后仍按相同规则解析。`Base Component` 指向的必须是场景组件（Scene Component），否则同样回退到根组件。
 
 ## 输出与事件
 
-组件没有事件，下面四个节点都是纯函数：
+组件不提供事件，以下四个节点均为纯函数：
 
 | 节点 | 输出 |
 | --- | --- |
-| `Get Resolved Robot Id` | String，`Robot Id` 或所属 Actor 的名字；没有所属 Actor 时为空 |
+| `Get Resolved Robot Id` | String，`Robot Id` 或所属 Actor 的名称；没有所属 Actor 时为空 |
 | `Get Resolved Namespace` | String，`Namespace` 或净化后的机器人 ID |
 | `Get Base Frame Id` | String，`Base Frame Id` 或 `base_link` |
-| `Get Base Component` | Scene Component，指定的组件或根组件，也可能为空 |
+| `Get Base Component` | Scene Component，指定的场景组件或所属 Actor 的根组件；两者均不可用时为空 |
 
 ### 谁会读取它
 
-| 使用方 | 读取什么 | 页面 |
+| 使用方 | 读取内容 | 页面 |
 | --- | --- | --- |
 | `uBot ROS Sensor Bridge` | `Namespace`（话题前缀）、`Base Frame Id`、`Base Component` | [发布传感器数据](/ros/publish-sensors/) |
 | `uBot ROS Velocity Command` | `Namespace`（话题 `/<namespace>/cmd_vel`） | [接收 cmd_vel](/ros/cmd-vel/) |
 
-这两个组件上各有 `Robot Namespace Override`，Sensor Bridge 上还有 `Base Frame Override`。填了覆盖项就以覆盖项为准。
+这两个组件均提供 `Robot Namespace Override`，Sensor Bridge 还提供 `Base Frame Override`。显式填写覆盖项时，使用方优先采用覆盖值。
 
 ## 注意事项
 
-- 组件是可选的。Actor 没有它时，使用方按同样的规则回退：Actor 名、净化后的 Actor 名、`base_link` 和根组件。
-- 每个机器人加一个组件就够了。
-- 在「Outliner」里改 Actor 的标签不会改变机器人的名字；要改名，填 `Robot Id`。
+- `uBot Identity` 是可选组件。Actor 未添加该组件时，使用方仍按相同规则分别回退到 Actor 名称、净化后的 Actor 名称、`base_link` 和根组件。
+- 每个机器人只需添加一个 `uBot Identity` 组件。
+- 修改「Outliner」中的 Actor 标签不会改变机器人标识；需要指定机器人标识时，应填写 `Robot Id`。
 
 ## 相关参考
 
 - [uBot Identity](/reference/ubotcore/uubotidentitycomponent/)：全部节点和属性。
-- [标识与命名](/concepts/identity/)：Sensor Id、Frame Id、名字的净化规则和命名建议。
+- [标识与命名](/concepts/identity/)：Sensor Id、Frame Id、名称净化规则和命名建议。

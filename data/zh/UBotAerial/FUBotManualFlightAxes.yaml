@@ -1,5 +1,5 @@
 Break:FUBotManualFlightAxes:
-  summary: 把 UBot Manual Flight Axes 拆成前、右、上和偏航四个轴。
+  summary: "将 UBot Manual Flight Axes 拆分为前、右、上和偏航四个轴。"
   sourceHash: "ec45a9fb2d48"
 
 FUBotManualFlightAxes:

@@ -12,15 +12,15 @@ uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说
 
 ### 为什么在 Content Browser 里看不到示例无人机？
 
-插件的 Content 默认不显示。打开 Content Browser 的「Settings > Show Plugin Content」就能看到 `/UBotAerial/` 下的示例蓝图和地图，见 [示例无人机与试飞关卡](/aerial/examples/)。
+内容浏览器（Content Browser）默认隐藏插件资产。在 Content Browser 的「Settings」菜单中勾选「Show Plugin Content」后，可查看 `/UBotAerial/` 下的示例蓝图和地图，见 [示例无人机与试飞关卡](/aerial/examples/)。
 
 ### 修改了插件里的示例，更新插件后改动不见了怎么办？
 
-直接改的是插件里的原资产，更新插件时会被覆盖。先把示例复制到自己的工程再改：在示例上右键「Duplicate」后移到 `/Game` 下，或用「Asset Actions > Migrate」。见 [示例无人机与试飞关卡](/aerial/examples/#改成自己的)。
+插件目录中的原始资产会在更新时被覆盖。应将示例复制到工程后，再修改副本：在示例上右键「Duplicate」后移到 `/Game` 下，或用「Asset Actions > Migrate」。见 [示例无人机与试飞关卡](/aerial/examples/#改成自己的)。
 
 ### 示例无人机放在地面上，怎么起飞？
 
-不需要起飞：地面只是碰撞面，直接按 W / A / S / D 就贴着地面移动，按 Space 立刻上升。见 [碰撞](/aerial/collision/)。
+示例无需额外的起飞流程：地面按普通碰撞面处理，按 W / A / S / D 可沿地面移动，按 Space 可上升。见 [碰撞](/aerial/collision/)。
 
 ## 控制
 
@@ -30,19 +30,19 @@ uBotAerial 的常见问题按主题分组，每题给出简短回答和详细说
 
 ### 为什么指令返回 `false`？
 
-有四种常见原因：这种指令被 `Accept Velocity Commands` 等属性关闭，裸机级无人机不接受速度和姿态指令；指令含 NaN；电机指令的个数不等于电机数；姿态四元数的长度接近 0。见 [物理无人机的指令与控制模式](/aerial/dynamics/#注意事项)。
+有四种常见原因：这种指令被 `Accept Velocity Commands` 等属性关闭，裸机级无人机不接受速度和姿态指令；指令含非数值（NaN）或其他非有限值；电机指令的个数不等于电机数；姿态四元数的长度接近 0。见 [物理无人机的指令与控制模式](/aerial/dynamics/#注意事项)。
 
 ### 在 `BeginPlay` 里发的指令为什么没有效果？
 
-uBotAerial 0.1.0 里，无人机自己的 `BeginPlay` 之前发出的指令会被开始飞行时的重置清掉，节点却返回成功。0.1.1 起这些指令会在开始飞行后生效，不需要再先 `Delay`。见 [示例无人机与试飞关卡](/aerial/examples/#注意事项)。
+uBotAerial 0.1.0 里，无人机自己的 `BeginPlay` 之前发出的指令会在开始飞行时因重置而被清除，节点却返回成功。0.1.1 起这些指令会在开始飞行后生效，不需要再先 `Delay`。见 [示例无人机与试飞关卡](/aerial/examples/#注意事项)。
 
 ### 物理无人机在风里越飘越远，怎么让它停在原地？
 
-发零速度的速度指令只跟踪零速度，不锁定位置。要刹停并锁定位置，调用 `Stop Motion`。见 [物理无人机的指令与控制模式](/aerial/dynamics/#注意事项)。
+零速度指令仅要求速度收敛至零，不启用位置保持。需要制动并保持位置时，应调用 `Stop Motion`。见 [物理无人机的指令与控制模式](/aerial/dynamics/#注意事项)。
 
 ### Blueprint 写的飞控太慢怎么办？
 
-蓝图控制器每个物理步（默认 1 kHz）都经过蓝图虚拟机运行。写成 C++ 子类，或调大 `Controller Rate Divider`。见 [自己写飞控](/aerial/flight-controller/#注意事项)。
+蓝图控制器每个物理步（默认 1 kHz）都经过蓝图虚拟机运行。可改用 C++ 子类，或增大 `Controller Rate Divider`。见 [自己写飞控](/aerial/flight-controller/#注意事项)。
 
 ## 行为
 
@@ -56,7 +56,7 @@ uBotAerial 0.1.0 里，无人机自己的 `BeginPlay` 之前发出的指令会�
 
 ### 无人机上的传感器读到的速度是哪来的？
 
-0.1.1 起，`Movement` 组件为根组件提供刚体状态，uBotSensor 0.1.2 的位姿、里程计和 IMU 直接读它，而不是对位姿差分。见[无人机的刚体状态](/aerial/body-state/)。
+从 uBotAerial 0.1.1 起，`Movement` 组件为根组件提供刚体状态；从 uBotSensor 0.1.2 起，位姿、里程计和惯性测量单元（IMU）传感器直接读取该状态中的速度，无需通过位姿差分估计。见[无人机的刚体状态](/aerial/body-state/)。
 
 ### 为什么无人机不能绑定到物理后端？
 
@@ -68,4 +68,4 @@ uBotAerial 0.1.0 里，无人机自己的 `BeginPlay` 之前发出的指令会�
 
 ### 日志提示一帧需要的物理步数超过上限是什么意思？
 
-一帧太长，需要的物理步数超过了 `Max Steps Per Frame`（默认 250），多出的时间被跳过。调大 `Max Steps Per Frame` 或降低 `Physics Rate Hz`。
+单帧耗时过长，所需物理步数超过了 `Max Steps Per Frame`（默认 250），多出的时间被跳过。可增大 `Max Steps Per Frame`，或降低 `Physics Rate Hz`。

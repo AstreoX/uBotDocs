@@ -3,11 +3,11 @@ FUBotFrameHeader:
   sourceHash: "df200008a274"
 
 FUBotFrameHeader.Sequence:
-  summary: 帧序号，每次采样加 1。
+  summary: "帧序号，由每个传感器组件独立维护，每次采样递增 1。"
   sourceHash: "e3b0c44298fc"
 
 FUBotFrameHeader.TimestampSeconds:
-  summary: 采样时刻的 uBot 仿真时间，单位秒。它就是 World 的游戏时间，会随暂停停止、随时间膨胀变快或变慢。
+  summary: "采样时刻的 uBot 仿真时间，单位 s。该时间以 World 游戏时间为基准，暂停时停止推进，推进速率受时间膨胀影响。"
   sourceHash: "d5a344c3f61a"
 
 FUBotFrameHeader.bValid:
@@ -15,19 +15,19 @@ FUBotFrameHeader.bValid:
   sourceHash: "e3b0c44298fc"
 
 FUBotFrameHeader.Status:
-  summary: 本次采样的结果，取值见 UBot Sample Status。
+  summary: "本次采样的结果，取值由 `UBot Sample Status` 枚举定义。"
   sourceHash: "e3b0c44298fc"
 
 Break:FUBotFrameHeader:
-  summary: 把帧头拆成 Sensor Id、Frame Id、Sequence、Timestamp Seconds、Valid 和 Status。
+  summary: "将帧头拆分为 Sensor Id、Frame Id、Sequence、Timestamp Seconds、Valid 和 Status。"
   sourceHash: "0be725a9f8e3"
 
 FUBotFrameHeader.FrameId:
-  summary: 传感器所在的坐标系名（Frame Id）。传感器上留空时等于传感器 id。
+  summary: "传感器所在坐标系的名称（Frame Id）。传感器的对应属性留空时，采用传感器标识。"
   sourceHash: "e3b0c44298fc"
 
 FUBotFrameHeader.SensorId:
-  summary: 传感器 id（Sensor Id）。传感器上留空时用组件名。
+  summary: "传感器标识（Sensor Id）。传感器的对应属性留空时，采用组件名称。"
   sourceHash: "e3b0c44298fc"
 
 Make:FUBotFrameHeader:

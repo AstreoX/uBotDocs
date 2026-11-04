@@ -1,21 +1,21 @@
 UUBotMultirotorManualInputComponent:
-  summary: 本地玩家控制（附身）所属多旋翼时，用键盘或手柄驾驶它。输入动作和映射上下文在运行时创建（Enhanced Input），不需要资产；要改按键就设置自己的。控制期间每帧发送一条指令。控制结束时，速度模式下刹车悬停；姿态和角速度模式下按 `Command Loss Action` 处理，默认悬停。
+  summary: "所属多旋翼 Pawn 由本地玩家控制时，将键盘和手柄输入转换为飞行指令，默认使用运行时创建的 Enhanced Input 动作与映射上下文。控制期间每帧发送一条指令；结束控制后，速度模式执行制动悬停，姿态和角速度模式按 `Command Loss Action` 处理，默认悬停。"
   sourceHash: "ba30b1e23931"
 
 UUBotMultirotorManualInputComponent.CustomMappingContext:
-  summary: 自己的映射上下文，必须映射 `Custom Move Action` 和 `Custom Yaw Action`。为空时使用内置按键。
+  summary: "自定义输入映射上下文，必须包含 `Custom Move Action` 和 `Custom Yaw Action` 的映射。为空时使用内置按键。"
   sourceHash: "f629bb284af3"
 
 UUBotMultirotorManualInputComponent.CustomMoveAction:
-  summary: 自己的移动动作（Axis3D：前、右、上），和 `Custom Mapping Context` 一起使用。
+  summary: "自定义移动输入动作，类型为三轴输入（Axis3D），分别表示前、右、上，与 `Custom Mapping Context` 配合使用。"
   sourceHash: "f4e52b85b9ad"
 
 UUBotMultirotorManualInputComponent.CustomYawAction:
-  summary: 自己的偏航动作（Axis1D，正值向右转），和 `Custom Mapping Context` 一起使用。
+  summary: "自定义偏航输入动作，类型为单轴输入（Axis1D），正值表示向右偏航，与 `Custom Mapping Context` 配合使用。"
   sourceHash: "ac45ab19419c"
 
 UUBotMultirotorManualInputComponent.DeadZone:
-  summary: 摇杆死区，占满偏转的比例。
+  summary: "摇杆死区，占最大偏转的比例。"
   sourceHash: "6786c4bef9bd"
 
 UUBotMultirotorManualInputComponent.FlightMode:
@@ -23,11 +23,11 @@ UUBotMultirotorManualInputComponent.FlightMode:
   sourceHash: "bf1b86d0c238"
 
 UUBotMultirotorManualInputComponent.GetAxes:
-  summary: 最近一帧经过死区处理后的各个轴。
+  summary: "返回最近一帧经过死区处理的各输入轴数值。"
   sourceHash: "747ed6db7ae1"
 
 UUBotMultirotorManualInputComponent.IsControlling:
-  summary: 这个组件正在驾驶无人机时为 true。
+  summary: "此组件正在接管无人机输入时返回 true。"
   sourceHash: "16b162a008b5"
 
 UUBotMultirotorManualInputComponent.MappingPriority:
@@ -35,25 +35,25 @@ UUBotMultirotorManualInputComponent.MappingPriority:
   sourceHash: "cfea3bb57faf"
 
 UUBotMultirotorManualInputComponent.MaxBodyRateDegreesPerSecond:
-  summary: 满偏转时的横滚和俯仰角速度（`Rate` 模式），单位 deg/s。
+  summary: "最大偏转时的横滚和俯仰角速度（`Rate` 模式），单位 deg/s。"
   sourceHash: "796462d00e98"
 
 UUBotMultirotorManualInputComponent.MaxHorizontalSpeedMetersPerSecond:
-  summary: 满偏转时的水平速度（`Velocity` 模式），单位 m/s。
+  summary: "最大偏转时的水平速度（`Velocity` 模式），单位 m/s。"
   sourceHash: "9bcf7fea011b"
 
 UUBotMultirotorManualInputComponent.MaxTiltDegrees:
-  summary: 满偏转时的倾角（`Angle` 模式），单位度。
+  summary: "最大偏转时的倾角（`Angle` 模式），单位度。"
   sourceHash: "7956319b4c0d"
 
 UUBotMultirotorManualInputComponent.MaxVerticalSpeedMetersPerSecond:
-  summary: 满偏转时的爬升或下降速度，单位 m/s。
+  summary: "最大偏转时的爬升或下降速度，单位 m/s。"
   sourceHash: "8d04da2f2b42"
 
 UUBotMultirotorManualInputComponent.MaxYawRateDegreesPerSecond:
-  summary: 满偏转时的偏航角速度，单位 deg/s。
+  summary: "最大偏转时的偏航角速度，单位 deg/s。"
   sourceHash: "51412a39ffd7"
 
 UUBotMultirotorManualInputComponent.bTakeControlWhenPossessed:
-  summary: 本地玩家附身无人机的 Pawn 时自动接管无人机。
+  summary: "本地玩家控制所属无人机 Pawn 时，是否自动接管手动飞行输入。"
   sourceHash: "371233fdaa65"

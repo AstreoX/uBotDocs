@@ -3,11 +3,11 @@ UUBot2DLidarSensorComponent:
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.AngularGridIntervalDegrees:
-  summary: "编辑器视口预览里角度辅助线的间隔，单位 °。仅编辑器使用。"
+  summary: "编辑器视口预览中角度辅助线的间隔，单位 °。仅编辑器使用。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.DistanceGridIntervalMeters:
-  summary: "编辑器视口预览里距离辅助线的间隔，单位 m。仅编辑器使用。"
+  summary: "编辑器视口预览中距离辅助线的间隔，单位 m。仅编辑器使用。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.EndAngleDegrees:
@@ -15,15 +15,15 @@ UUBot2DLidarSensorComponent.EndAngleDegrees:
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.FrameId:
-  summary: "帧头里的 Frame Id，为空时使用 Sensor Id。默认 lidar_2d。"
+  summary: "帧头中的 Frame Id，为空时使用 Sensor Id。默认 lidar_2d。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.GetLatest2DLidarFrame:
-  summary: "返回最近一帧，不会触发新的扫描。还没有采过样时为空。"
+  summary: "返回最近一帧，不会触发新的扫描。尚未完成采样时返回空值。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.HorizontalSamples:
-  summary: "一圈的射线数，范围 2 到 4096。起止两束射线都在扫描范围的边界上。"
+  summary: "每次扫描的射线数量，范围 2 到 4096。首尾两束射线分别位于扫描范围的两个边界。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.IgnoredActors:
@@ -39,7 +39,7 @@ UUBot2DLidarSensorComponent.MinimumRangeMeters:
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.On2DLidarFrameReady:
-  summary: "每次产生有效帧后触发，Frame 是这一帧。"
+  summary: "每次产生有效帧后触发，通过 Frame 参数提供本次生成的帧对象。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.RangeNoiseStdDevMeters:
@@ -59,7 +59,7 @@ UUBot2DLidarSensorComponent.Sample2DLidar:
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.SensorId:
-  summary: "帧头里的 Sensor Id，为空时使用组件名。默认 lidar_2d。"
+  summary: "帧头中的 Sensor Id，为空时使用组件名。默认 lidar_2d。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.SmokeCellRadiusScale:
@@ -67,7 +67,7 @@ UUBot2DLidarSensorComponent.SmokeCellRadiusScale:
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.SmokeDensityThreshold:
-  summary: "有效密度（Density 乘以 Edge Factor）低于它的烟雾单元被忽略。"
+  summary: "烟雾单元的有效密度（Density 乘以 Edge Factor）低于该阈值时，忽略该单元。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.SmokeVolumeActorTag:
@@ -91,7 +91,7 @@ UUBot2DLidarSensorComponent.bIgnoreOwner:
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.bShowRangeLabels:
-  summary: "在编辑器视口预览里显示距离标签。仅编辑器使用。"
+  summary: "在编辑器视口预览中显示距离标签。仅编辑器使用。"
   sourceHash: "e3b0c44298fc"
 
 UUBot2DLidarSensorComponent.bTraceComplex:

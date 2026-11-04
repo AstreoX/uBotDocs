@@ -1,5 +1,5 @@
 Break:FUBotMultirotorVelocityLimits:
-  summary: 把 UBot Multirotor Velocity Limits 拆成最大水平速度、最大上升速度、最大下降速度和最大偏航角速度。
+  summary: "将 UBot Multirotor Velocity Limits 拆分为最大水平速度、最大上升速度、最大下降速度和最大偏航角速度。"
   sourceHash: "e934269cab47"
 
 FUBotMultirotorVelocityLimits:

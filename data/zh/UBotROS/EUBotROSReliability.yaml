@@ -3,9 +3,9 @@ EUBotROSReliability:
   sourceHash: "679d13a80f5c"
 
 EUBotROSReliability.BestEffort:
-  summary: 尽力而为，可能丢消息；传感器数据默认用它。
+  summary: "尽力传输策略，消息可能丢失；传感器数据默认使用该策略。"
   sourceHash: "e3b0c44298fc"
 
 EUBotROSReliability.Reliable:
-  summary: 保证送达，必要时重传；位姿、里程计、TF 和 /clock 用它。
+  summary: "可靠传输策略，必要时重传消息；位姿、里程计、TF 和 /clock 使用该策略。"
   sourceHash: "e3b0c44298fc"

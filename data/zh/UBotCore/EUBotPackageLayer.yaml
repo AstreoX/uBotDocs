@@ -1,5 +1,5 @@
 EUBotPackageLayer:
-  summary: uBot Package 在插件描述文件 UBot 块里声明的分类。
+  summary: "uBot Package 在插件描述文件 `UBot` 块中声明的分类。"
   sourceHash: "eefbda228b2b"
 
 EUBotPackageLayer.Adapter:

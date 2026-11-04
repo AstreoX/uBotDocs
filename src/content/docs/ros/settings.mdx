@@ -1,6 +1,6 @@
 ---
 title: uBotROS 设置项
-description: uBotROS 的项目设置和 DefaultUBotROS.ini：在哪里改，默认值，保存到哪里。
+description: uBotROS 的项目设置和 DefaultUBotROS.ini：修改入口、默认值和保存位置。
 pageKind: settings
 sidebar:
   order: 70
@@ -10,11 +10,11 @@ uBotROS 的设置在「Edit > Project Settings」里修改，设置表给出每�
 
 ## 在哪里改
 
-打开「Edit > Project Settings」，在左侧「Plugins」下找到「uBot ROS」。「Limits」分类里的两项是高级设置，要展开分类底部的箭头才显示。
+打开「Edit > Project Settings」，在左侧「Plugins」下找到「uBot ROS」。「Limits」分类里的两项属于高级设置，需要展开分类底部的箭头后才能显示。
 
 ![Project Settings 的「Plugins - uBot ROS」页：Bridge、Clock 和 Limits 三个分类，Limits 下的两项在「Advanced」里](../../../assets/ros/project-settings.png)
 
-uBot Manager 的「设置 > ROS 桥接」读写同一个文件里的 `Bridge Host` 和 `Bridge Port`，其余设置只能在「Project Settings」里改。
+uBot Manager 的「设置 > ROS 桥接」读写同一个文件里的 `Bridge Host` 和 `Bridge Port`，其余设置需要在「Project Settings」中修改。
 
 ## 设置表
 
@@ -29,11 +29,11 @@ uBot Manager 的「设置 > ROS 桥接」读写同一个文件里的 `Bridge Hos
 | 「Limits」 | `Max Payload Bytes` | `MaxPayloadBytes` | 67108864（64 MiB） | 单帧负载上限，需与桥的 `max_payload_bytes` 一致，最小 1024 |
 | 「Limits」 | `Max Queued Bytes` | `MaxQueuedBytes` | 268435456（256 MiB） | 等待发送的数据和等待分发的接收消息的字节预算，最小 65536 |
 
-- `Max Queued Bytes` 超出时，先丢弃最旧的 best_effort 数据，再拒绝新的 reliable 数据并警告。它小于 `Max Payload Bytes` + 12 时，连接时自动提高到这个值，并记一条警告。
+- `Max Queued Bytes` 超出时，先丢弃最旧的 best_effort 数据，再拒绝新的 reliable 数据并警告。`Max Queued Bytes` 小于 `Max Payload Bytes` + 12 时，连接启动过程会将队列上限提高到 `Max Payload Bytes` + 12，并记录警告。
 - 地址、端口、重连间隔和 `Max Payload Bytes`、`Max Queued Bytes` 在连接启动时读取；`Publish Clock` 和 `Clock Topic` 每个 Tick 重新读取。
-- 对同一个地址重复调用 `Connect` 什么也不做。要让新的重连间隔或队列限制生效，先 `Disconnect` 再 `Connect`，见[连接与状态](/ros/connection/)。
+- 对同一个地址重复调用 `Connect` 不会重新发起连接。如需应用新的重连间隔或队列限制，应先调用 `Disconnect`，再调用 `Connect`，见[连接与状态](/ros/connection/)。
 
-`uBot ROS Sensor Bridge` 和 `uBot ROS Velocity Command` 的属性存在 Actor 或蓝图里，不在这里，见[发布传感器数据](/ros/publish-sensors/)和[接收 cmd_vel](/ros/cmd-vel/)。
+`uBot ROS Sensor Bridge` 和 `uBot ROS Velocity Command` 的属性保存在 Actor 实例或蓝图中，不属于这些项目级设置，见[发布传感器数据](/ros/publish-sensors/)和[接收 cmd_vel](/ros/cmd-vel/)。
 
 ## 保存位置
 
@@ -45,6 +45,6 @@ BridgeHost=127.0.0.1
 BridgePort=8268
 ```
 
-- uBot Manager 只改 `BridgeHost` 和 `BridgePort` 两行，其余内容不变；没有安装 uBotROS 的工程，使用 uBot Manager 自己保存的值。
-- 插件目录里自带的 `Config/DefaultUBotROS.ini` 只放 CoreRedirects（旧插件名称的重定向），是另一个文件，不用改。
-- 早期版本把这些设置写在 `Config/DefaultEngine.ini`。现在只读取 `DefaultUBotROS.ini`，`DefaultEngine.ini` 里的这一段不再生效，升级后设置会回到默认值。把整段剪切到 `DefaultUBotROS.ini`，或在「Project Settings」里重新设置一遍。
+- uBot Manager 只改 `BridgeHost` 和 `BridgePort` 两行，其余内容不变；没有安装 uBotROS 的工程，使用 uBot Manager 保存的值。
+- 插件目录里自带的 `Config/DefaultUBotROS.ini` 仅包含 CoreRedirects（旧插件名称的重定向），与工程设置文件不同，无需修改。
+- 早期版本把这些设置写在 `Config/DefaultEngine.ini`。现在只读取 `DefaultUBotROS.ini`，`DefaultEngine.ini` 里的这一段不再生效，升级后设置会回到默认值。升级时，应将对应设置段迁移到 `DefaultUBotROS.ini`，或在「Project Settings」中重新配置。

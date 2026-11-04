@@ -3,7 +3,7 @@ FUBotImuSensorData:
   sourceHash: "e3b0c44298fc"
 
 FUBotImuSensorData.Header:
-  summary: 帧头，含 Valid 和 Status。
+  summary: 帧头，包含 Valid 和 Status 字段。
   sourceHash: "e3b0c44298fc"
 
 FUBotImuSensorData.OrientationQuaternion:
@@ -23,11 +23,11 @@ Break:FUBotImuSensorData:
   sourceHash: "30460fda8aae"
 
 FUBotImuSensorData.AngularVelocityVariance:
-  summary: 角速度方差，单位 rad²/s²，等于 Gyroscope Noise Std Dev 的平方，三个轴相同。Noise Enabled 关闭时也照样填写。
+  summary: 角速度方差，单位 rad²/s²，等于 Gyroscope Noise Std Dev 的平方，三个轴相同。Noise Enabled 关闭时仍会填充。
   sourceHash: "e3b0c44298fc"
 
 FUBotImuSensorData.LinearAccelerationVariance:
-  summary: 比力方差，单位 m²/s⁴，等于 Accelerometer Noise Std Dev 的平方，三个轴相同。Noise Enabled 关闭时也照样填写。
+  summary: 比力方差，单位 m²/s⁴，等于 Accelerometer Noise Std Dev 的平方，三个轴相同。Noise Enabled 关闭时仍会填充。
   sourceHash: "e3b0c44298fc"
 
 FUBotImuSensorData.OrientationVariance:

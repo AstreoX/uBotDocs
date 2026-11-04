@@ -1,9 +1,9 @@
 UUBotROSBridgeSubsystem:
-  summary: 每个 Game 或 PIE 世界一个，管理这个世界到 ubot_ros_bridge 的 TCP 连接：声明发布者和订阅者，发布 /tf、/tf_static 和 /clock，断线重连并重新注册。套接字读写在后台线程，游戏线程不会阻塞。
+  summary: "每个游戏（Game）或编辑器内运行（PIE）世界各有一个实例，管理该世界与 ubot_ros_bridge 之间的 TCP 连接。负责声明发布者与订阅者，发布 /tf、/tf_static 和 /clock，并在断线重连后重新注册；套接字读写在后台线程执行，不阻塞游戏线程。"
   sourceHash: "bb3b80ecdf9d"
 
 UUBotROSBridgeSubsystem.Connect:
-  summary: 按项目设置里的 Bridge Host 和 Bridge Port 连接；对同一个地址重复调用什么也不做。
+  summary: 按项目设置中的 Bridge Host 和 Bridge Port 连接；对同一个地址重复调用时，不会重新发起连接。
   sourceHash: "617a98ba9784"
 
 UUBotROSBridgeSubsystem.ConnectTo:
@@ -11,11 +11,11 @@ UUBotROSBridgeSubsystem.ConnectTo:
   sourceHash: "0fb57de1a1fd"
 
 UUBotROSBridgeSubsystem.Disconnect:
-  summary: 关闭连接并停止重连，丢弃还没发出的数据。
+  summary: 关闭连接并停止重连，丢弃尚未发出的数据。
   sourceHash: "5efd0edf8eb6"
 
 UUBotROSBridgeSubsystem.GetBridgeEndpoint:
-  summary: 正在连接（或最后连过）的 host:port，从没连过时为空。ConnectTo 拒绝了无效地址时，返回被拒绝的那个，主机为空显示 (no host)。
+  summary: "返回正在连接或最近一次尝试连接的 host:port；从未尝试连接时为空。ConnectTo 拒绝无效地址时，返回该地址；主机为空时显示 (no host)。"
   sourceHash: "607bc2daa7ee"
 
 UUBotROSBridgeSubsystem.GetBridgeStatus:

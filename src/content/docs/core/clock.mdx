@@ -10,11 +10,11 @@ import { Steps } from "@astrojs/starlight/components";
 
 读取 uBot 的仿真时间（Sim Time），并设置固定步长（Fixed Time Step）、暂停和单步（Step）。
 
-所有 uBot 时间戳都用同一个时间：World 的游戏时间。它在暂停时不走，会随时间膨胀（Time Dilation）变快或变慢。
+所有 uBot 时间戳均以世界（World）的游戏时间为基准。该时间在世界暂停时停止推进，其推进速率受时间膨胀（Time Dilation）影响。
 
 ## 快速用法
 
-时钟是一个 World 子系统（Subsystem）。在事件图里右键，搜索 `Get UBotClockSubsystem`（在「World Subsystems」分类下）取到它，再读仿真时间。放进图里后，节点的标题显示为类的显示名 `UBot Clock Subsystem`：
+仿真时钟由 World 子系统（Subsystem）提供。在事件图中右键搜索 `Get UBotClockSubsystem`（位于「World Subsystems」分类），添加子系统获取节点，再通过该节点返回的引用读取仿真时间。添加后，节点标题显示为类的显示名称 `UBot Clock Subsystem`：
 
 ```blueprint
 caption: 每帧把仿真时间打印到屏幕左上角
@@ -30,7 +30,7 @@ wires:
   - T.ReturnValue -> C.InDouble
   - C.ReturnValue -> P.InString
 notes:
-  S: 这个节点只在 Game 和 PIE 世界里有效，后面几张图里的同名节点都一样。
+  S: 该节点仅在游戏（Game）世界和编辑器内运行（PIE，Play In Editor）世界中有效；后续示例中的同名节点遵循相同规则。
 ```
 
 ## 步骤
@@ -39,8 +39,8 @@ notes:
 
 固定步长让引擎每帧固定推进 1 / `Step Hz` 秒。有两种设置方法：
 
-- 在项目设置里勾选 `Use Fixed Time Step`，之后每个 Game 或 PIE 世界开始运行时自动启用，见[设置项](/core/settings/)。
-- 在蓝图里调用 `Set Fixed Time Step`，把 `Enabled` 设为 true；设为 false 则关闭。
+- 在项目设置中勾选 `Use Fixed Time Step`，之后每个 Game 或 PIE 世界开始运行时自动启用，见[设置项](/core/settings/)。
+- 在蓝图中调用 `Set Fixed Time Step`，将 `Enabled` 设置为 true；设为 false 则关闭。
 
 ```blueprint
 caption: 开始运行时启用 60 Hz 的固定步长
@@ -55,7 +55,7 @@ wires:
 
 ### 暂停与单步
 
-先暂停，再每触发一次就前进几帧：
+暂停仿真后，可以通过 `Step Simulation` 指定每次调用需要推进的帧数：
 
 ```blueprint
 caption: 开始运行 2 秒后暂停
@@ -80,24 +80,24 @@ wires:
   - E.then -> T.execute
   - S.ReturnValue -> T.Target
 notes:
-  E: 这是你自己建的自定义事件（Custom Event），由按键或界面按钮调用。
+  E: "`Step Once` 是自行创建的自定义事件（Custom Event），由按键或界面按钮调用。"
 ```
 
-暂停时按键事件默认不触发。用按键调用 `Step Once` 时，选中按键事件节点，在「Details」面板勾选 `Execute When Paused`；用 Enhanced Input 则勾选输入动作资产的 `Trigger When Paused`。界面按钮（UMG Button）不受暂停影响，可以直接调用。
+暂停时按键事件默认不触发。通过按键调用 `Step Once` 时，选中按键事件节点，在「Details」面板勾选 `Execute When Paused`；使用增强输入（Enhanced Input）时，勾选输入动作资产的 `Trigger When Paused`。界面按钮（UMG Button）不受暂停影响，可以直接调用。
 
 <Steps>
 
 1. **暂停**
 
-   调用 `Pause Simulation`。暂停后仿真时间和 `Get Sim Frame` 都停住。
+   调用 `Pause Simulation`。暂停后，仿真时间和 `Get Sim Frame` 返回的仿真帧号均停止增长。
 
 2. **单步**
 
-   调用 `Step Simulation`，`Num Frames` 填要前进的帧数。世界恢复运行恰好这么多个 world tick，然后自动再暂停。
+   调用 `Step Simulation`，将需要推进的帧数填写到 `Num Frames`。世界恢复运行，完成指定数量的世界更新（world tick）后自动暂停。
 
 3. **恢复**
 
-   调用 `Resume Simulation`，世界恢复自由运行，没跑完的单步也一并取消。
+   调用 `Resume Simulation`，世界恢复持续运行，尚未完成的单步任务同时取消。
 
 </Steps>
 
@@ -113,30 +113,30 @@ notes:
 
 ## 输出与事件
 
-时钟子系统没有事件，需要时在 `Event Tick` 或计时器里读取下面这些节点：
+时钟子系统不提供事件。需要获取状态时，可以在 `Event Tick` 或计时器回调中调用以下节点：
 
 | 节点 | 输出 | 说明 |
 | --- | --- | --- |
 | `Get Sim Time Seconds` | Float (double)，单位 s | 当前仿真时间 |
 | `Get Sim Frame` | Integer64 | 游戏时间前进过的 world tick 数；暂停时不增加 |
 | `Is Fixed Time Step Enabled` | Boolean | 引擎当前是否启用了固定步长 |
-| `Is Simulation Paused` | Boolean | 世界是否处于暂停 |
-| `Get Remaining Step Frames` | Integer | 单步还剩几个 world tick；没有单步时为 0 |
-| `Step Simulation` | `Return Value`（Boolean） | 单步开始为 true；`Num Frames` 小于 1 或取消不了暂停时为 false |
+| `Is Simulation Paused` | Boolean | 世界是否处于暂停状态 |
+| `Get Remaining Step Frames` | Integer | 当前单步任务剩余的 world tick 数；没有单步任务时为 0 |
+| `Step Simulation` | `Return Value`（Boolean） | 成功开始单步任务时为 true；`Num Frames` 小于 1 或无法解除暂停时为 false |
 
-PIE 运行时，[uBot 面板](/core/packages/)的 `Runtime` 分区也显示仿真时间和固定时间步长。
+PIE 运行期间，[uBot 面板](/core/packages/)的「Runtime」分区也会显示仿真时间和固定时间步长。
 
 ## 注意事项
 
-- 子系统只存在于 Game 和 PIE 世界。编辑器的预览世界里取不到它。
-- 固定步长是整个进程共用的设置。第一个改它的时钟记下原来的值，最后一个改过它的时钟销毁时恢复。
-- 暂停靠本地玩家控制器（PlayerController），并要求 GameMode 允许暂停。编辑器自己的 PIE 暂停会让世界一直保持暂停，这时 `Resume Simulation` 和 `Step Simulation` 都不会成功，日志里有 `LogUBot` 警告。
-- `Step Simulation` 在单步进行中再次调用，会把帧数加到剩余帧数上。
-- 关闭项目设置 `Use Fixed Time Step` 不会关掉已经启用的固定步长。
-- 不支持固定步长的构建配置里，启用固定步长只会在日志里警告，不会生效。
+- 时钟子系统仅存在于 Game 和 PIE 世界中，无法从编辑器预览世界中获取。
+- 固定步长设置由整个进程共享。首次修改该设置的时钟会记录原始值，最后一个曾修改该设置的时钟销毁时恢复原始值。
+- 暂停操作依赖本地玩家控制器（PlayerController），并要求游戏模式（GameMode）允许暂停。编辑器的 PIE 暂停功能会持续保持世界的暂停状态，此时 `Resume Simulation` 和 `Step Simulation` 均无法成功执行，日志会输出 `LogUBot` 警告。
+- `Step Simulation` 在单步进行中再次调用，会将本次指定的帧数累加到剩余帧数。
+- 关闭项目设置 `Use Fixed Time Step` 不会关闭已经启用的固定步长。
+- 在不支持固定步长的构建配置中，启用请求不会生效，日志会输出警告。
 
 ## 相关参考
 
 - [UBot Clock Subsystem](/reference/ubotcore/uubotclocksubsystem/)：全部节点。
-- [仿真时钟与采样调度](/concepts/clock-and-scheduling/)：传感器的采样时刻怎么排。
+- [仿真时钟与采样调度](/concepts/clock-and-scheduling/)：传感器采样时刻的调度规则。
 - [uBotCore 设置项](/core/settings/)：`Use Fixed Time Step` 和 `Fixed Time Step Hz`。
