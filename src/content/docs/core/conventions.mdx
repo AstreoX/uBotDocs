@@ -12,6 +12,8 @@ import { Steps } from "@astrojs/starlight/components";
 
 ROS（REP-103）用的就是这个右手系，MuJoCo 等 Z 轴朝上的右手系引擎在模型的 X 轴朝前时也一样，所以节点名里不带协议的名字：`UE To Right-Handed …` 和 `Right-Handed To UE …`。UE 的单位是厘米，右手系的单位是米，两边的 Y 轴方向也相反，数据在两边传递时都要换算。
 
+下方示例与参考数据对应已发布的 0.1.x。尚未发布的 0.2.0 源码已删除 Core 的 17 个旧节点，旧资产通过重定向迁移并需要重存，见 [Core API 迁移](/develop/migration/#core-旧-ros-api-迁移020-开发版)。
+
 ## 快速用法
 
 下面把 Actor 的 UE 位置（厘米）换算成右手系的位置（米），并打印到屏幕：
